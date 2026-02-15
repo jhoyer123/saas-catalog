@@ -1,0 +1,119 @@
+catalogo-whatsapp/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── (auth)/                   # Rutas de autenticación
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx
+│   │   │   ├── register/
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
+│   │   │
+│   │   ├── (dashboard)/              # Panel del dueño (protegido)
+│   │   │   ├── dashboard/
+│   │   │   │   └── page.tsx          # Vista general
+│   │   │   ├── products/
+│   │   │   │   ├── page.tsx          # Lista de productos
+│   │   │   │   ├── new/
+│   │   │   │   │   └── page.tsx      # Crear producto
+│   │   │   │   └── [id]/
+│   │   │   │       └── page.tsx      # Editar producto
+│   │   │   ├── categories/
+│   │   │   │   └── page.tsx          # Gestión de categorías
+│   │   │   ├── store/
+│   │   │   │   └── page.tsx          # Configuración de tienda
+│   │   │   └── layout.tsx            # Layout con sidebar
+│   │   │
+│   │   ├── (public)/                 # Catálogos públicos
+│   │   │   └── [slug]/
+│   │   │       └── page.tsx          # Catálogo público: tuapp.com/nombre-tienda
+│   │   │
+│   │   ├── api/                      # API Routes
+│   │   │   ├── products/
+│   │   │   │   └── route.ts
+│   │   │   └── stores/
+│   │   │       └── route.ts
+│   │   │
+│   │   ├── layout.tsx                # Root layout
+│   │   ├── page.tsx                  # Landing page
+│   │   └── globals.css
+│   │
+│   ├── components/                   # Componentes reutilizables
+│   │   ├── ui/                       # Componentes base (shadcn/ui)
+│   │   │   ├── button.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   └── ...
+│   │   │
+│   │   ├── auth/                     # Componentes de autenticación
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── RegisterForm.tsx
+│   │   │   └── AuthProvider.tsx
+│   │   │
+│   │   ├── dashboard/                # Componentes del dashboard
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Header.tsx
+│   │   │   └── StatsCard.tsx
+│   │   │
+│   │   ├── products/                 # Componentes de productos
+│   │   │   ├── ProductCard.tsx
+│   │   │   ├── ProductForm.tsx
+│   │   │   ├── ProductList.tsx
+│   │   │   └── ImageUploader.tsx
+│   │   │
+│   │   ├── catalog/                  # Componentes del catálogo público
+│   │   │   ├── CatalogHeader.tsx
+│   │   │   ├── ProductGrid.tsx
+│   │   │   ├── CategoryFilter.tsx
+│   │   │   └── WhatsAppButton.tsx
+│   │   │
+│   │   └── shared/                   # Componentes compartidos
+│   │       ├── Logo.tsx
+│   │       ├── LoadingSpinner.tsx
+│   │       └── EmptyState.tsx
+│   │
+│   ├── lib/                          # Utilidades y configuraciones
+│   │   ├── supabase/
+│   │   │   ├── client.ts             # Cliente de Supabase (browser)
+│   │   │   ├── server.ts             # Cliente de Supabase (server)
+│   │   │   └── middleware.ts         # Middleware de auth
+│   │   │
+│   │   ├── services/                   #llamadas a al server
+│   │   │
+│   │   ├── schemas/              # Schemas de validación (Zod)
+│   │   │   ├── product.ts
+│   │   │   ├── store.ts
+│   │   │   └── auth.ts
+│   │   │
+│   │   └── utils.ts                  # Funciones helper (cn, etc)
+│   │
+│   ├── hooks/                        # Custom React Hooks
+│   │   ├── useAuth.ts
+│   │   ├── useStore.ts
+│   │   ├── useProducts.ts
+│   │   └── useCategories.ts
+│   │
+│   ├── types/                        # TypeScript types
+│   │   ├── database.ts               # Tipos generados de Supabase
+│   │   ├── product.ts
+│   │   ├── store.ts
+│   │   └── index.ts
+│   │
+│   └── constants/                    # Constantes
+│       ├── plans.ts                  # Límites de planes
+│       └── routes.ts                 # Rutas de la app
+│
+├── public/                           # Archivos estáticos
+│   ├── images/
+│   │   ├── logo.svg
+│   │   └── placeholder.png
+│   └── favicon.ico
+│
+├── .env.local                        # Variables de entorno
+├── .env.example
+├── .gitignore
+├── next.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── package.json
+└── README.md
