@@ -1,0 +1,17 @@
+"use client";
+
+import React from "react";
+import BannerOffer from "@/components/catalog/offer/BannerOffer";
+
+const HeroSection: React.FC = () => {
+  return (
+    <div className="w-full">
+      {/* seccion del banner */}
+      <section className="flex py-2 flex-col items-center justify-center gap-1 w-full max-w-2xl mx-auto">
+        <BannerOffer />
+      </section>
+    </div>
+  );
+};
+
+export default HeroSection;
