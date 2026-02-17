@@ -43,28 +43,28 @@ export function ProductInfo({
       </div>
       {/* Título del producto */}
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 md:text-4xl text-center">
+        <h2 className="text-3xl font-bold font-poppins text-gray-900 md:text-4xl text-center">
           {product.name}
         </h2>
         {product.brand && (
-          <p className="text-center mt-2 text-lg text-gray-600">
-            marca: {product.brand}
+          <p className="text-center font-poppins mt-2 text-lg text-gray-600">
+            {product.brand}
           </p>
         )}
       </div>
 
       {/* Precio */}
       <div className="flex items-center justify-between gap-3">
-        <span className="text-4xl font-bold text-gray-900">
+        <span className="text-4xl font-bold text-gray-900 font-inter">
           ${displayPrice.toFixed(2)}
         </span>
 
         {hasDiscount && (
           <>
-            <span className="text-2xl text-gray-500 line-through">
+            <span className="text-2xl text-gray-500 line-through font-inter">
               ${product.price.toFixed(2)}
             </span>
-            <span className="rounded-full bg-red-500 px-3 py-1 text-sm font-semibold text-white">
+            <span className="font-inter rounded-full bg-red-500 px-3 py-1 text-sm font-semibold text-white">
               -{discountPercentage}%
             </span>
           </>
@@ -73,20 +73,17 @@ export function ProductInfo({
 
       {/* Descripción */}
       <div className="border-t border-gray-200 pt-6">
-        <h2 className="mb-4 text-xl font-semibold text-gray-900">
+        <h2 className="mb-4 text-xl font-semibold text-gray-900 font-poppins">
           Descripción
         </h2>
         <div
-          className="prose prose-sm max-w-none text-gray-600"
+          className="prose prose-sm max-w-none text-gray-600 font-inter"
           dangerouslySetInnerHTML={{ __html: product.description }}
         />
       </div>
 
       {/* Botones de acción */}
-      <div
-        className="sticky bottom-0 border-t border-gray-200 bg-white w-full
-      md:bg-transparent"
-      >
+      <div className="sticky bottom-0 border-t border-gray-200 bg-white w-full md:bg-transparent">
         <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2">
           <Button
             size="lg"

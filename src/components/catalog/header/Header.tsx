@@ -30,6 +30,7 @@ const Header: React.FC<HeaderProps> = ({
               alt="Logo de la Tienda"
               width={40}
               height={40}
+              className="rounded-full w-10 h-10"
             />
           </Link>
           {/* name store */}

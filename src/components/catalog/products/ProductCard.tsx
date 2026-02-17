@@ -44,22 +44,22 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Nombre y marca */}
         <div className="flex-1">
           <Link href={`/public/catalog/${product.slug}`}>
-            <h3 className="font-medium text-gray-900 line-clamp-2 hover:text-gray-700 transition-colors">
+            <h3 className="font-medium font-poppins text-gray-900 line-clamp-2 hover:text-gray-700 transition-colors">
               {product.name}
             </h3>
           </Link>
           {product.brand && (
-            <p className="text-sm text-gray-500 mt-1">{product.brand}</p>
+            <p className="text-sm text-gray-500 mt-1 font-inter">{product.brand}</p>
           )}
         </div>
 
         {/* Precio */}
         <div className="flex items-baseline gap-2">
-          <span className="text-lg font-bold text-gray-900">
+          <span className="text-lg font-inter font-bold text-gray-900">
             ${displayPrice.toFixed(2)}
           </span>
           {hasDiscount && (
-            <span className="text-sm text-gray-500 line-through">
+            <span className="text-sm font-inter text-gray-500 line-through">
               ${product.price.toFixed(2)}
             </span>
           )}

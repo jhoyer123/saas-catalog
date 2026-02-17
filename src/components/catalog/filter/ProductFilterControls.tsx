@@ -40,11 +40,11 @@ export function ProductFilterControls({
 
   return (
     <div
-      className="bg-white rounded-lg border border-gray-200 p-3 space-y-3
-    lg:p-6"
+      className="bg-white rounded-lg border border-gray-200 p-3 space-y-3 lg:p-6"
     >
-      <div className="items-center justify-between hidden
-      lg:flex">
+      <div
+        className="items-center justify-between hidden lg:flex"
+      >
         <h2>Filtros</h2>
 
         {/* Botón para limpiar filtros */}
@@ -62,8 +62,7 @@ export function ProductFilterControls({
 
       {/* Búsqueda */}
       <div
-        className="space-y-2 hidden
-       md:block"
+        className="space-y-2 hidden md:block"
       >
         <Label className="text-sm font-medium text-gray-700">Buscar</Label>
         <Input

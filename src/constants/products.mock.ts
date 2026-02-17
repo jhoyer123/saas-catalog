@@ -28,8 +28,8 @@ export const mockProducts: ProductCatalog[] = [
       <p><em>Disponible en tallas XS al XXL. Recomendamos tallar a su talla habitual.</em></p>
     `,
     images: [
-      "https://i.pinimg.com/736x/57/84/0c/57840ced0adac7c90c5c596ff121d5a7.jpg",
-      "https://i.pinimg.com/736x/57/84/0c/57840ced0adac7c90c5c596ff121d5a7.jpg",
+      "https://i.pinimg.com/736x/75/7b/16/757b168b9219cecd607c109686294576.jpg",
+      "https://i.pinimg.com/1200x/a6/85/93/a68593220d20e4a56bc50c88688bd1d8.jpg",
     ],
     created_at: "2024-11-01T10:00:00",
     updated_at: "2024-11-15T10:00:00",
@@ -59,9 +59,9 @@ export const mockProducts: ProductCatalog[] = [
       <p><em>Ideal para uso diario o actividades al aire libre.</em></p>
     `,
     images: [
-      "https://i.pinimg.com/1200x/d1/82/a6/d182a6c8a3624a005dbc94a45412e7db.jpg",
-      "https://i.pinimg.com/1200x/d1/82/a6/d182a6c8a3624a005dbc94a45412e7db.jpg",
-      "https://i.pinimg.com/1200x/d1/82/a6/d182a6c8a3624a005dbc94a45412e7db.jpg",
+      "https://i.pinimg.com/736x/8b/45/ec/8b45ec5d3d56d60a81ab2f68878dd161.jpg",
+      "https://i.pinimg.com/1200x/0f/d9/90/0fd990dd798d64d9fb7fd32df8c8e1cc.jpg",
+      "https://i.pinimg.com/1200x/fe/d9/95/fed995960a76e97119076968cbb97f5a.jpg",
     ],
     created_at: "2024-11-02T10:00:00",
     updated_at: "2024-11-02T10:00:00",
@@ -91,7 +91,7 @@ export const mockProducts: ProductCatalog[] = [
       <p><em>Se recomienda lavar a mano o en ciclo delicado.</em></p>
     `,
     images: [
-      "https://i.pinimg.com/736x/ec/c8/22/ecc822154d16f4d49ce90a02fdf2b197.jpg",
+      "https://i.pinimg.com/1200x/ae/9d/0a/ae9d0ae79f1db88360f2ee6b0921d5aa.jpg",
     ],
     created_at: "2024-11-03T10:00:00",
     updated_at: "2024-11-20T10:00:00",
@@ -121,8 +121,8 @@ export const mockProducts: ProductCatalog[] = [
       <p><em>Con el uso frecuente adquiere un desgaste natural único.</em></p>
     `,
     images: [
-      "https://i.pinimg.com/736x/77/58/d5/7758d5f995e2c26271e9c9e72bf7a100.jpg",
-      "https://i.pinimg.com/736x/77/58/d5/7758d5f995e2c26271e9c9e72bf7a100.jpg",
+      "https://i.pinimg.com/1200x/c7/07/78/c707786fa83eab4dd3a94fdc8348b013.jpg",
+      "https://i.pinimg.com/736x/a3/3c/a2/a33ca2ab6d0f49f1117675e9c8adb698.jpg",
     ],
     created_at: "2024-11-04T10:00:00",
     updated_at: "2024-11-04T10:00:00",
@@ -214,8 +214,8 @@ export const mockProducts: ProductCatalog[] = [
     `,
     images: [
       "https://i.pinimg.com/1200x/89/1c/4c/891c4ce5fcce9689cf3c27b2d5578393.jpg",
-      "https://i.pinimg.com/1200x/89/1c/4c/891c4ce5fcce9689cf3c27b2d5578393.jpg",
-      "https://i.pinimg.com/1200x/89/1c/4c/891c4ce5fcce9689cf3c27b2d5578393.jpg",
+      "https://i.pinimg.com/1200x/3d/b4/b6/3db4b6f6f0669224e78fa39e3d1e3955.jpg",
+      "https://i.pinimg.com/736x/91/bb/be/91bbbeb67b9d5f8f5e4f2c83e4eb5163.jpg",
     ],
     created_at: "2024-11-07T10:00:00",
     updated_at: "2024-11-07T10:00:00",

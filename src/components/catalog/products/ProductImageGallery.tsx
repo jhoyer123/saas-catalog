@@ -46,7 +46,7 @@ export function ProductImageGallery({
             fill
             className="object-cover"
             priority
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 1280px) 50vw, 600px"
           />
 
           {/* Controles de navegación - Solo si hay múltiples imágenes */}
@@ -220,7 +220,7 @@ export function ProductImageGallery({
             fill
             className="object-cover"
             priority
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
 
           {/* Controles de navegación */}

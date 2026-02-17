@@ -104,10 +104,10 @@ export default function Catalog() {
       <section className="container w-full max-w-7xl mx-auto px-4">
         {/* Header de resultados */}
         <div className="mb-6 flex flex-col items-start gap-2 md:flex-row md:items-center lg:justify-between w-full">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold font-poppins text-gray-900">
             Catálogo de Productos
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm font-inter text-gray-600 mt-1">
             {paginatedResult.total} productos encontrados
           </p>
         </div>
