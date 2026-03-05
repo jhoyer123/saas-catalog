@@ -14,11 +14,7 @@ export function useCreateProduct() {
 
   return useMutation({
     mutationFn: (dataProducto: ProductInputService) =>
-      createProduct(
-        dataProducto,
-        sessionData?.store?.id!,
-        sessionData?.profile?.id!,
-      ),
+      createProduct(dataProducto, sessionData?.store?.id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       router.push("/dashboard/products");

@@ -1,12 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
-  Offer,
+  Banner,
   AUTOPLAY_INTERVAL,
   DRAG_THRESHOLD,
   SNAP_THRESHOLD,
 } from "@/types/catalog/catalog.types";
 
-export function useBannerCarousel(offers: Offer[]) {
+export function useBannerCarousel(offers: Banner[]) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
