@@ -1,7 +1,9 @@
 "use client";
 
-import { ProductFilters } from "@/hooks/catalog/useProductFilter";
-import { mockCategories } from "@/constants/categories.mock";
+import {
+  useProductFilter,
+  ProductFilters,
+} from "@/hooks/catalog/useProductFilter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,40 +16,27 @@ import {
 import { Label } from "@/components/ui/label";
 
 interface ProductFilterControlsProps {
-  filters: ProductFilters;
-  updateFilter: <K extends keyof ProductFilters>(
-    key: K,
-    value: ProductFilters[K],
-  ) => void;
-  resetFilters: () => void;
-  availableBrands: string[];
+  categories: { id: string; name: string }[];
+  brands: string[];
 }
 
 export function ProductFilterControls({
-  filters,
-  updateFilter,
-  resetFilters,
-  availableBrands,
+  categories,
+  brands,
 }: ProductFilterControlsProps) {
-  const hasActiveFilters =
-    filters.search ||
-    filters.category ||
-    filters.minPrice !== null ||
-    filters.maxPrice !== null ||
-    filters.isOffer !== null ||
-    filters.brand ||
-    filters.sortBy;
+  const {
+    filters,
+    updateFilter,
+    resetFilters,
+    hasActiveFilters,
+    searchInput,
+    setSearchInput,
+  } = useProductFilter();
 
   return (
-    <div
-      className="bg-white rounded-lg border border-gray-200 p-3 space-y-3 lg:p-6"
-    >
-      <div
-        className="items-center justify-between hidden lg:flex"
-      >
+    <div className="bg-white rounded-lg border border-gray-200 p-3 space-y-3 lg:p-6">
+      <div className="items-center justify-between hidden lg:flex">
         <h2>Filtros</h2>
-
-        {/* Botón para limpiar filtros */}
         {hasActiveFilters && (
           <Button
             variant="ghost"
@@ -61,15 +50,13 @@ export function ProductFilterControls({
       </div>
 
       {/* Búsqueda */}
-      <div
-        className="space-y-2 hidden md:block"
-      >
+      <div className="space-y-2 hidden md:block">
         <Label className="text-sm font-medium text-gray-700">Buscar</Label>
         <Input
           type="text"
           placeholder="Buscar productos..."
-          value={filters.search}
-          onChange={(e) => updateFilter("search", e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
         />
       </div>
 
@@ -85,9 +72,9 @@ export function ProductFilterControls({
           <SelectTrigger>
             <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper">
             <SelectItem value="all">Todas las categorías</SelectItem>
-            {mockCategories.map((category) => (
+            {categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
               </SelectItem>
@@ -97,7 +84,7 @@ export function ProductFilterControls({
       </div>
 
       {/* Marca */}
-      {availableBrands.length > 0 && (
+      {brands.length > 0 && (
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Marca</Label>
           <Select
@@ -109,9 +96,9 @@ export function ProductFilterControls({
             <SelectTrigger>
               <SelectValue placeholder="Todas las marcas" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper">
               <SelectItem value="all">Todas las marcas</SelectItem>
-              {availableBrands.map((brand) => (
+              {brands.map((brand) => (
                 <SelectItem key={brand} value={brand}>
                   {brand}
                 </SelectItem>
@@ -190,12 +177,12 @@ export function ProductFilterControls({
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar orden" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper">
             <SelectItem value="none">Sin orden</SelectItem>
-            <SelectItem value="name">Nombre (A-Z)</SelectItem>
-            <SelectItem value="price-asc">Precio (menor a mayor)</SelectItem>
-            <SelectItem value="price-desc">Precio (mayor a menor)</SelectItem>
+            <SelectItem value="price_asc">Precio (menor a mayor)</SelectItem>
+            <SelectItem value="price_desc">Precio (mayor a menor)</SelectItem>
             <SelectItem value="newest">Más recientes</SelectItem>
+            <SelectItem value="display_order">Orden de tienda</SelectItem>
           </SelectContent>
         </Select>
       </div>

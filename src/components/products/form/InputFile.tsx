@@ -1,13 +1,21 @@
-// components/products/form/InputFile.improved.tsx
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, X, Plus } from "lucide-react";
 import type { UseFormSetValue } from "react-hook-form";
+import { toast } from "sonner";
+//helpers
+import {
+  createPreviewsFromFileList,
+  createFileListFromArray,
+  validateFile,
+  processImage,
+} from "@/lib/helpers/image";
+import { BannerCard, ProductCard } from "@/components/image/ImageCardStore";
 
 // ============================================
 // TYPES
 // ============================================
 
-interface ImagePreview {
+export interface ImagePreview {
   file: File;
   url: string;
 }
@@ -22,47 +30,7 @@ interface InputFileProps {
   disabled?: boolean;
   imgExisting?: string[];
   setValue?: UseFormSetValue<any>; // TODO: Podríamos tiparlo mejor con generics
-}
-
-// ============================================
-// HELPERS
-// ============================================
-
-/**
- * Convierte FileList a array de previews
- */
-function createPreviewsFromFileList(fileList: FileList): ImagePreview[] {
-  return Array.from(fileList).map((file) => ({
-    file,
-    url: URL.createObjectURL(file),
-  }));
-}
-
-/**
- * Convierte array de Files a FileList
- */
-function createFileListFromArray(files: File[]): FileList {
-  const dataTransfer = new DataTransfer();
-  files.forEach((file) => dataTransfer.items.add(file));
-  return dataTransfer.files;
-}
-
-/**
- * Valida un archivo individual
- */
-function validateFile(file: File, maxSizeMB: number): string | null {
-  // Validar tipo
-  if (!file.type.startsWith("image/")) {
-    return `${file.name} no es una imagen válida`;
-  }
-
-  // Validar tamaño
-  const sizeMB = file.size / (1024 * 1024);
-  if (sizeMB > maxSizeMB) {
-    return `${file.name} excede el tamaño máximo de ${maxSizeMB}MB`;
-  }
-
-  return null;
+  typeElement?: "banner" | "product";
 }
 
 // ============================================
@@ -79,6 +47,7 @@ export default function InputFile({
   disabled = false,
   imgExisting = [],
   setValue,
+  typeElement = "product",
 }: InputFileProps) {
   // ============================================
   // STATE
@@ -104,7 +73,6 @@ export default function InputFile({
       previews.forEach((preview) => URL.revokeObjectURL(preview.url));
       setPreviews([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   // Cleanup al desmontar
@@ -122,7 +90,7 @@ export default function InputFile({
    * Maneja selección de nuevos archivos
    */
   const handleFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const newFiles = e.target.files;
       if (!newFiles || newFiles.length === 0) return;
 
@@ -133,18 +101,31 @@ export default function InputFile({
       const validNewFiles: File[] = [];
       const errors: string[] = [];
 
-      Array.from(newFiles).forEach((file) => {
+      for (const file of Array.from(newFiles)) {
         const error = validateFile(file, maxSizeMB);
         if (error) {
           errors.push(error);
         } else {
-          validNewFiles.push(file);
+          const processed =
+            typeElement === "banner"
+              ? await processImage(file, {
+                  targetWidth: 1440,
+                  targetHeight: 500,
+                  quality: 0.88,
+                  maxSizeBytes: 300 * 1024, // 300kb para banners
+                })
+              : await processImage(file);
+          validNewFiles.push(processed);
         }
-      });
+      }
 
       // Mostrar errores
       if (errors.length > 0) {
-        alert(errors.join("\n"));
+        //alert(errors.join("\n"));
+        toast.error(errors.join("\n"), {
+          position: "top-center",
+          duration: 5000,
+        });
       }
 
       // Combinar archivos
@@ -152,7 +133,11 @@ export default function InputFile({
 
       // Validar límite total
       if (combinedFiles.length + existingImages.length > maxFiles) {
-        alert(`Solo puedes subir un máximo de ${maxFiles} imágenes`);
+        //alert(`Solo puedes subir un máximo de ${maxFiles} imágenes`);
+        toast.error(`Solo puedes subir un máximo de ${maxFiles} imágenes`, {
+          position: "top-center",
+          duration: 5000,
+        });
         return;
       }
 
@@ -278,31 +263,49 @@ export default function InputFile({
           {/* Grid de previews */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Imágenes existentes */}
-            {existingImages.map((url, index) => (
-              <ImageCard
-                key={`existing-${index}`}
-                url={url}
-                onRemove={() => handleRemoveExistingImage(index)}
-                disabled={disabled}
-              />
-            ))}
+            {existingImages.map((url, index) =>
+              typeElement === "banner" ? (
+                <BannerCard
+                  key={`existing-${index}`}
+                  url={url}
+                  onRemove={() => handleRemoveExistingImage(index)}
+                  disabled={disabled}
+                />
+              ) : (
+                <ProductCard
+                  key={`existing-${index}`}
+                  url={url}
+                  onRemove={() => handleRemoveExistingImage(index)}
+                  disabled={disabled}
+                />
+              ),
+            )}
 
             {/* Imágenes nuevas */}
-            {previews.map((preview, index) => (
-              <ImageCard
-                key={`new-${index}`}
-                url={preview.url}
-                onRemove={() => handleRemoveImage(index)}
-                disabled={disabled}
-              />
-            ))}
+            {previews.map((preview, index) =>
+              typeElement === "banner" ? (
+                <BannerCard
+                  key={`new-${index}`}
+                  url={preview.url}
+                  onRemove={() => handleRemoveImage(index)}
+                  disabled={disabled}
+                />
+              ) : (
+                <ProductCard
+                  key={`new-${index}`}
+                  url={preview.url}
+                  onRemove={() => handleRemoveImage(index)}
+                  disabled={disabled}
+                />
+              ),
+            )}
 
             {/* Botón para añadir más */}
             {canAddMore && (
               <button
                 type="button"
                 onClick={handleOpenFileDialog}
-                className="aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-blue-500"
+                className={`${typeElement === "banner" ? "aspect-16/5" : "aspect-square"} rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-blue-500`}
               >
                 <Plus className="w-8 h-8" />
                 <span className="text-xs font-medium">Añadir más</span>
@@ -321,41 +324,6 @@ export default function InputFile({
 
       {/* Error message */}
       {error && <p className="text-sm text-red-500">{error}</p>}
-    </div>
-  );
-}
-
-// ============================================
-// SUB-COMPONENTES
-// ============================================
-
-interface ImageCardProps {
-  url: string;
-  onRemove: () => void;
-  disabled: boolean;
-}
-
-function ImageCard({ url, onRemove, disabled }: ImageCardProps) {
-  return (
-    <div className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-colors">
-      <img
-        loading="lazy"
-        src={url}
-        alt="Preview"
-        className="w-full h-full object-cover"
-      />
-
-      {!disabled && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <button
-            type="button"
-            onClick={onRemove}
-            className="opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full p-2"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

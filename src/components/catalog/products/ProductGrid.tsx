@@ -1,8 +1,8 @@
-import { ProductCatalog } from "@/types/product.types";
+import { ProductCatalogCard } from "@/types/product.types";
 import { ProductCard } from "./ProductCard";
 
 interface ProductGridProps {
-  products: ProductCatalog[];
+  products: ProductCatalogCard[];
   isLoading?: boolean;
 }
 
@@ -56,7 +56,7 @@ export function ProductGrid({ products, isLoading = false }: ProductGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}

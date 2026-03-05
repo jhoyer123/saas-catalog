@@ -1,86 +1,62 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ProductCatalog } from "@/types/product.types";
-import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { ProductCatalogCard } from "@/types/product.types";
+import { useParams } from "next/navigation";
+import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 interface ProductCardProps {
-  product: ProductCatalog;
+  product: ProductCatalogCard;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const displayPrice =
-    product.is_offer && product.offer_price
-      ? product.offer_price
-      : product.price;
+  const hasDiscount = checkIsOfferActive({
+    is_offer: product.is_offer,
+    offer_price: product.offer_price,
+    offer_start: product.offer_start,
+    offer_end: product.offer_end,
+  });
 
-  const hasDiscount = product.is_offer && product.offer_price;
+  const displayPrice =
+    hasDiscount && product.offer_price ? product.offer_price : product.price;
+  const { store_slug } = useParams<{ store_slug: string }>();
 
   return (
-    <div className="group relative flex flex-col bg-white overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-      {/* Badge de oferta */}
-      {hasDiscount && (
-        <div className="absolute top-2 right-2 z-10 bg-[#10B981] text-white text-xs font-bold px-2 py-1 rounded">
-          OFERTA
-        </div>
-      )}
-
-      {/* Imagen del producto */}
+    <div className="flex flex-col justify-between group relative w-full bg-card hover:shadow-md transition-all duration-300  border border-border shadow-sm">
+      {/* ───────── IMAGEN ───────── */}
       <Link
-        href={`/public/catalog/${product.slug}`}
-        className="relative aspect-3/4 w-full overflow-hidden bg-gray-100"
+        href={`/public/${store_slug}/${product.slug}`}
+        className="relative block aspect-3/4 w-full overflow-hidden bg-gray-300"
       >
         <Image
-          src={product.images[0] || "/placeholder-product.jpg"}
+          src={product.images[0]?.image_url || "/images/placeholder.png"}
           alt={product.name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          fill // ← fill en vez de width/height
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
       </Link>
 
-      {/* Contenido de la tarjeta */}
-      <div className="flex flex-col flex-1 p-4 space-y-3">
-        {/* Nombre y marca */}
-        <div className="flex-1">
-          <Link href={`/public/catalog/${product.slug}`}>
-            <h3 className="font-medium font-poppins text-gray-900 line-clamp-2 hover:text-gray-700 transition-colors">
-              {product.name}
-            </h3>
-          </Link>
-          {product.brand && (
-            <p className="text-sm text-gray-500 mt-1 font-inter">{product.brand}</p>
-          )}
-        </div>
+      {/* ───────── INFO ───────── */}
+      <div className="px-4 pb-3 pt-2">
+        {/* Nombre */}
+        <Link href={`/public/${store_slug}/${product.slug}`}>
+          <h3 className="text-sm sm:text-base md:text-lg font-medium font-inter text-gray-700 leading-snug line-clamp-2 wrap-break-word hover:text-gray-900 transition-colors">
+            {product.name}
+          </h3>
+        </Link>
 
-        {/* Precio */}
-        <div className="flex items-baseline gap-2">
-          <span className="text-lg font-inter font-bold text-gray-900">
-            ${displayPrice.toFixed(2)}
+        <div className="mt-1.5 flex items-baseline justify-center gap-2 font-inter flex-wrap">
+          {/* Precio Actual */}
+          <span className="text-md sm:text-xl font-bold text-background-foreground">
+            Bs. {displayPrice.toFixed(2)}
           </span>
-          {hasDiscount && (
-            <span className="text-sm font-inter text-gray-500 line-through">
-              ${product.price.toFixed(2)}
+
+          {/* Precio de Oferta (Tachado) */}
+          {hasDiscount && product.price !== displayPrice && (
+            <span className="text-sm sm:text-base text-muted-foreground line-through font-medium">
+              Bs. {product.price.toFixed(2)}
             </span>
           )}
-        </div>
-
-        {/* Botones de acción */}
-        <div className="flex flex-col gap-2 pt-2">
-          <Link href={`/public/catalog/${product.slug}`} className="w-full">
-            <Button variant="outline" className="w-full">
-              Ver Detalles
-            </Button>
-          </Link>
-          <a
-            href={`https://wa.me/59162557286?text=${encodeURIComponent(`Hola! Me interesa el producto: ${product.name}`)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 bg-[#0f52ba] hover:bg-[#0e48a3] text-gray-50 rounded-md px-4 py-2 transition-colors"
-          >
-            <Send className="h-5 w-5" />
-            Solicitar
-          </a>
         </div>
       </div>
     </div>

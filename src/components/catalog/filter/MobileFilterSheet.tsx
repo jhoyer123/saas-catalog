@@ -8,27 +8,19 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ProductFilterControls } from "./ProductFilterControls";
-import { ProductFilters } from "@/hooks/catalog/useProductFilter";
 
 interface MobileFilterSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  filters: ProductFilters;
-  updateFilter: <K extends keyof ProductFilters>(
-    key: K,
-    value: ProductFilters[K],
-  ) => void;
-  resetFilters: () => void;
-  availableBrands: string[];
+  categories: { id: string; name: string }[];
+  brands: string[];
 }
 
 export function MobileFilterSheet({
   open,
   onOpenChange,
-  filters,
-  updateFilter,
-  resetFilters,
-  availableBrands,
+  categories,
+  brands,
 }: MobileFilterSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -40,12 +32,7 @@ export function MobileFilterSheet({
           </SheetDescription>
         </SheetHeader>
         <div className="px-2">
-          <ProductFilterControls
-            filters={filters}
-            updateFilter={updateFilter}
-            resetFilters={resetFilters}
-            availableBrands={availableBrands}
-          />
+          <ProductFilterControls categories={categories} brands={brands} />
         </div>
       </SheetContent>
     </Sheet>

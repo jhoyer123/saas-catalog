@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import MenuBar from "@/components/products/textRich/MenuBar";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
+import { useEffect } from "react";
 
 interface Props {
   value: string;
@@ -14,6 +15,7 @@ interface Props {
 
 const RichTextEditor = ({ value, onChange, disabled }: Props) => {
   const editor = useEditor({
+    editable: !disabled,
     extensions: [
       StarterKit.configure({
         bulletList: {
@@ -40,10 +42,15 @@ const RichTextEditor = ({ value, onChange, disabled }: Props) => {
     },
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      // console.log(editor.getHTML());
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value || "");
+    }
+  }, [value, editor]);
 
   return (
     <div>

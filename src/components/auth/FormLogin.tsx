@@ -25,7 +25,6 @@ const FormLogin = ({ handleLogin, isPending }: Props) => {
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
-  console.log("Errores:", errors);
 
   const onSubmit = (data: LoginData) => {
     handleLogin(data);

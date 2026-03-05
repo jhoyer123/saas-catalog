@@ -2,30 +2,24 @@
 
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useProductFilter } from "@/hooks/catalog/useProductFilter";
 
 interface ProductPaginationProps {
-  currentPage: number;
   totalPages: number;
   pageSize: number;
   total: number;
-  setPage: (page: number) => void;
-  setPageSize: (pageSize: number) => void;
 }
 
 export function ProductPagination({
-  currentPage,
   totalPages,
   pageSize,
   total,
-  setPage,
 }: ProductPaginationProps) {
-  const startItem = (currentPage - 1) * pageSize + 1;
-  const endItem = Math.min(currentPage * pageSize, total);
+  const { filters, setPage } = useProductFilter();
+  const currentPage = filters.page;
 
-  // Función para cambiar de página y hacer scroll al inicio
   const handlePageChange = (page: number) => {
     setPage(page);
-    // Scroll suave al inicio de la página
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

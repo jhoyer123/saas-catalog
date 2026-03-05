@@ -1,8 +1,7 @@
 // hooks/useProductForm.ts
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import type { ProductType } from "@/types/product.types";
+import { useEffect, useMemo } from "react";
 import {
   productFormSchema,
   productFormSchemaUpdate,
@@ -11,78 +10,66 @@ import {
   type ProductInputService,
   type ProductInputServiceUpdate,
 } from "@/lib/schemas/product";
+import { useProductActions } from "./useHandleAction";
+import { ProductCatalog } from "@/types/product.types";
 
 type FormMode = "create" | "update" | "view";
 
 interface UseProductFormProps {
   mode: FormMode;
-  initialData?: ProductType;
-  onSubmit?: (data: ProductInputService | ProductInputServiceUpdate) => void;
+  initialData?: ProductCatalog;
+  categories: { id: string; name: string }[];
 }
 
 export function useProductForm({
   mode,
   initialData,
-  onSubmit,
+  categories,
 }: UseProductFormProps) {
-  const isUpdate = mode === "update" || mode === "view";
+  const isCreate = mode === "create";
+  const isUpdate = mode === "update";
+  const isView = mode === "view";
+
+  const { createProduct, updateProduct, isPending } = useProductActions();
 
   const form = useForm({
     resolver: zodResolver(
       isUpdate ? productFormSchemaUpdate : productFormSchema,
     ),
     mode: "onChange",
-    defaultValues:
-      isUpdate && initialData
-        ? {
-            name: initialData.name,
-            sku: initialData.sku ?? "",
-            brand: initialData.brand ?? "",
-            price: initialData.price,
-            description: initialData.description,
-            category_id: initialData.category_id,
-            imageExisting: initialData.imageExisting ?? [],
-            imageToDelete: [],
-          }
-        : {
-            name: "",
-            brand: "",
-            sku: "",
-            category_id: "",
-            description: "",
-            price: 0,
-          },
+    defaultValues: {
+      name: initialData?.name ?? "",
+      sku: initialData?.sku ?? "",
+      brand: initialData?.brand ?? "",
+      price: initialData?.price ?? 0,
+      description: initialData?.description ?? "",
+      category_id: initialData?.category_id ?? "",
+      imageExisting: initialData?.images ?? [],
+      imageToDelete: [],
+    },
   });
 
-  // Hidratar form
-  useEffect(() => {
-    if (isUpdate && initialData) {
-      form.reset({
-        name: initialData.name,
-        sku: initialData.sku ?? "",
-        brand: initialData.brand ?? "",
-        price: initialData.price,
-        description: initialData.description,
-        category_id: initialData.category_id,
-        imageExisting: initialData.imageExisting ?? [],
-        imageToDelete: [],
-      });
-    }
-  }, [initialData, isUpdate, form]);
+  //refinar las categorias para el select (memo para evitar recrear el array en cada render)
+  const categoryOptions = useMemo(
+    () =>
+      (categories ?? []).map((cat) => ({
+        value: String(cat.id),
+        label: cat.name,
+      })),
+    [categories],
+  );
 
   // Registrar imageToDelete
   useEffect(() => {
     if (isUpdate) {
       form.register("imageToDelete");
     }
-  }, [form, isUpdate]);
+  }, [form.register, isUpdate]);
 
   // Submit
   const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
   ) => {
-    if (!onSubmit) return;
-
     const transformed = isUpdate
       ? {
           ...data,
@@ -95,19 +82,35 @@ export function useProductForm({
           images: Array.from((data as ProductFormInput).images),
         };
 
-    console.log(transformed);
-    //onSubmit(transformed);
-
-    // Reset en create
-    if (mode === "create") {
-      form.reset({
-        name: "",
-        brand: "",
-        sku: "",
-        category_id: "",
-        description: "",
-        price: 0,
+    //execute action
+    if (isCreate) {
+      createProduct(transformed as ProductInputService, () => {
+        form.reset({
+          name: "",
+          brand: "",
+          sku: "",
+          category_id: "",
+          description: "",
+          price: 0,
+        });
       });
+    }
+
+    if (isUpdate) {
+      updateProduct(
+        initialData?.id!,
+        transformed as ProductInputServiceUpdate,
+        () => {
+          form.reset({
+            name: "",
+            brand: "",
+            sku: "",
+            category_id: "",
+            description: "",
+            price: 0,
+          });
+        },
+      );
     }
   };
 
@@ -118,6 +121,9 @@ export function useProductForm({
     errors: form.formState.errors,
     setValue: form.setValue,
     reset: form.reset,
-    isViewMode: mode === "view",
+    isViewMode: isView,
+    initialData,
+    categoryOptions,
+    isPending,
   };
 }

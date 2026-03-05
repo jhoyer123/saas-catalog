@@ -1,9 +1,7 @@
 // Forma de cada banner que viene de la base de datos
-export interface Offer {
+export interface Banner {
   id: number;
-  image: string;
-  link: string;
-  alt?: string;
+  image_url: string;
 }
 
 // Cuánto tiempo muestra cada banner antes de pasar al siguiente

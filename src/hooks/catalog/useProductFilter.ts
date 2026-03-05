@@ -1,7 +1,9 @@
+// src/hooks/catalog/useProductFilter.ts
 "use client";
 
-import { useState, useMemo } from "react";
-import { ProductCatalog } from "@/types/product.types";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useDebounce } from "@/hooks/catalog/useDebounce";
+import { useEffect, useState } from "react";
 
 export interface ProductFilters {
   search: string;
@@ -10,197 +12,121 @@ export interface ProductFilters {
   maxPrice: number | null;
   isOffer: boolean | null;
   brand: string | null;
-  sortBy: "name" | "price-asc" | "price-desc" | "newest" | null;
+  sortBy: "price_asc" | "price_desc" | "newest" | "display_order" | null;
   page: number;
   pageSize: number;
 }
 
-interface UseProductFilterProps {
-  products: ProductCatalog[];
-}
+export function useProductFilter() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-interface PaginatedResult {
-  items: ProductCatalog[];
-  total: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
-}
+  // Lee los filtros actuales desde la URL
+  const filters: ProductFilters = {
+    search: searchParams.get("search") ?? "",
+    category: searchParams.get("category"),
+    minPrice: searchParams.get("minPrice")
+      ? Number(searchParams.get("minPrice"))
+      : null,
+    maxPrice: searchParams.get("maxPrice")
+      ? Number(searchParams.get("maxPrice"))
+      : null,
+    isOffer: searchParams.get("onlyOffers") === "true" ? true : null,
+    brand: searchParams.get("brand"),
+    sortBy: (searchParams.get("sort") as ProductFilters["sortBy"]) ?? null,
+    page: Number(searchParams.get("page")) || 1,
+    pageSize: Number(searchParams.get("pageSize")) || 12,
+  };
 
-export function useProductFilter({ products }: UseProductFilterProps) {
-  const [filters, setFilters] = useState<ProductFilters>({
-    search: "",
-    category: null,
-    minPrice: null,
-    maxPrice: null,
-    isOffer: null,
-    brand: null,
-    sortBy: null,
-    page: 1,
-    pageSize: 12,
-  });
-
-  // Filtrado y ordenamiento
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = [...products];
-
-    // Filtrar solo productos disponibles (opcional, puedes comentar esta línea)
-    // result = result.filter(p => p.is_available);
-
-    // Filtro de búsqueda
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchLower) ||
-          p.brand?.toLowerCase().includes(searchLower) ||
-          p.name_category.toLowerCase().includes(searchLower)
-      );
+  // Función base para actualizar un param en la URL
+  const updateParam = (key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
     }
-
-    // Filtro por categoría
-    if (filters.category) {
-      result = result.filter((p) => p.category_id === filters.category);
+    // Reset page al cambiar cualquier filtro excepto page y pageSize
+    if (key !== "page" && key !== "pageSize") {
+      params.delete("page");
     }
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
-    // Filtro por rango de precio
-    if (filters.minPrice !== null) {
-      result = result.filter((p) => {
-        const price = p.is_offer && p.offer_price ? p.offer_price : p.price;
-        return price >= filters.minPrice!;
-      });
+  // Mapeo de keys del filtro a keys de la URL
+  const keyMap: Record<keyof ProductFilters, string> = {
+    search: "search",
+    category: "category",
+    minPrice: "minPrice",
+    maxPrice: "maxPrice",
+    isOffer: "onlyOffers",
+    brand: "brand",
+    sortBy: "sort",
+    page: "page",
+    pageSize: "pageSize",
+  };
+
+  // Debounce solo para search
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") ?? "",
+  );
+  const debouncedSearch = useDebounce(searchInput, 400);
+
+  useEffect(() => {
+    const currentSearch = searchParams.get("search") ?? "";
+    if (debouncedSearch !== currentSearch) {
+      updateParam("search", debouncedSearch || null);
     }
+  }, [debouncedSearch]);
 
-    if (filters.maxPrice !== null) {
-      result = result.filter((p) => {
-        const price = p.is_offer && p.offer_price ? p.offer_price : p.price;
-        return price <= filters.maxPrice!;
-      });
-    }
-
-    // Filtro por ofertas
-    if (filters.isOffer !== null) {
-      result = result.filter((p) => p.is_offer === filters.isOffer);
-    }
-
-    // Filtro por marca
-    if (filters.brand) {
-      result = result.filter((p) => p.brand === filters.brand);
-    }
-
-    // Ordenamiento
-    if (filters.sortBy) {
-      switch (filters.sortBy) {
-        case "name":
-          result.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-        case "price-asc":
-          result.sort((a, b) => {
-            const priceA = a.is_offer && a.offer_price ? a.offer_price : a.price;
-            const priceB = b.is_offer && b.offer_price ? b.offer_price : b.price;
-            return priceA - priceB;
-          });
-          break;
-        case "price-desc":
-          result.sort((a, b) => {
-            const priceA = a.is_offer && a.offer_price ? a.offer_price : a.price;
-            const priceB = b.is_offer && b.offer_price ? b.offer_price : b.price;
-            return priceB - priceA;
-          });
-          break;
-        case "newest":
-          result.sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-          break;
-      }
-    }
-
-    return result;
-  }, [products, filters]);
-
-  // Paginación
-  const paginatedResult = useMemo((): PaginatedResult => {
-    const total = filteredAndSortedProducts.length;
-    const totalPages = Math.ceil(total / filters.pageSize);
-    const start = (filters.page - 1) * filters.pageSize;
-    const end = start + filters.pageSize;
-    const items = filteredAndSortedProducts.slice(start, end);
-
-    return {
-      items,
-      total,
-      totalPages,
-      currentPage: filters.page,
-      pageSize: filters.pageSize,
-    };
-  }, [filteredAndSortedProducts, filters.page, filters.pageSize]);
-
-  // Helpers para actualizar filtros
   const updateFilter = <K extends keyof ProductFilters>(
     key: K,
-    value: ProductFilters[K]
+    value: ProductFilters[K],
   ) => {
-    setFilters((prev) => {
-      const newFilters = {
-        ...prev,
-        [key]: value,
-      };
-      
-      // Reset page cuando cambian los filtros (excepto cuando se cambia la página o pageSize)
-      if (key !== "page" && key !== "pageSize") {
-        newFilters.page = 1;
-      }
-      
-      return newFilters;
-    });
+    const urlKey = keyMap[key];
+
+    if (value === null || value === "" || value === false) {
+      updateParam(urlKey, null);
+      return;
+    }
+
+    updateParam(urlKey, String(value));
   };
 
   const resetFilters = () => {
-    setFilters({
-      search: "",
-      category: null,
-      minPrice: null,
-      maxPrice: null,
-      isOffer: null,
-      brand: null,
-      sortBy: null,
-      page: 1,
-      pageSize: 12,
-    });
+    router.push(pathname);
   };
 
   const setPage = (page: number) => {
-    setFilters((prev) => ({
-      ...prev,
-      page,
-    }));
+    updateParam("page", String(page));
   };
 
   const setPageSize = (pageSize: number) => {
-    setFilters((prev) => ({
-      ...prev,
-      pageSize,
-      page: 1, // Reset to first page when changing page size
-    }));
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("pageSize", String(pageSize));
+    params.delete("page");
+    router.push(`${pathname}?${params.toString()}`);
   };
 
-  // Obtener marcas únicas para el filtro
-  const availableBrands = useMemo(() => {
-    const brands = products
-      .map((p) => p.brand)
-      .filter((brand): brand is string => brand !== null);
-    return Array.from(new Set(brands)).sort();
-  }, [products]);
+  const hasActiveFilters = !!(
+    filters.search ||
+    filters.category ||
+    filters.minPrice !== null ||
+    filters.maxPrice !== null ||
+    filters.isOffer !== null ||
+    filters.brand ||
+    filters.sortBy
+  );
 
   return {
     filters,
+    searchInput,
+    setSearchInput,
     updateFilter,
     resetFilters,
     setPage,
     setPageSize,
-    paginatedResult,
-    availableBrands,
+    hasActiveFilters,
   };
 }

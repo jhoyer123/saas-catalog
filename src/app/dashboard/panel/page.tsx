@@ -1,3 +1,7 @@
-export default function DashboardPage() {
-  return <h1>Hola mundo</h1>;
+import { getProductCount } from "@/lib/actions/validateActions";
+import PanelPage from "@/components/panel/PanelPage";
+
+export default async function Page() {
+  const count = await getProductCount();
+  return <PanelPage hasProducts={count > 0} />;
 }

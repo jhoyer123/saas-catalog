@@ -9,6 +9,7 @@ import { RegisterData } from "@/lib/schemas/auth";
 
 //components
 import FormRegister from "@/components/auth/FormRegister";
+import Image from "next/image";
 
 export default function Register() {
   const { showPromise } = useToastPromise();
@@ -36,16 +37,24 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="w-full max-w-md p-6">
+      <Image
+        src="/images/backgroundAuth.webp"
+        alt="Fondo de Login"
+        fill
+        className="object-cover opacity-50 relative z-0"
+        priority
+      />
+      <main className="w-full max-w-md p-6 relative z-10">
         {/* header */}
         <header className="mb-8 text-center flex flex-col gap-2 px-4">
           {/* logo */}
-          <span>logo</span>
-          <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200">
-            Registrarse
-          </h1>
+          <span className="text-2xl font-black tracking-tighter leading-none font-poppins">
+            JVG
+          </span>
+          <h1 className="text-3xl font-bold">Registrarse</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Crea una nueva cuenta para continuar.
+            Completa el formulario para crear tu cuenta y empezar a gestionar tu
+            catálogo.
           </p>
         </header>
         {/* form register*/}

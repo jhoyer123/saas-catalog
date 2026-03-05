@@ -4,31 +4,13 @@ import React from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
-import { Offer } from "@/types/catalog/catalog.types";
+import { Banner } from "@/types/catalog/catalog.types";
 
-// Datos hardcodeados por ahora — luego vendrán de la base de datos
-const offers: Offer[] = [
-  {
-    id: 1,
-    image: "/images/banner1.webp",
-    link: "/offers",
-    alt: "Oferta especial 1",
-  },
-  {
-    id: 2,
-    image: "/images/banner2.webp",
-    link: "/offers",
-    alt: "Oferta especial 2",
-  },
-  {
-    id: 3,
-    image: "/images/banner3.webp",
-    link: "/offers",
-    alt: "Oferta especial 3",
-  },
-];
+interface BannerOfferProps {
+  banners: Banner[];
+}
 
-const BannerOffer: React.FC = () => {
+const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
   const {
     currentIndex,
     isAnimating,
@@ -42,7 +24,7 @@ const BannerOffer: React.FC = () => {
     onPointerMove,
     onPointerUp,
     onPointerCancel,
-  } = useBannerCarousel(offers);
+  } = useBannerCarousel(banners);
 
   return (
     <div
@@ -69,15 +51,15 @@ const BannerOffer: React.FC = () => {
         onPointerCancel={onPointerCancel}
         onDragStart={(e) => e.preventDefault()}
       >
-        {offers.map((offer, index) => (
+        {banners.map((banner, index) => (
           <div
-            key={offer.id}
-            className="relative w-full shrink-0 aspect-3/2"
+            key={banner.id}
+            className="relative w-full shrink-0 aspect-video"
             aria-hidden={index !== currentIndex}
           >
             <Image
-              src={offer.image}
-              alt={offer.alt ?? `Oferta ${offer.id}`}
+              src={banner.image_url}
+              alt={`Banner ${index + 1}`}
               fill
               sizes="(max-width: 768px) 100vw, 70vw"
               className="object-cover pointer-events-none"
@@ -110,9 +92,9 @@ const BannerOffer: React.FC = () => {
         className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10"
         role="tablist"
       >
-        {offers.map((_, index) => (
+        {banners.map((banner, index) => (
           <button
-            key={index}
+            key={banner.id}
             role="tab"
             aria-selected={index === currentIndex}
             aria-label={`Banner ${index + 1}`}
