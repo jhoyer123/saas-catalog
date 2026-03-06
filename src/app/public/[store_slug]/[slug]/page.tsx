@@ -3,6 +3,8 @@ import { getPublicProductBySlug } from "@/lib/actions/catalogActions";
 import ProductDetailClient from "@/components/catalog/products/ProductDetailClient";
 import { notFound } from "next/navigation";
 
+export const revalidate = 3600;
+
 type Props = {
   params: Promise<{ store_slug: string; slug: string }>;
 };

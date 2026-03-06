@@ -98,60 +98,62 @@ export const getPublicBanners = unstable_cache(
  * @param slug
  * @returns
  */
-export async function getPublicProductBySlug(
-  slug: string,
-): Promise<ProductCatalog> {
-  const { data, error } = await supabasePublic
-    .from("products")
-    .select(
-      `
+export const getPublicProductBySlug = unstable_cache(
+  async (slug: string): Promise<ProductCatalog> => {
+    const { data, error } = await supabasePublic
+      .from("products")
+      .select(
+        `
       *,
       category:categories(name),
       images:product_images(image_url)
     `,
-    )
-    .eq("slug", slug)
-    .eq("is_available", true)
-    .single();
+      )
+      .eq("slug", slug)
+      .eq("is_available", true)
+      .single();
 
-  if (error) throw new Error(error.message);
-  const now = new Date();
-  const isOfferActive = checkIsOfferActive(
-    {
+    if (error) throw new Error(error.message);
+    const now = new Date();
+    const isOfferActive = checkIsOfferActive(
+      {
+        is_offer: data.is_offer ?? false,
+        offer_price: data.offer_price ?? null,
+        offer_start: data.offer_start ?? null,
+        offer_end: data.offer_end ?? null,
+      },
+      now,
+    );
+
+    const mapped: ProductCatalog = {
+      id: data.id,
+      store_id: data.store_id,
+      category_id: data.category_id,
+      name_category: data.category?.name ?? "Sin categoría",
+      name: data.name,
+      sku: data.sku ?? null,
+      price: data.price,
+      description: data.description,
+      is_available: data.is_available,
+      display_order: data.display_order ?? 0,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
       is_offer: data.is_offer ?? false,
       offer_price: data.offer_price ?? null,
       offer_start: data.offer_start ?? null,
       offer_end: data.offer_end ?? null,
-    },
-    now,
-  );
+      slug: data.slug,
+      is_offer_active: isOfferActive,
+      brand: data.brand ?? null,
+      images:
+        data.images?.map((img: { image_url: string }) => img.image_url) ?? [],
+    };
 
-  const mapped: ProductCatalog = {
-    id: data.id,
-    store_id: data.store_id,
-    category_id: data.category_id,
-    name_category: data.category?.name ?? "Sin categoría",
-    name: data.name,
-    sku: data.sku ?? null,
-    price: data.price,
-    description: data.description,
-    is_available: data.is_available,
-    display_order: data.display_order ?? 0,
-    created_at: data.created_at,
-    updated_at: data.updated_at,
-    is_offer: data.is_offer ?? false,
-    offer_price: data.offer_price ?? null,
-    offer_start: data.offer_start ?? null,
-    offer_end: data.offer_end ?? null,
-    slug: data.slug,
-    is_offer_active: isOfferActive,
-    brand: data.brand ?? null,
-    images:
-      data.images?.map((img: { image_url: string }) => img.image_url) ?? [],
-  };
-
-  return mapped;
-}
+    return mapped;
+  },
+  ["public-product-by-slug"],
+  { revalidate: 3600, tags: ["products"] },
+);
 
 /**
  * Get products for public catalog with filters, sorting and pagination.
@@ -159,18 +161,19 @@ export async function getPublicProductBySlug(
  * @returns
  */
 //Productos — store_id viene del caché, sin doble round-trip
-export async function getPublicProducts({
-  storeSlug,
-  search,
-  category,
-  brand,
-  minPrice,
-  maxPrice,
-  onlyOffers,
-  sort = "display_order",
-  page = 1,
-  pageSize = 12,
-}: GetPublicProductsParams) {
+export const getPublicProducts = unstable_cache(
+  async ({
+    storeSlug,
+    search,
+    category,
+    brand,
+    minPrice,
+    maxPrice,
+    onlyOffers,
+    sort = "display_order",
+    page = 1,
+    pageSize = 12,
+  }: GetPublicProductsParams) => {
   const storeId = await getStoreIdBySlug(storeSlug); // ~0ms desde caché
 
   let query = supabasePublic
@@ -234,4 +237,7 @@ export async function getPublicProducts({
     pageSize,
     totalPages: Math.ceil((count ?? 0) / pageSize),
   };
-}
+  },
+  ["public-products"],
+  { revalidate: 3600, tags: ["products"] },
+);

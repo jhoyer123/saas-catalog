@@ -6,6 +6,7 @@ import { generateSlug } from "@/lib/utils/slug";
 import { CreateCategoryInput, CategorySimple } from "@/types/category.types";
 import { Category } from "@/types/category.types";
 import { PaginationParams, PaginatedResponse } from "@/types/pagination.types";
+import { revalidateTag } from "next/cache";
 
 /**
  * service for creating a new category in the database
@@ -30,6 +31,8 @@ export const createCategory = async (dataInput: CreateCategoryInput) => {
     throw new Error(error.message);
   }
 
+  revalidateTag("categories", {});
+  revalidateTag("products", {});
   return data;
 };
 
@@ -59,6 +62,8 @@ export const updateCategory = async (id: string, dataInput: CategoryForm) => {
     throw new Error(error.message);
   }
 
+  revalidateTag("categories", {});
+  revalidateTag("products", {});
   return data;
 };
 
@@ -83,6 +88,8 @@ export const deleteCategory = async (
   });
 
   if (error) throw new Error(error.message);
+  revalidateTag("categories", {});
+  revalidateTag("products", {});
 };
 
 /**

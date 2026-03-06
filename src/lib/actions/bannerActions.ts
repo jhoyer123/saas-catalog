@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/supabaseServer";
 import { uploadFile, deleteFile } from "@/lib/utils/storage";
+import { revalidateTag } from "next/cache";
 
 // ─── Subir nuevos banners
 export async function uploadBannersAction(storeId: string, files: File[]) {
@@ -46,6 +47,7 @@ export async function uploadBannersAction(storeId: string, files: File[]) {
     throw error;
   }
 
+  revalidateTag("banners", {});
   return { success: true, count: insertedIds.length };
 }
 
@@ -126,6 +128,7 @@ export async function updateBannersAction(dataFiles: UpdateBannersParams) {
     throw error;
   }
 
+  revalidateTag("banners", {});
   return { success: true };
 }
 

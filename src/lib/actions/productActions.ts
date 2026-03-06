@@ -13,7 +13,7 @@ import type {
 } from "@/types/pagination.types";
 import type { ProductCatalog } from "@/types/product.types";
 import { checkIsOfferActive } from "../helpers/validations";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 /**
  * action for create product
@@ -82,6 +82,7 @@ export const createProduct = async (
     }
   }
 
+  revalidateTag("products", {});
   return data;
 };
 
@@ -165,6 +166,7 @@ export const updateProduct = async (
     }
   }
 
+  revalidateTag("products", {});
   return data;
 };
 
@@ -203,6 +205,7 @@ export const deleteProductAction = async (
     await supabase.storage.from("products").remove(paths);
   }
 
+  revalidateTag("products", {});
   revalidatePath("/dashboard/panel");
 };
 
@@ -396,4 +399,5 @@ export const toggleOfferAction = async (
     .eq("id", params.id);
 
   if (error) throw new Error(error.message);
+  revalidateTag("products", {});
 };
