@@ -1,39 +1,41 @@
 "use client";
 
 import { ProductCatalog } from "@/types/product.types";
-import {
-  ShoppingCart,
-  MessageCircle,
-  Star,
-  Heart,
-  Share2,
-  Shield,
-  Truck,
-} from "lucide-react";
-import { checkIsOfferActive } from "@/lib/helpers/validations";
+import { ShoppingCart, MessageCircle, Star } from "lucide-react";
+import { useCartStore } from "@/hooks/cart/useCartStore";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ProductInfoProps {
   product: ProductCatalog;
-  onAddToCart?: () => void;
 }
 
-export function ProductInfo({ product, onAddToCart }: ProductInfoProps) {
-  const hasDiscount = checkIsOfferActive({
-    is_offer: product.is_offer,
-    offer_price: product.offer_price,
-    offer_start: product.offer_start || null,
-    offer_end: product.offer_end || null,
-  });
+export function ProductInfo({ product }: ProductInfoProps) {
+  const addItem = useCartStore((s) => s.addItem);
 
-  const displayPrice =
-    hasDiscount && product.offer_price ? product.offer_price : product.price;
-  const discountPercentage = hasDiscount
+  const displayPrice = product.is_offer_active
+    ? product.offer_price
+    : product.price;
+
+  const discountPercentage = product.is_offer_active
     ? Math.round(((product.price - product.offer_price!) / product.price) * 100)
     : 0;
 
+  /** Agrega el producto al carrito con su info básica */
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      image: product.images[0] || "/images/placeholder.png",
+      price: displayPrice!,
+    });
+    toast.success("Producto agregado al carrito");
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center h-full px-2 py-5 bg-card rounded-2xl md:px-6">
+    <div className="flex flex-col items-center justify-center h-full px-2 py-4 bg-card border border-border rounded-2xl md:px-6 md:py-20">
       {/* ── BRAND ── */}
       {product.brand && (
         <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
@@ -71,13 +73,13 @@ export function ProductInfo({ product, onAddToCart }: ProductInfoProps) {
       {/* ── PRICING ── */}
       <div className="flex items-end gap-4 flex-wrap justify-center">
         <span className="font-['Playfair_Display',serif] text-5xl font-bold tracking-tight text-gray-900">
-          ${displayPrice.toFixed(2)}
+          Bs. {displayPrice!.toFixed(2)}
         </span>
 
-        {hasDiscount && (
+        {product.is_offer_active && (
           <div className="mb-1 flex flex-col items-start">
             <span className="text-lg text-gray-400 line-through">
-              ${product.price.toFixed(2)}
+              Bs. {product.price.toFixed(2)}
             </span>
             <span className="rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
               AHORRA {discountPercentage}%
@@ -100,43 +102,29 @@ export function ProductInfo({ product, onAddToCart }: ProductInfoProps) {
         />
       </div>
 
-      {/* ── SPACER (fills remaining height on desktop) ── */}
-      {/*   <div className="flex-1" /> */}
-
       {/* ── CTA BUTTONS (sticky on mobile) ── */}
-      <div className="bottom-0 bg-white static">
-        {/* thin top separator only on mobile */}
-        {/*  <div className="mb-3 h-px bg-gray-100 md:hidden" /> */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {/* Add to Cart */}
+        <Button onClick={handleAddToCart} disabled={!product.is_available}>
+          <ShoppingCart className="h-5 w-5" />
+          Agregar al Carrito
+        </Button>
 
-        <div className="grid grid-cols-1 gap-3">
-          {/* Add to Cart */}
-          <button
-            onClick={onAddToCart}
-            disabled={!product.is_available}
-            className={cn(
-              "flex items-center justify-center gap-2.5 rounded-2xl px-3 py-3 text-sm font-bold tracking-wide transition-all duration-200",
-              product.is_available
-                ? "bg-gray-900 text-white shadow-lg shadow-gray-900/20 hover:bg-gray-800 hover:shadow-xl hover:shadow-gray-900/30 active:scale-[0.98]"
-                : "cursor-not-allowed bg-gray-200 text-gray-400",
-            )}
-          >
-            <ShoppingCart className="h-5 w-5" />
-            Agregar al Carrito
-          </button>
-
-          {/* WhatsApp / Request */}
-          <a
-            href={`https://wa.me/59162557286?text=${encodeURIComponent(
-              `Hola! Me interesa el producto: ${product.name}`,
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2.5 rounded-2xl bg-blue-600 px-3 py-3 text-sm font-bold tracking-wide text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30 active:scale-[0.98]"
-          >
-            <MessageCircle className="h-5 w-5" />
-            Solicitar por WhatsApp
-          </a>
-        </div>
+        {/* WhatsApp / Request */}
+        <a
+          href={`https://wa.me/59162557286?text=${encodeURIComponent(
+            `Hola! Me interesa el producto: ${product.name}`,
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            buttonVariants({ variant: "default", size: "default" }),
+            "gap-2.5 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white",
+          )}
+        >
+          <MessageCircle className="h-5 w-5" />
+          Solicitar por WhatsApp
+        </a>
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ interface CatalogClientProps {
   categories: { id: string; name: string }[];
   brands: string[];
   banners: Banner[];
-  store: { name: string; slug: string; logo_url: string | null };
+  store: { name: string; slug: string; logo_url: string | null; whatsapp_number: string | null };
 }
 
 export default function CatalogClient({

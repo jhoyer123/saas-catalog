@@ -25,11 +25,11 @@ export const getPublicStore = unstable_cache(
   async (storeSlug: string) => {
     const { data, error } = await supabasePublic
       .from("stores")
-      .select("name, slug, logo_url")
+      .select("name, slug, logo_url, whatsapp_number")
       .eq("slug", storeSlug)
       .single();
     if (error || !data) throw new Error("Tienda no encontrada");
-    return data as { name: string; slug: string; logo_url: string | null };
+    return data as { name: string; slug: string; logo_url: string | null; whatsapp_number: string | null };
   },
   ["public-store"],
   { revalidate: 3600, tags: ["store"] },

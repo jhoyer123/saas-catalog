@@ -11,7 +11,7 @@ import { ArrowLeft } from "lucide-react";
 interface ProductDetailClientProps {
   product: ProductCatalog;
   storeSlug: string;
-  store: { name: string; slug: string; logo_url: string | null };
+  store: { name: string; slug: string; logo_url: string | null; whatsapp_number: string | null };
 }
 
 export default function ProductDetailClient({
@@ -22,7 +22,7 @@ export default function ProductDetailClient({
   const router = useRouter();
 
   const getBadge = () => {
-    if (product.is_offer && product.offer_price) return "OFERTA";
+    if (product.is_offer_active) return "OFERTA";
     return undefined;
   };
 
@@ -33,11 +33,7 @@ export default function ProductDetailClient({
       </div>
 
       <div className="container mx-auto px-4 py-3">
-        <Button
-          variant="ghost"
-          onClick={() => router.push(`/public/${storeSlug}`)}
-          className="gap-2"
-        >
+        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
           Volver
         </Button>

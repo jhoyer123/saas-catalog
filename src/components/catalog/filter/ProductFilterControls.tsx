@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Search } from "lucide-react";
 
 interface ProductFilterControlsProps {
   categories: { id: string; name: string }[];
@@ -34,9 +35,9 @@ export function ProductFilterControls({
   } = useProductFilter();
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 space-y-3 lg:p-6">
+    <div className="bg-card rounded-lg border border-border p-3 space-y-3 lg:p-6">
       <div className="items-center justify-between hidden lg:flex">
-        <h2>Filtros</h2>
+        <h2 className="font-poppins">Filtros</h2>
         {hasActiveFilters && (
           <Button
             variant="ghost"
@@ -52,12 +53,16 @@ export function ProductFilterControls({
       {/* Búsqueda */}
       <div className="space-y-2 hidden md:block">
         <Label className="text-sm font-medium text-gray-700">Buscar</Label>
-        <Input
-          type="text"
-          placeholder="Buscar productos..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Buscar productos..."
+            className="pl-10"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Categoría */}
