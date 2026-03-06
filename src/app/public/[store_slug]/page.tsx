@@ -6,6 +6,7 @@ import {
   getPublicStore,
 } from "@/lib/actions/catalogActions";
 import CatalogClient from "@/components/catalog/CatalogClient";
+import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
 
 type SearchParams = {
   search?: string;
@@ -36,34 +37,50 @@ export default async function Page({ params, searchParams }: Props) {
     page,
   } = await searchParams;
 
-  const [{ products, totalPages, total }, categories, brands, banners, store] =
-    await Promise.all([
-      getPublicProducts({
-        storeSlug: store_slug,
-        search,
-        category,
-        brand,
-        minPrice,
-        maxPrice,
-        onlyOffers,
-        sort,
-        page: Number(page) || 1,
-      }),
-      getPublicCategories(store_slug),
-      getPublicBrands(store_slug),
-      getPublicBanners(store_slug),
-      getPublicStore(store_slug),
-    ]);
+  const queryClient = new QueryClient();
+  const pageNum = Number(page) || 1;
+
+  const [categories, brands, banners, store] = await Promise.all([
+    getPublicCategories(store_slug),
+    getPublicBrands(store_slug),
+    getPublicBanners(store_slug),
+    getPublicStore(store_slug),
+    queryClient.prefetchQuery({
+      queryKey: [
+        "public-products",
+        store_slug,
+        search ?? "",
+        category ?? "",
+        brand ?? "",
+        minPrice ?? "",
+        maxPrice ?? "",
+        onlyOffers ?? "",
+        sort ?? "",
+        pageNum,
+      ],
+      queryFn: () =>
+        getPublicProducts({
+          storeSlug: store_slug,
+          search,
+          category,
+          brand,
+          minPrice,
+          maxPrice,
+          onlyOffers,
+          sort,
+          page: pageNum,
+        }),
+    }),
+  ]);
 
   return (
-    <CatalogClient
-      products={products}
-      totalPages={totalPages}
-      total={total}
-      categories={categories}
-      brands={brands}
-      banners={banners}
-      store={store}
-    />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <CatalogClient
+        categories={categories}
+        brands={brands}
+        banners={banners}
+        store={store}
+      />
+    </HydrationBoundary>
   );
 }

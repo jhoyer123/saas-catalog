@@ -71,7 +71,7 @@ export function useProductFilter() {
   const [searchInput, setSearchInput] = useState(
     searchParams.get("search") ?? "",
   );
-  const debouncedSearch = useDebounce(searchInput, 400);
+  const debouncedSearch = useDebounce(searchInput, 300);
 
   useEffect(() => {
     const currentSearch = searchParams.get("search") ?? "";

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ProductCatalogCard } from "@/types/product.types";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { getPublicProducts } from "@/lib/actions/catalogActions";
 import Header from "@/components/catalog/header/Header";
 import HeroSection from "@/components/catalog/offer/HeroSection";
 import { ProductGrid } from "@/components/catalog/products/ProductGrid";
@@ -11,9 +13,6 @@ import { ProductPagination } from "@/components/catalog/products/ProductPaginati
 import { Banner } from "@/types/catalog/catalog.types";
 
 interface CatalogClientProps {
-  products: ProductCatalogCard[];
-  totalPages: number;
-  total: number;
   categories: { id: string; name: string }[];
   brands: string[];
   banners: Banner[];
@@ -21,15 +20,57 @@ interface CatalogClientProps {
 }
 
 export default function CatalogClient({
-  products,
-  totalPages,
-  total,
   categories,
   brands,
   banners,
   store,
 }: CatalogClientProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const searchParams = useSearchParams();
+
+  const search = searchParams.get("search") ?? "";
+  const category = searchParams.get("category") ?? "";
+  const brand = searchParams.get("brand") ?? "";
+  const minPrice = searchParams.get("minPrice") ?? "";
+  const maxPrice = searchParams.get("maxPrice") ?? "";
+  const onlyOffers = searchParams.get("onlyOffers") ?? "";
+  const sort = searchParams.get("sort") ?? "";
+  const pageNum = Number(searchParams.get("page")) || 1;
+
+  const { data, isLoading } = useQuery({
+    queryKey: [
+      "public-products",
+      store.slug,
+      search,
+      category,
+      brand,
+      minPrice,
+      maxPrice,
+      onlyOffers,
+      sort,
+      pageNum,
+    ],
+    queryFn: () =>
+      getPublicProducts({
+        storeSlug: store.slug,
+        search: search || undefined,
+        category: category || undefined,
+        brand: brand || undefined,
+        minPrice: minPrice || undefined,
+        maxPrice: maxPrice || undefined,
+        onlyOffers: onlyOffers || undefined,
+        sort:
+          (sort as "price_asc" | "price_desc" | "newest" | "display_order") ||
+          undefined,
+        page: pageNum,
+      }),
+    staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
+
+  const products = data?.products ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const total = data?.total ?? 0;
 
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
@@ -65,7 +106,7 @@ export default function CatalogClient({
           </p>
         </div>
 
-        <ProductGrid products={products} isLoading={false} />
+        <ProductGrid products={products} isLoading={isLoading} />
 
         {totalPages > 0 && (
           <ProductPagination
