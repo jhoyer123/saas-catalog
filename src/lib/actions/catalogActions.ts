@@ -1,8 +1,9 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/supabaseServer";
+import { supabasePublic } from "@/lib/supabase/server-public";
 import { ProductCatalog, ProductCatalogCard } from "@/types/product.types";
 import { checkIsOfferActive } from "../helpers/validations";
+import { unstable_cache } from "next/cache";
 
 type GetPublicProductsParams = {
   storeSlug: string;
@@ -17,165 +18,80 @@ type GetPublicProductsParams = {
   pageSize?: number;
 };
 
-/**
- * Get products for public catalog with filters, sorting and pagination.
- * @param param0
- * @returns
- */
-export async function getPublicProducts({
-  storeSlug,
-  search,
-  category,
-  brand,
-  minPrice,
-  maxPrice,
-  onlyOffers,
-  sort = "display_order",
-  page = 1,
-  pageSize = 12,
-}: GetPublicProductsParams) {
-  const supabase = await createClient();
-
-  // Primero resuelves el slug a id
-  const { data: store, error: storeError } = await supabase
-    .from("stores")
-    .select("id")
-    .eq("slug", storeSlug)
-    .single();
-
-  if (storeError || !store) throw new Error("Tienda no encontrada");
-
-  // Luego filtras productos por store_id
-  let query = supabase
-    .from("products")
-    .select(
-      `
-    id,
-    name,
-    description,
-    price,
-    is_offer,
-    offer_price,
-    offer_start,
-    offer_end,
-    brand,
-    slug,
-    category:categories(name),
-    images:product_images(image_url)
-    `,
-      { count: "exact" },
-    )
-    .limit(1, { foreignTable: "product_images" })
-    .eq("store_id", store.id)
-    .eq("is_available", true);
-
-  // Filtros
-  if (search) query = query.ilike("name", `%${search}%`);
-  if (category) query = query.eq("category_id", category);
-  if (brand) query = query.ilike("brand", `%${brand}%`);
-  if (minPrice) query = query.gte("price", Number(minPrice));
-  if (maxPrice) query = query.lte("price", Number(maxPrice));
-  if (onlyOffers === "true") query = query.eq("is_offer", true);
-
-  // Ordenamiento
-  switch (sort) {
-    case "price_asc":
-      query = query.order("price", { ascending: true });
-      break;
-    case "price_desc":
-      query = query.order("price", { ascending: false });
-      break;
-    case "newest":
-      query = query.order("created_at", { ascending: false });
-      break;
-    case "display_order":
-    default:
-      query = query.order("display_order", { ascending: true });
-      break;
-  }
-
-  // Paginación
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
-  query = query.range(from, to);
-
-  const { data, error, count } = await query;
-
-  if (error) throw new Error(error.message);
-  const now = new Date();
-  return {
-    products: (data ?? []).map((p) => ({
-      ...p,
-      is_offer_active: checkIsOfferActive(
-        {
-          is_offer: p.is_offer ?? false,
-          offer_price: p.offer_price ?? null,
-          offer_start: p.offer_start ?? null,
-          offer_end: p.offer_end ?? null,
-        },
-        now,
-      ),
-    })) as unknown as ProductCatalogCard[],
-    total: count ?? 0,
-    page,
-    pageSize,
-    totalPages: Math.ceil((count ?? 0) / pageSize),
-  };
-}
+//store_id cacheado 1 hora — nunca hay razón para buscarlo dos veces
+const getStoreIdBySlug = unstable_cache(
+  async (storeSlug: string): Promise<string> => {
+    const { data, error } = await supabasePublic
+      .from("stores")
+      .select("id")
+      .eq("slug", storeSlug)
+      .single();
+    if (error || !data) throw new Error("Tienda no encontrada");
+    return data.id;
+  },
+  ["store-id-by-slug"],
+  { revalidate: 3600 },
+);
 
 /**
  * get categories for public catalog
  */
-export async function getPublicCategories(storeSlug: string) {
-  const supabase = await createClient();
-
-  const { data: store, error: storeError } = await supabase
-    .from("stores")
-    .select("id")
-    .eq("slug", storeSlug)
-    .single();
-
-  if (storeError || !store) throw new Error("Tienda no encontrada");
-
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id, name")
-    .eq("store_id", store.id)
-    .order("name", { ascending: true });
-
-  if (error) throw new Error(error.message);
-
-  return data ?? [];
-}
-
+export const getPublicCategories = unstable_cache(
+  async (storeSlug: string) => {
+    const storeId = await getStoreIdBySlug(storeSlug);
+    const { data, error } = await supabasePublic
+      .from("categories")
+      .select("id, name")
+      .eq("store_id", storeId)
+      .order("name", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+  ["public-categories"],
+  { revalidate: 3600, tags: ["categories"] },
+);
 /**
  * get brands for public catalog
  */
-export async function getPublicBrands(storeSlug: string) {
-  const supabase = await createClient();
+export const getPublicBrands = unstable_cache(
+  async (storeSlug: string) => {
+    const storeId = await getStoreIdBySlug(storeSlug);
+    const { data, error } = await supabasePublic
+      .from("products")
+      .select("brand")
+      .eq("store_id", storeId)
+      .eq("is_available", true)
+      .not("brand", "is", null);
+    if (error) throw new Error(error.message);
+    const unique = [
+      ...new Set((data ?? []).map((p) => p.brand).filter(Boolean)),
+    ];
+    return unique as string[];
+  },
+  ["public-brands"],
+  { revalidate: 3600, tags: ["products"] },
+);
 
-  const { data: store, error: storeError } = await supabase
-    .from("stores")
-    .select("id")
-    .eq("slug", storeSlug)
-    .single();
-
-  if (storeError || !store) throw new Error("Tienda no encontrada");
-
-  const { data, error } = await supabase
-    .from("products")
-    .select("brand")
-    .eq("store_id", store.id)
-    .eq("is_available", true)
-    .not("brand", "is", null);
-
-  if (error) throw new Error(error.message);
-
-  // Marcas únicas y ordenadas
-  const brands = [...new Set(data.map((p) => p.brand as string))].sort();
-
-  return brands;
-}
+/**
+ * get banners for public catalog
+ * @param storeSlug
+ * @returns
+ */
+export const getPublicBanners = unstable_cache(
+  async (storeSlug: string) => {
+    const storeId = await getStoreIdBySlug(storeSlug);
+    const { data, error } = await supabasePublic
+      .from("store_banners")
+      .select("*")
+      .eq("store_id", storeId)
+      .eq("is_active", true)
+      .order("display_order");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+  ["public-banners"],
+  { revalidate: 3600, tags: ["banners"] },
+);
 
 /**
  * Get product by slug for public catalog
@@ -185,9 +101,7 @@ export async function getPublicBrands(storeSlug: string) {
 export async function getPublicProductBySlug(
   slug: string,
 ): Promise<ProductCatalog> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
+  const { data, error } = await supabasePublic
     .from("products")
     .select(
       `
@@ -240,27 +154,84 @@ export async function getPublicProductBySlug(
 }
 
 /**
- * get banners for public catalog
- * @param storeSlug
+ * Get products for public catalog with filters, sorting and pagination.
+ * @param param0
  * @returns
  */
-export async function getPublicBanners(storeSlug: string) {
-  const supabase = await createClient();
+//Productos — store_id viene del caché, sin doble round-trip
+export async function getPublicProducts({
+  storeSlug,
+  search,
+  category,
+  brand,
+  minPrice,
+  maxPrice,
+  onlyOffers,
+  sort = "display_order",
+  page = 1,
+  pageSize = 12,
+}: GetPublicProductsParams) {
+  const storeId = await getStoreIdBySlug(storeSlug); // ~0ms desde caché
 
-  const { data: store, error: storeError } = await supabase
-    .from("stores")
-    .select("id")
-    .eq("slug", storeSlug)
-    .single();
+  let query = supabasePublic
+    .from("products")
+    .select(
+      `
+      id, name, price, is_offer, offer_price, offer_start, offer_end,
+      brand, slug, is_available,
+      category:categories(id, name),
+      images:product_images(image_url)
+      `,
+      { count: "exact" },
+    )
+    .limit(1, { foreignTable: "product_images" })
+    .eq("store_id", storeId)
+    .eq("is_available", true);
 
-  if (storeError || !store) throw new Error("Tienda no encontrada");
+  if (search) query = query.ilike("name", `%${search}%`);
+  if (category) query = query.eq("category_id", category);
+  if (brand) query = query.ilike("brand", `%${brand}%`);
+  if (minPrice) query = query.gte("price", Number(minPrice));
+  if (maxPrice) query = query.lte("price", Number(maxPrice));
+  if (onlyOffers === "true") query = query.eq("is_offer", true);
 
-  const { data, error } = await supabase
-    .from("store_banners")
-    .select("id,image_url")
-    .eq("store_id", store.id);
+  switch (sort) {
+    case "price_asc":
+      query = query.order("price", { ascending: true });
+      break;
+    case "price_desc":
+      query = query.order("price", { ascending: false });
+      break;
+    case "newest":
+      query = query.order("created_at", { ascending: false });
+      break;
+    default:
+      query = query.order("display_order", { ascending: true });
+  }
 
+  const from = (page - 1) * pageSize;
+  query = query.range(from, from + pageSize - 1);
+
+  const { data, error, count } = await query;
   if (error) throw new Error(error.message);
 
-  return data;
+  const now = new Date();
+  return {
+    products: (data ?? []).map((p) => ({
+      ...p,
+      is_offer_active: checkIsOfferActive(
+        {
+          is_offer: p.is_offer ?? false,
+          offer_price: p.offer_price ?? null,
+          offer_start: p.offer_start ?? null,
+          offer_end: p.offer_end ?? null,
+        },
+        now,
+      ),
+    })) as unknown as ProductCatalogCard[],
+    total: count ?? 0,
+    page,
+    pageSize,
+    totalPages: Math.ceil((count ?? 0) / pageSize),
+  };
 }

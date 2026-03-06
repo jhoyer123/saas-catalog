@@ -18,7 +18,6 @@ export default async function DashboardPage() {
           </Button>
         </div>
 
-        {/* <ProductsTable data={products} /> */}
         <ProductsTable />
       </div>
     </section>

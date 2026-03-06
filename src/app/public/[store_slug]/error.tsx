@@ -7,8 +7,8 @@ interface ErrorProps {
 
 export default function CatalogError({ error, reset }: ErrorProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white px-6 text-center">
-      <h1 className="text-[150px] md:text-[200px] font-black text-[#3d3d3d] leading-none">
+    <div className="flex flex-col gap-10 items-center justify-center min-h-screen bg-white px-6 text-center">
+      <h1 className="text-[100px] md:text-[200px] font-black text-[#3d3d3d] leading-none">
         ¡Ups!
       </h1>
 
