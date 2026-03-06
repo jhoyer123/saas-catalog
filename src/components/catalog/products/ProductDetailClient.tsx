@@ -11,11 +11,13 @@ import { ArrowLeft } from "lucide-react";
 interface ProductDetailClientProps {
   product: ProductCatalog;
   storeSlug: string;
+  store: { name: string; slug: string; logo_url: string | null };
 }
 
 export default function ProductDetailClient({
   product,
   storeSlug,
+  store,
 }: ProductDetailClientProps) {
   const router = useRouter();
 
@@ -27,7 +29,7 @@ export default function ProductDetailClient({
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
       <div className="hidden md:block">
-        <Header />
+        <Header store={store} />
       </div>
 
       <div className="container mx-auto px-4 py-3">

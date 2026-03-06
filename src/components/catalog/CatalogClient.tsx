@@ -17,6 +17,7 @@ interface CatalogClientProps {
   categories: { id: string; name: string }[];
   brands: string[];
   banners: Banner[];
+  store: { name: string; slug: string; logo_url: string | null };
 }
 
 export default function CatalogClient({
@@ -26,12 +27,13 @@ export default function CatalogClient({
   categories,
   brands,
   banners,
+  store,
 }: CatalogClientProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
-      <Header onOpenFilters={() => setMobileFiltersOpen(true)} />
+      <Header store={store} onOpenFilters={() => setMobileFiltersOpen(true)} />
 
       <MobileFilterSheet
         open={mobileFiltersOpen}

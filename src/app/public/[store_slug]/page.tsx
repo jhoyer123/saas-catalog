@@ -3,6 +3,7 @@ import {
   getPublicCategories,
   getPublicBrands,
   getPublicBanners,
+  getPublicStore,
 } from "@/lib/actions/catalogActions";
 import CatalogClient from "@/components/catalog/CatalogClient";
 
@@ -35,7 +36,7 @@ export default async function Page({ params, searchParams }: Props) {
     page,
   } = await searchParams;
 
-  const [{ products, totalPages, total }, categories, brands, banners] =
+  const [{ products, totalPages, total }, categories, brands, banners, store] =
     await Promise.all([
       getPublicProducts({
         storeSlug: store_slug,
@@ -51,6 +52,7 @@ export default async function Page({ params, searchParams }: Props) {
       getPublicCategories(store_slug),
       getPublicBrands(store_slug),
       getPublicBanners(store_slug),
+      getPublicStore(store_slug),
     ]);
 
   return (
@@ -61,6 +63,7 @@ export default async function Page({ params, searchParams }: Props) {
       categories={categories}
       brands={brands}
       banners={banners}
+      store={store}
     />
   );
 }

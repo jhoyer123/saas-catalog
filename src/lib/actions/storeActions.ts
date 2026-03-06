@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/supabaseServer";
 import { uploadFile } from "@/lib/utils/storage";
 import { generateSlug } from "@/lib/utils/slug";
 import type { StoreForm } from "@/lib/schemas/store";
+import { revalidateTag } from "next/cache";
 
 export const createStore = async (dataInput: StoreForm, storeId: string) => {
   const supabase = await createClient();
@@ -71,5 +72,6 @@ export const updateStore = async (storeId: string, dataInput: StoreForm) => {
     .eq("id", storeId);
 
   if (error) throw new Error(error.message);
+  revalidateTag("store", {});
   return data;
 };

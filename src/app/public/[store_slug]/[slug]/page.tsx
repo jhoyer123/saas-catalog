@@ -1,5 +1,5 @@
 // src/app/public/[storeSlug]/[productSlug]/page.tsx
-import { getPublicProductBySlug } from "@/lib/actions/catalogActions";
+import { getPublicProductBySlug, getPublicStore } from "@/lib/actions/catalogActions";
 import ProductDetailClient from "@/components/catalog/products/ProductDetailClient";
 import { notFound } from "next/navigation";
 
@@ -12,9 +12,12 @@ type Props = {
 export default async function Page({ params }: Props) {
   const { store_slug, slug } = await params;
 
-  const product = await getPublicProductBySlug(slug).catch(() => null);
+  const [product, store] = await Promise.all([
+    getPublicProductBySlug(slug).catch(() => null),
+    getPublicStore(store_slug),
+  ]);
 
   if (!product) notFound();
 
-  return <ProductDetailClient product={product} storeSlug={store_slug} />;
+  return <ProductDetailClient product={product} storeSlug={store_slug} store={store} />;
 }

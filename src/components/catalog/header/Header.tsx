@@ -3,19 +3,17 @@
 import React from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { Funnel, Search, ShoppingCart } from "lucide-react";
+import { Funnel, Search } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useProductFilter } from "@/hooks/catalog/useProductFilter";
-import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface HeaderProps {
+  store: { name: string; slug: string; logo_url: string | null };
   onOpenFilters?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onOpenFilters }) => {
-  const { data } = useSessionData();
-  const store_slug = data?.store?.slug;
+const Header: React.FC<HeaderProps> = ({ store, onOpenFilters }) => {
   const { searchInput, setSearchInput } = useProductFilter();
 
   return (
@@ -24,9 +22,9 @@ const Header: React.FC<HeaderProps> = ({ onOpenFilters }) => {
         {/* Logo - name store*/}
         <div className="flex items-center justify-between w-full px-4">
           {/* logo */}
-          <Link href={`/public/${store_slug}`}>
+          <Link href={`/public/${store.slug}`}>
             <Image
-              src={data?.store?.logo_url || "/images/store-placeholder.png"}
+              src={store.logo_url || "/images/store-placeholder.png"}
               alt="Logo de la Tienda"
               width={200}
               height={200}
@@ -35,12 +33,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenFilters }) => {
           </Link>
           {/* name store */}
           <h1 className="text-2xl font-semibold text-gray-800">
-            {data?.store?.name}
+            {store.name}
           </h1>
-          {/* user - session */}
-          <Button variant="outline" size="sm">
-            <ShoppingCart />
-          </Button>
+          {/* placeholder - cart */}
+          <div className="w-9" />
         </div>
 
         {/* Search Bar - filter*/}
