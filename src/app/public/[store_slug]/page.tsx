@@ -39,43 +39,45 @@ export default async function Page({ params, searchParams }: Props) {
 
   const queryClient = new QueryClient();
   const pageNum = Number(page) || 1;
+  const productKey = [
+    "public-products",
+    store_slug,
+    search ?? "",
+    category ?? "",
+    brand ?? "",
+    minPrice ?? "",
+    maxPrice ?? "",
+    onlyOffers ?? "",
+    sort ?? "",
+    pageNum,
+  ];
 
-  const [categories, brands, banners, store] = await Promise.all([
-    getPublicCategories(store_slug),
-    getPublicBrands(store_slug),
-    getPublicBanners(store_slug),
-    getPublicStore(store_slug),
-    queryClient.prefetchQuery({
-      queryKey: [
-        "public-products",
-        store_slug,
-        search ?? "",
-        category ?? "",
-        brand ?? "",
-        minPrice ?? "",
-        maxPrice ?? "",
-        onlyOffers ?? "",
-        sort ?? "",
-        pageNum,
-      ],
-      queryFn: () =>
-        getPublicProducts({
-          storeSlug: store_slug,
-          search,
-          category,
-          brand,
-          minPrice,
-          maxPrice,
-          onlyOffers,
-          sort,
-          page: pageNum,
-        }),
-    }),
-  ]);
+  const [initialProductData, categories, brands, banners, store] =
+    await Promise.all([
+      getPublicProducts({
+        storeSlug: store_slug,
+        search,
+        category,
+        brand,
+        minPrice,
+        maxPrice,
+        onlyOffers,
+        sort,
+        page: pageNum,
+      }),
+      getPublicCategories(store_slug),
+      getPublicBrands(store_slug),
+      getPublicBanners(store_slug),
+      getPublicStore(store_slug),
+    ]);
+
+  // Inyecta en TanStack para que back-navigation sea instantáneo
+  queryClient.setQueryData(productKey, initialProductData);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <CatalogClient
+        initialProductData={initialProductData}
         categories={categories}
         brands={brands}
         banners={banners}

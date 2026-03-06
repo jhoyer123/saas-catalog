@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { getPublicProducts } from "@/lib/actions/catalogActions";
+import type { ProductCatalogCard } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
 import HeroSection from "@/components/catalog/offer/HeroSection";
 import { ProductGrid } from "@/components/catalog/products/ProductGrid";
@@ -13,6 +14,11 @@ import { ProductPagination } from "@/components/catalog/products/ProductPaginati
 import { Banner } from "@/types/catalog/catalog.types";
 
 interface CatalogClientProps {
+  initialProductData: {
+    products: ProductCatalogCard[];
+    totalPages: number;
+    total: number;
+  };
   categories: { id: string; name: string }[];
   brands: string[];
   banners: Banner[];
@@ -20,6 +26,7 @@ interface CatalogClientProps {
 }
 
 export default function CatalogClient({
+  initialProductData,
   categories,
   brands,
   banners,
@@ -68,9 +75,11 @@ export default function CatalogClient({
     placeholderData: keepPreviousData,
   });
 
-  const products = data?.products ?? [];
-  const totalPages = data?.totalPages ?? 0;
-  const total = data?.total ?? 0;
+  // Fallback a initialProductData: SSR siempre renderiza productos
+  // aunque HydrationBoundary no esté disponible aún en el cliente
+  const products = data?.products ?? initialProductData.products;
+  const totalPages = data?.totalPages ?? initialProductData.totalPages;
+  const total = data?.total ?? initialProductData.total;
 
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
