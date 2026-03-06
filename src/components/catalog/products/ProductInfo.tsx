@@ -31,7 +31,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       image: product.images[0] || "/images/placeholder.png",
       price: displayPrice!,
     });
-    toast.success("Producto agregado al carrito");
+    toast.success("Producto agregado al carrito", { position: "top-right" });
   };
 
   return (

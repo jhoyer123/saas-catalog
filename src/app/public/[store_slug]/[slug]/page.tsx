@@ -1,7 +1,7 @@
-// src/app/public/[storeSlug]/[productSlug]/page.tsx
 import { getPublicProductBySlug, getPublicStore } from "@/lib/actions/catalogActions";
 import ProductDetailClient from "@/components/catalog/products/ProductDetailClient";
 import { notFound } from "next/navigation";
+import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
 
 export const revalidate = 3600;
 
@@ -19,5 +19,13 @@ export default async function Page({ params }: Props) {
 
   if (!product) notFound();
 
-  return <ProductDetailClient product={product} storeSlug={store_slug} store={store} />;
+  // Inyecta en TanStack para que back-navigation sea instantáneo
+  const queryClient = new QueryClient();
+  queryClient.setQueryData(["public-product", slug], product);
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ProductDetailClient product={product} storeSlug={store_slug} store={store} />
+    </HydrationBoundary>
+  );
 }

@@ -11,15 +11,22 @@ import {
   CheckCircle2,
   ChevronRight,
 } from "lucide-react";
-import SkeletonPanel from "@/components/panel/SkeletonPanel";
+import type { Store as StoreType } from "@/types/store.types";
 
 interface DashboardPageProps {
   hasProducts?: boolean;
+  /** Pasado desde el Server Component para evitar skeleton en SSR */
+  store?: StoreType | null;
 }
 
-export default function PanelPage({ hasProducts = false }: DashboardPageProps) {
+export default function PanelPage({
+  hasProducts = false,
+  store: serverStore,
+}: DashboardPageProps) {
+  // En cliente, useSessionData ya tiene los datos hidratados del layout.
+  // serverStore cubre el caso SSR (render del servidor) para evitar el flash de skeleton.
   const { data } = useSessionData();
-  const store = data?.store;
+  const store = serverStore ?? data?.store ?? null;
 
   const storeIsComplete = !!(
     store?.name &&
@@ -28,7 +35,8 @@ export default function PanelPage({ hasProducts = false }: DashboardPageProps) {
     store?.is_active
   );
   const canShowCatalog = storeIsComplete && hasProducts;
-  if (!data) return <SkeletonPanel />;
+  // Sin skeleton: el servidor ya pasó los datos. Si por algún motivo
+  // store fuera null (no tiene tienda), el bloque de abajo lo maneja.
 
   // Steps para onboarding
   const steps = [

@@ -48,7 +48,7 @@ export function CategoriesTable() {
     });
   };
 
-  // ║ Columnas memoizadas — se reconstruyen solo si cambia openModal
+  // Columnas memoizadas — se reconstruyen solo si cambia openModal
   const columns = useMemo(
     () => getCategoriesColumns({ onOpenModal: openModal }),
     [openModal],
