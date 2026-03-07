@@ -1,4 +1,4 @@
-import { getCategories } from "@/lib/actions/categoryActions";
+import { fetchCategories } from "@/lib/services/dashboard";
 import { useSessionData } from "../auth/useSessionData";
 import { useQuery } from "@tanstack/react-query";
 
@@ -11,7 +11,7 @@ export const useGetCategoryNoPage = () => {
 
   return useQuery({
     queryKey: ["categories-no-page"],
-    queryFn: () => getCategories(data?.store?.id!),
+    queryFn: () => fetchCategories(data?.store?.id!),
     enabled: !!data?.store?.id, // Solo ejecuta si tenemos el storeId;
   });
 };

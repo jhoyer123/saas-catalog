@@ -8,15 +8,24 @@ import { createStore } from "@/lib/actions/storeActions";
 import type { StoreForm } from "@/lib/schemas/store";
 import { useSessionData } from "../auth/useSessionData";
 
-export const useCreateStore = (): UseMutationResult<null, Error, StoreForm> => {
+/**
+ * Hook para crear una tienda nueva.
+ *
+ * Solo necesita el userId del perfil autenticado.
+ * El ID de la tienda se genera al insertar en la DB
+ * (ver createStore en storeActions).
+ */
+export const useCreateStore = (): UseMutationResult<
+  { id: string },
+  Error,
+  StoreForm
+> => {
   const queryClient = useQueryClient();
-
-  //get store id from session data
   const { data } = useSessionData();
-  const storeId = data?.store?.id;
+  const userId = data?.profile?.id;
 
   return useMutation({
-    mutationFn: (data: StoreForm) => createStore(data, storeId!),
+    mutationFn: (data: StoreForm) => createStore(data, userId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session-data"] });
     },

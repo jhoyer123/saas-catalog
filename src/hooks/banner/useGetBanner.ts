@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getBannersAction } from "@/lib/actions/bannerActions";
+import { fetchBanners } from "@/lib/services/dashboard";
 import { useSessionData } from "../auth/useSessionData";
 
 /**
@@ -14,7 +14,7 @@ export const useGetBanner = () => {
     queryKey: ["storeBanners"],
     queryFn: async () => {
       if (!storeId) throw new Error("No se encontró el ID de la tienda");
-      return getBannersAction(storeId);
+      return fetchBanners(storeId);
     },
     enabled: !!storeId, // Solo ejecutar si storeId está disponible
   });

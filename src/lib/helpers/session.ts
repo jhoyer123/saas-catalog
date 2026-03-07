@@ -24,18 +24,23 @@ type SessionData = {
 export const getSessionDataCached = cache(async (): Promise<SessionData | null> => {
   const supabase = await createClient();
 
+  // getSession() decodifica el JWT localmente (~0ms) en vez de
+  // hacer un round-trip a Supabase Auth (~200-500ms) con getUser().
+  // Es seguro porque el middleware ya validó el JWT con getUser().
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) return null;
+  if (!session?.user) return null;
+
+  const userId = session.user.id;
 
   const [{ data: profile }, { data: store }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase
       .from("stores")
       .select("*, plans(*)")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .single(),
   ]);
 

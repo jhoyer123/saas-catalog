@@ -1,16 +1,23 @@
-import { getProductCount } from "@/lib/actions/validateActions";
-import { getSessionDataCached } from "@/lib/helpers/session";
-import PanelPage from "@/components/panel/PanelPage";
+"use client";
 
-export default async function Page() {
-  // React.cache() deduplicates: getSessionDataCached ya fue llamado en el layout
-  // dentro del mismo ciclo de render — Supabase no se consulta dos veces
-  const [count, sessionData] = await Promise.all([
-    getProductCount(),
-    getSessionDataCached(),
-  ]);
+import PanelPage from "@/components/panel/PanelPage";
+import { useSessionData } from "@/hooks/auth/useSessionData";
+import SkeletonPanel from "@/components/panel/SkeletonPanel";
+import { useProductCount } from "@/hooks/validation/useProductCount";
+
+export default function DashboardPanelPage() {
+  //important data for validation
+  const { data: sessionData, isPending } = useSessionData();
+  const storeId = sessionData?.store?.id;
+
+  const { data: count, isPending: isCountPending } = useProductCount(storeId);
+
+  if (isPending || isCountPending) return <SkeletonPanel />;
 
   return (
-    <PanelPage hasProducts={count > 0} store={sessionData?.store ?? null} />
+    <PanelPage
+      hasProducts={(count ?? 0) > 0}
+      store={sessionData?.store ?? null}
+    />
   );
 }

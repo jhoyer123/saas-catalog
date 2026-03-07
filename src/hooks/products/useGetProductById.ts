@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProductByIdAction } from "@/lib/actions/productActions";
+import { fetchProductById } from "@/lib/services/dashboard";
 
 /**
  * hook for get product by id
@@ -9,7 +9,7 @@ import { getProductByIdAction } from "@/lib/actions/productActions";
 export function useGetProductById(id: string) {
   return useQuery({
     queryKey: ["product", id],
-    queryFn: () => getProductByIdAction(id),
+    queryFn: () => fetchProductById(id),
     enabled: !!id, // solo ejecuta si hay id
   });
 }

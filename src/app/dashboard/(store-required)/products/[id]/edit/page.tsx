@@ -17,7 +17,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   if (isLoadingProduct || isLoadingCategories || !product || !categories) {
     return <SkeletonForm />;
   }
-  
+
   return (
     <div className="h-full w-full py-6 px-4">
       <div className="max-w-4xl w-full mx-auto flex flex-col gap-6">

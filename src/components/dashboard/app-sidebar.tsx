@@ -13,31 +13,37 @@ import { Frame, Layers, LucideIcon, Package, Store } from "lucide-react";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import SkeletonSidebar from "./SkeletonSidebar";
 
-interface Data {
-  user: { full_name: string; email: string; avatar: string };
-  projects: { name: string; url: string; icon: LucideIcon }[];
+/**
+ * Definición de items del menú lateral.
+ *
+ * `requiresStore` indica que ese link solo se habilita si el usuario
+ * ya creó su tienda. Esto evita que accedan a productos/categorías
+ * antes de tener tienda configurada.
+ */
+interface NavItem {
+  name: string;
+  url: string;
+  icon: LucideIcon;
+  /** Si es true, el link se deshabilita cuando no existe tienda */
+  requiresStore?: boolean;
 }
 
-const data: Data = {
-  user: {
-    full_name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  projects: [
-    { name: "Dashboard", url: "/dashboard/panel", icon: Frame },
-    { name: "Categorias", url: "/dashboard/categories", icon: Layers },
-    { name: "Productos", url: "/dashboard/products", icon: Package },
-    { name: "Mi Tienda", url: "/dashboard/store", icon: Store },
-  ],
-};
+const navItems: NavItem[] = [
+  { name: "Dashboard", url: "/dashboard/panel", icon: Frame },
+  { name: "Categorias", url: "/dashboard/categories", icon: Layers, requiresStore: true },
+  { name: "Productos", url: "/dashboard/products", icon: Package, requiresStore: true },
+  { name: "Mi Tienda", url: "/dashboard/store", icon: Store },
+];
 
 export function AppSidebar() {
-  const { data: user, isPending } = useSessionData();
+  const { data: session, isPending } = useSessionData();
 
   if (isPending) {
     return <SkeletonSidebar />;
   }
+
+  // hasStore viene de la sesión hidratada por el layout del servidor
+  const hasStore = session?.hasStore ?? false;
 
   return (
     <Sidebar>
@@ -46,11 +52,11 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarContent>
-          <NavProjects projects={data.projects} />
+          <NavProjects projects={navItems} hasStore={hasStore} />
         </SidebarContent>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user?.profile || data.user} />
+        <NavUser user={session?.profile || { full_name: "", email: "", avatar: "" }} />
       </SidebarFooter>
     </Sidebar>
   );

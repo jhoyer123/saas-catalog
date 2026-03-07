@@ -28,9 +28,9 @@ export const createProduct = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   const { data, error } = await supabase
     .from("products")
@@ -101,9 +101,9 @@ export const updateProduct = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   //Actualizar datos del producto
   const { data, error } = await supabase
@@ -182,9 +182,9 @@ export const deleteProductAction = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   // Obtener archivos antes de borrar la DB
   const folderPath = `${storeId}/${id}`;
@@ -222,9 +222,9 @@ export const getProductsPaginatedAction = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   const {
     page = 1,
@@ -319,9 +319,9 @@ export const getProductByIdAction = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   const { data, error } = await supabase
     .from("products")
@@ -381,9 +381,9 @@ export const toggleOfferAction = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   const { error } = await supabase
     .from("products")

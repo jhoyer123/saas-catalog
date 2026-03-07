@@ -5,11 +5,12 @@ import { ProductCatalog } from "@/types/product.types";
 //table
 import { createProductsColumns } from "./products-columns";
 import { DataTableServer } from "@/components/shared/DataTableServer";
-import { getProductsPaginatedAction } from "@/lib/actions/productActions";
+import { fetchProductsPaginated } from "@/lib/services/dashboard";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useModalsProduct } from "@/hooks/products/useModalsProduct";
 import ModalProduct from "@/components/products/modal/ModalProduct";
 import { useProductActions } from "@/hooks/products/useHandleAction";
+import { DebouncedInput } from "@/components/shared/DebouncedInput";
 
 export function ProductsTable() {
   //storeid for get products
@@ -31,7 +32,14 @@ export function ProductsTable() {
     <>
       <DataTableServer<ProductCatalog>
         columns={columns}
-        fetchData={(params) => getProductsPaginatedAction(storeId, params)}
+        fetchData={(params) => fetchProductsPaginated(storeId, params)}
+        toolbar={({ searchInput, setSearchInput }) => (
+          <DebouncedInput
+            valueDefault={searchInput}
+            onChange={setSearchInput}
+            placeholder="Buscar por nombre..."
+          />
+        )}
         queryKey="products"
         searchKey="name"
         searchPlaceholder="Buscar productos..."

@@ -9,16 +9,16 @@ export async function uploadBannersAction(storeId: string, files: File[]) {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   // Verificar que el usuario sea dueño de la tienda
   const { data: store } = await supabase
     .from("stores")
     .select("id")
     .eq("id", storeId)
-    .eq("user_id", user.id)
+    .eq("user_id", session.user.id)
     .single();
 
   if (!store) throw new Error("No tienes permisos sobre esta tienda");
@@ -61,16 +61,16 @@ export interface UpdateBannersParams {
 export async function updateBannersAction(dataFiles: UpdateBannersParams) {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   // Verificar que el usuario sea dueño de la tienda
   const { data: store } = await supabase
     .from("stores")
     .select("id")
     .eq("id", dataFiles.storeId)
-    .eq("user_id", user.id)
+    .eq("user_id", session.user.id)
     .single();
 
   if (!store) throw new Error("No tienes permisos sobre esta tienda");
@@ -137,16 +137,16 @@ export async function getBannersAction(storeId: string) {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   // Verificar que el usuario sea dueño de la tienda
   const { data: store } = await supabase
     .from("stores")
     .select("id")
     .eq("id", storeId)
-    .eq("user_id", user.id)
+    .eq("user_id", session.user.id)
     .single();
 
   if (!store) throw new Error("No tienes permisos sobre esta tienda");

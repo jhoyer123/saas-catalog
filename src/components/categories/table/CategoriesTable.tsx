@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { DataTableServer } from "@/components/shared/DataTableServer";
 import { getCategoriesColumns } from "./categories-columns";
-import { getCategoriesPaginate } from "@/lib/actions/categoryActions";
+import { fetchCategoriesPaginated } from "@/lib/services/dashboard";
 import { Category } from "@/types/category.types";
 import { useModalsCategory } from "@/hooks/category/useModalsCategory";
 import { ModalCategory } from "@/components/categories/ModalCategory";
@@ -11,6 +11,8 @@ import { DeleteModal } from "@/components/shared/DeleteAlert";
 import { Button } from "@/components/ui/button";
 import { useDeleteCategory } from "@/hooks/category/useDeleteCategory";
 import { useToastPromise } from "@/hooks/shared/useToastPromise";
+import { useSessionData } from "@/hooks/auth/useSessionData";
+import { DebouncedInput } from "@/components/shared/DebouncedInput";
 
 /**
  * CategoriesTable — self-contained, igual que ProductsTable.
@@ -23,10 +25,13 @@ import { useToastPromise } from "@/hooks/shared/useToastPromise";
  * La página solo renderiza <CategoriesTable /> y el título.
  */
 export function CategoriesTable() {
-  // ║ Estado de modales (hook propio, no viene de afuera)
+  const { data: sessionData } = useSessionData();
+  const storeId = sessionData?.store?.id!;
+
+  // Estado de modales (hook propio, no viene de afuera)
   const { modalState, openModal, closeModal } = useModalsCategory();
 
-  // ║ Acciones
+  // Acciones
   const { mutateAsync: removeCategory } = useDeleteCategory();
   const { showPromise } = useToastPromise();
 
@@ -59,8 +64,10 @@ export function CategoriesTable() {
       {/* Botón para crear — abre el modal en modo "create" */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Categorías</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight font-poppins">
+            Lista de Categorías
+          </h1>
+          <p className="text-muted-foreground font-inter">
             Gestiona las categorías de tus productos
           </p>
         </div>
@@ -70,8 +77,15 @@ export function CategoriesTable() {
       </div>
 
       <DataTableServer<Category>
+        toolbar={({ searchInput, setSearchInput }) => (
+          <DebouncedInput
+            valueDefault={searchInput}
+            onChange={setSearchInput}
+            placeholder="Buscar por nombre..."
+          />
+        )}
         columns={columns}
-        fetchData={getCategoriesPaginate}
+        fetchData={(params) => fetchCategoriesPaginated(params, storeId)}
         queryKey="categories"
         searchKey="name"
         searchPlaceholder="Buscar categorías..."

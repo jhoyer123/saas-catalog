@@ -5,7 +5,7 @@ import { BannerUploadForm } from "@/components/store/BannerUploadForm";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import SketetonStoreConfig from "@/components/store/SketetonStoreConfig";
 
-export default function DashboardPage() {
+export default function StorePage() {
   const { data, isPending } = useSessionData();
 
   if (isPending) {
@@ -13,26 +13,38 @@ export default function DashboardPage() {
   }
 
   return (
-    <section className="w-full p-4">
-      <div className="mx-auto max-w-7xl w-full flex flex-col gap-10 items-center justify-center">
-        {/* ── Sección 1: Datos de la tienda ── */}
-        <div className="flex flex-col gap-1 justify-start items-start w-full">
-          <h2 className="text-3xl font-bold tracking-tight font-inter">
+    <section className="w-full p-6">
+      <div className="mx-auto max-w-6xl w-full flex flex-col gap-12">
+        <div className="flex flex-col gap-2 w-full">
+          <h2 className="text-3xl font-bold tracking-tight">
             Configuración de la tienda
           </h2>
-        </div>
-        <div className="flex flex-col gap-4 border rounded-md border-input p-4 w-full">
-          <p className="text-muted-foreground font-inter border-b border-input pb-4">
-            Gestiona y administra los datos de tu tienda.
+          <p className="text-muted-foreground text-sm">
+            Administra la información y apariencia de tu tienda.
           </p>
+        </div>
+        {/* ── Sección 1: Datos de la tienda ── */}
+        <div className="flex flex-col gap-4 border rounded-lg border-input p-6 w-full bg-card font-inter">
+          <div className="flex flex-col gap-1 border-b pb-4">
+            <h3 className="text-lg font-semibold">Datos de la tienda</h3>
+            <p className="text-sm text-muted-foreground">
+              Gestiona y administra los datos principales de tu tienda.
+              <span className="text-red-400 ml-1">Campos obligatorios</span>
+            </p>
+          </div>
+
           <StoreForm defaultValues={data?.store!} />
         </div>
         {/* ── Sección 2: Banners del catálogo ── */}
-        {/* ── Sección 1: Datos de la tienda ── */}
-        <div className="flex flex-col gap-4 border rounded-md border-input p-4 w-full">
-          <p className="text-muted-foreground font-inter border-b border-input pb-4">
-            Gestiona los banners que se mostrarán en tu catálogo.
-          </p>
+        <div className="flex flex-col gap-4 border rounded-lg border-input p-6 w-full bg-card font-inter">
+          <div className="flex flex-col gap-1 border-b border-input pb-4">
+            <h3 className="text-lg font-semibold">Banners del catálogo</h3>
+            <p className="text-sm text-muted-foreground">
+              Gestiona los banners que se mostrarán en tu catálogo: promociones,
+              eventos especiales o información importante para tus clientes.
+            </p>
+          </div>
+
           <BannerUploadForm />
         </div>
       </div>

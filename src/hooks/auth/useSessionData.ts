@@ -2,23 +2,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getSessionData } from "@/lib/actions/authActions";
-import { User } from "@/types/auth.types";
-import { Store } from "@/types/store.types";
-import { Plan } from "@/types/plan.types";
+import { fetchSessionData } from "@/lib/services/dashboard";
+import type { SessionData } from "@/lib/services/dashboard";
 
-type SessionData = {
-  profile: User | null;
-  store: Store | null;
-  plan: Plan | null;
-  hasStore: boolean;
-};
+export type { SessionData };
 
 export const useSessionData = () => {
   return useQuery<SessionData | null>({
     queryKey: ["session-data"],
-    queryFn: getSessionData,
-    staleTime: Infinity,
+    queryFn: fetchSessionData,
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
 };

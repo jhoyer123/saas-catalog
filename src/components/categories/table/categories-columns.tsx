@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Category } from "@/types/category.types";
-import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import {
@@ -54,9 +53,8 @@ export const getCategoriesColumns = ({
   }, */
   {
     accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nombre" />
-    ),
+    enableSorting: true,
+    header: "Nombre",
     cell: ({ row }) => {
       const name = row.getValue("name") as string;
       const slug = row.original.slug;
@@ -71,9 +69,8 @@ export const getCategoriesColumns = ({
   },
   {
     accessorKey: "description",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Descripción" />
-    ),
+    enableSorting: true,
+    header: "Descripción",
     cell: ({ row }) => {
       const description = row.getValue("description") as string | null;
 
@@ -86,9 +83,8 @@ export const getCategoriesColumns = ({
   },
   {
     accessorKey: "product_count",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Productos" />
-    ),
+    enableSorting: false,
+    header: "Cant. Productos",
     cell: ({ row }) => {
       const count = row.getValue("product_count") as number;
       return <span className="text-sm">{count}</span>;
@@ -96,9 +92,7 @@ export const getCategoriesColumns = ({
   },
   {
     accessorKey: "created_at",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Fecha de creación" />
-    ),
+    header: "Fecha de creación",
     cell: ({ row }) => {
       const date = new Date(row.getValue("created_at") as string);
 
@@ -141,7 +135,7 @@ export const getCategoriesColumns = ({
               Editar
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="text-red-600"
+              className="text-red-600 focus:text-red-600"
               onClick={() => onOpenModal("delete", category)}
             >
               <Trash2 className="mr-2 h-4 w-4" />

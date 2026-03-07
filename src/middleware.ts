@@ -25,24 +25,69 @@ export async function middleware(request: NextRequest) {
     },
   );
 
+  // getUser() puede refrescar el token y escribir cookies nuevas en `response`.
+  // Es CRÍTICO que esas cookies se propaguen en cualquier respuesta (incluso redirects).
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
+
+  // ── Redirects ──
+  // Usamos una función helper para copiar las cookies de Supabase
+  // al redirect. Sin esto, el token refrescado se pierde y la
+  // siguiente petición falla con sesión inválida.
+  if (!user && isDashboard) {
+    return redirectWithCookies("/auth/login", request, response);
   }
 
-  if (user && request.nextUrl.pathname.startsWith("/auth/login")) {
-    return NextResponse.redirect(new URL("/dashboard/panel", request.url));
+  if (user && request.nextUrl.pathname.startsWith("/auth")) {
+    return redirectWithCookies("/dashboard/panel", request, response);
+  }
+
+  // ── Evitar que el navegador cachee páginas protegidas ──
+  // Sin esto, al cerrar sesión y presionar "atrás" el navegador
+  // muestra la página del dashboard desde su caché (bfcache)
+  // sin pasar por el middleware.
+  if (isDashboard) {
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
   }
 
   return response;
 }
 
+/**
+ * Crea un redirect que conserva las cookies escritas por Supabase.
+ *
+ * ¿Por qué?
+ * supabase.auth.getUser() puede refrescar el JWT y escribir cookies
+ * nuevas en `response`. Si hacemos NextResponse.redirect() sin copiarlas,
+ * el navegador pierde el token refrescado → la siguiente petición falla.
+ */
+function redirectWithCookies(
+  path: string,
+  request: NextRequest,
+  currentResponse: NextResponse,
+) {
+  const redirectResponse = NextResponse.redirect(new URL(path, request.url));
+
+  // Copiar todas las cookies que Supabase escribió al nuevo redirect
+  currentResponse.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie.name, cookie.value);
+  });
+
+  return redirectResponse;
+}
+
 export const config = {
   matcher: [
     "/dashboard/:path*", // Protege dashboard
+    "/auth/:path*", // Redirige a dashboard si ya está logueado
     "/profile/:path*", // Protege perfil
     "/settings/:path*", // Protege configuración
   ],

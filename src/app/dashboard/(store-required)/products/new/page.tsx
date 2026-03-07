@@ -1,4 +1,4 @@
-"use client"; // ← Agrega esta línea al inicio
+"use client";
 
 import Form from "@/components/products/form/Form";
 import { Button } from "@/components/ui/button";

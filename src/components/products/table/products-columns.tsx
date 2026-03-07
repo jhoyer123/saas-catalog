@@ -2,7 +2,6 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { ProductCatalog } from "@/types/product.types";
-import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,14 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  Eye,
-  Tag,
-  TagIcon,
-} from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Eye, TagIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { ModalType } from "@/hooks/products/useModalsProduct";
@@ -58,6 +50,7 @@ export const createProductsColumns = ({
   // ── Imagen ──────────────────────────────────
   {
     accessorKey: "images",
+    enableSorting: false,
     header: "Imagen",
     cell: ({ row }) => {
       const images = row.getValue("images") as string[];
@@ -84,9 +77,8 @@ export const createProductsColumns = ({
   // ── Nombre + Marca ───────────────────────────
   {
     accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Producto" />
-    ),
+    enableSorting: true,
+    header: "Nombre",
     cell: ({ row }) => {
       const name = row.getValue("name") as string;
       const brand = row.original.brand;
@@ -105,9 +97,8 @@ export const createProductsColumns = ({
   // ── SKU ─────────────────────────────────────
   {
     accessorKey: "sku",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="SKU" />
-    ),
+    enableSorting: true,
+    header: "Cod. Unico",
     cell: ({ row }) => (
       <span className="font-mono text-xs text-muted-foreground">
         {row.getValue("sku")}
@@ -118,9 +109,8 @@ export const createProductsColumns = ({
   // ── Categoría ───────────────────────────────
   {
     accessorKey: "name_category",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Categoría" />
-    ),
+    enableSorting: false,
+    header: "Categoria",
     cell: ({ row }) => {
       const category = row.getValue("name_category") as string;
       return (
@@ -134,9 +124,8 @@ export const createProductsColumns = ({
   // ── Precio ──────────────────────────────────
   {
     accessorKey: "price",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Precio" />
-    ),
+    enableSorting: true,
+    header: "Precio",
     cell: ({ row }) => {
       const isOffer = checkIsOfferActive({
         is_offer: row.original.is_offer,
@@ -169,6 +158,7 @@ export const createProductsColumns = ({
   // ── Oferta ──────────────────────────────────
   {
     accessorKey: "isOfferActive",
+    enableSorting: false,
     header: "Oferta",
     cell: ({ row }) => {
       const isOffer = checkIsOfferActive({

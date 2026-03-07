@@ -16,9 +16,9 @@ export const createCategory = async (dataInput: CreateCategoryInput) => {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return null;
 
   const { data, error } = await supabase.from("categories").insert({
     store_id: dataInput.store_id,
@@ -45,9 +45,9 @@ export const updateCategory = async (id: string, dataInput: CategoryForm) => {
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return null;
 
   const { data, error } = await supabase
     .from("categories")
@@ -78,9 +78,9 @@ export const deleteCategory = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   const { error } = await supabase.rpc("delete_category", {
     p_category_id: categoryId,
@@ -101,9 +101,9 @@ export const getCategories = async (
   const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return null;
   const { data, error } = await supabase
     .from("categories")
     .select("id, name")

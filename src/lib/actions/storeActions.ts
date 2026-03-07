@@ -7,52 +7,89 @@ import { generateSlug } from "@/lib/utils/slug";
 import type { StoreForm } from "@/lib/schemas/store";
 import { revalidateTag } from "next/cache";
 
-export const createStore = async (dataInput: StoreForm, storeId: string) => {
+/**
+ * Crea una tienda nueva.
+ *
+ * Flujo:
+ *  1. Insertar la tienda SIN logo para obtener el ID generado por la DB.
+ *  2. Si el usuario adjuntó un logo, subirlo al storage usando ese ID.
+ *  3. Actualizar la tienda con la URL pública del logo.
+ *
+ * ¿Por qué no subimos el logo antes del insert?
+ *  Porque necesitamos el ID de la tienda como parte de la ruta en Storage
+ *  (stores/{storeId}/logo/main.ext). Ese ID lo genera Supabase al insertar.
+ */
+export const createStore = async (dataInput: StoreForm, userId: string) => {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
-  if (!storeId) {
-    throw new Error("No se pudo obtener el ID de la tienda");
+  if (!userId) {
+    throw new Error("No se pudo obtener el ID del usuario");
   }
 
-  // subir logo al storage del usuario
-  const logo_url = dataInput.logo
-    ? await uploadFile("stores", storeId, "logo", dataInput.logo, "main")
-    : null;
-
-  // plan por defecto
+  // ── 1. Obtener el plan por defecto ──
   const { data: defaultPlan } = await supabase
     .from("plans")
     .select("id")
     .limit(1)
     .single();
 
-  const { data, error } = await supabase.from("stores").insert({
-    user_id: user.id,
-    plane_id: defaultPlan!.id,
-    name: dataInput.name,
-    slug: generateSlug(dataInput.name),
-    logo_url,
-    description: dataInput.description,
-    whatsapp_number: dataInput.whatsapp_number,
-    is_active: true,
-  });
-  if (error) {
-    throw new Error(error.message);
+  if (!defaultPlan) {
+    throw new Error("No se encontró un plan por defecto");
   }
 
-  return data;
+  // ── 2. Insertar la tienda SIN logo (para obtener el ID) ──
+  const { data: newStore, error } = await supabase
+    .from("stores")
+    .insert({
+      user_id: userId,
+      plane_id: defaultPlan.id,
+      name: dataInput.name,
+      slug: generateSlug(dataInput.name),
+      logo_url: null,
+      description: dataInput.description,
+      whatsapp_number: dataInput.whatsapp_number,
+      is_active: true,
+    })
+    .select("id") // ← pedimos el ID de vuelta
+    .single();
+
+  if (error || !newStore) {
+    throw new Error(error?.message ?? "Error al crear la tienda");
+  }
+
+  // ── 3. Si hay logo, subirlo y actualizar la tienda ──
+  if (dataInput.logo) {
+    const logo_url = await uploadFile(
+      "stores",
+      newStore.id,
+      "logo",
+      dataInput.logo,
+      "main",
+    );
+
+    const { error: updateError } = await supabase
+      .from("stores")
+      .update({ logo_url })
+      .eq("id", newStore.id);
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+  }
+
+  return newStore;
 };
 
 export const updateStore = async (storeId: string, dataInput: StoreForm) => {
   const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("No autenticado");
 
   // solo sube imagen nueva si mandaron un File
   const logo_url =

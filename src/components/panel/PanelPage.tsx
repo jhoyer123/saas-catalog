@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useSessionData } from "@/hooks/auth/useSessionData";
 import Link from "next/link";
 import {
   ExternalLink,
@@ -12,23 +11,16 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { Store as StoreType } from "@/types/store.types";
-import { User } from "@/types/auth.types";
 
 interface DashboardPageProps {
   hasProducts?: boolean;
-  /** Pasado desde el Server Component para evitar skeleton en SSR */
   store?: StoreType | null;
 }
 
 export default function PanelPage({
   hasProducts = false,
-  store: serverStore,
+  store = null,
 }: DashboardPageProps) {
-  // En cliente, useSessionData ya tiene los datos hidratados del layout.
-  // serverStore cubre el caso SSR (render del servidor) para evitar el flash de skeleton.
-  const { data } = useSessionData();
-  const store = serverStore ?? data?.store ?? null;
-
   const storeIsComplete = !!(
     store?.name &&
     store?.whatsapp_number &&
@@ -36,8 +28,6 @@ export default function PanelPage({
     store?.is_active
   );
   const canShowCatalog = storeIsComplete && hasProducts;
-  // Sin skeleton: el servidor ya pasó los datos. Si por algún motivo
-  // store fuera null (no tiene tienda), el bloque de abajo lo maneja.
 
   // Steps para onboarding
   const steps = [
