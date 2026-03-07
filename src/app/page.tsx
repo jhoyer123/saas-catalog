@@ -5,7 +5,7 @@ import { LayoutDashboard, Link2, ShoppingBag } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen w-full bg-[#FDFDFD] text-[#1A1A1A] overflow-x-hidden lg:overflow-hidden flex flex-col font-sans">
+    <div className="relative max-h-screen w-full bg-[#FDFDFD] text-[#1A1A1A] overflow-x-hidden lg:overflow-hidden flex flex-col font-sans">
       {/* FONDO: Tu imagen original con overlay minimalista */}
       <div className="absolute inset-0 z-0">
         <Image

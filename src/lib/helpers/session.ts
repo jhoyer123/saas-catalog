@@ -29,6 +29,8 @@ export const getSessionDataCached = cache(async () => {
       .single(),
   ]);
 
+  if (!profile) return null;
+
   return {
     profile,
     store,

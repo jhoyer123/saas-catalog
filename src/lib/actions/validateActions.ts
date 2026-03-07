@@ -15,11 +15,11 @@ export const getProductCount = async () => {
     .eq("user_id", user.id)
     .single();
 
-  if (!store) throw new Error("Tienda no encontrada");
+  if (!store) return 0;
 
   const { count } = await supabase
     .from("products")
-    .select("id, name", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("store_id", store.id);
 
   return count ?? 0;
