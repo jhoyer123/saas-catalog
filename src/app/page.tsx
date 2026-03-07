@@ -39,7 +39,7 @@ export default function Home() {
         <div className="flex gap-4 items-center">
           <Link
             href="/auth/login"
-            className="text-sm font-bold uppercase tracking-widest hover:opacity-50 transition-opacity hidden bg-accent p-3 rounded-3xl"
+            className="text-sm font-bold uppercase tracking-widest hover:opacity-50 transition-opacity hidden sm:block bg-accent p-3 rounded-3xl"
           >
             Iniciar Sesión
           </Link>
