@@ -38,12 +38,16 @@ export const signUpNewUser = async (
 export const signInUser = async (
   dataLogin: LoginDataInput,
 ): Promise<AuthResponse> => {
+  // 👇 Limpia cualquier sesión corrupta antes de intentar login
+  await supabase.auth.signOut();
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email: dataLogin.email,
     password: dataLogin.password,
   });
 
   if (error) {
+    console.error("Error signing in user:", error);
     throw new Error(getSupabaseErrorMessage(error));
   }
 
