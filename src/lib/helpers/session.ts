@@ -10,8 +10,18 @@
 
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/supabaseServer";
+import type { User } from "@/types/auth.types";
+import type { Store } from "@/types/store.types";
+import type { Plan } from "@/types/plan.types";
 
-export const getSessionDataCached = cache(async () => {
+type SessionData = {
+  profile: User | null;
+  store: Store | null;
+  plan: Plan | null;
+  hasStore: boolean;
+};
+
+export const getSessionDataCached = cache(async (): Promise<SessionData | null> => {
   const supabase = await createClient();
 
   const {

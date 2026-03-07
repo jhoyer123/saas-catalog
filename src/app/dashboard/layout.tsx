@@ -2,7 +2,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import StoreInactive from "@/components/dashboard/StoreInactive";
 import { getSessionDataCached } from "@/lib/helpers/session";
-import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import {
+  QueryClient,
+  HydrationBoundary,
+  dehydrate,
+} from "@tanstack/react-query";
 
 export default async function Layout({
   children,
@@ -13,6 +17,11 @@ export default async function Layout({
   const sessionData = await getSessionDataCached();
 
   if (!sessionData) return null; // middleware ya redirige, pero por seguridad
+
+  // Bloquear si el usuario NO está activo
+  if (!sessionData.profile?.is_active) {
+    return <StoreInactive />;
+  }
 
   // Bloquear si la tienda está inactiva
   if (sessionData.store && !sessionData.store.is_active) {

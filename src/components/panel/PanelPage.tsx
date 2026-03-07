@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { Store as StoreType } from "@/types/store.types";
+import { User } from "@/types/auth.types";
 
 interface DashboardPageProps {
   hasProducts?: boolean;
