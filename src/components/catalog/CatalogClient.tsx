@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { getPublicProducts } from "@/lib/actions/catalogActions";
@@ -38,6 +38,16 @@ export default function CatalogClient({
   store,
 }: CatalogClientProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    const header = document.getElementById("catalog-header");
+    if (!header) return;
+    const ro = new ResizeObserver(() => setHeaderHeight(header.offsetHeight));
+    ro.observe(header);
+    setHeaderHeight(header.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
   const searchParams = useSearchParams();
 
   const search = searchParams.get("search") ?? "";
@@ -89,6 +99,7 @@ export default function CatalogClient({
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
       <Header store={store} onOpenFilters={() => setMobileFiltersOpen(true)} />
+      <div style={{ height: headerHeight }} />
 
       <MobileFilterSheet
         open={mobileFiltersOpen}
@@ -98,7 +109,7 @@ export default function CatalogClient({
       />
       {/* quitaar ! */}
       {hasBanners && (
-        <div className="max-w-7xl w-full mx-auto py-6 px-2">
+        <div className="max-w-7xl w-full mx-auto py-3 px-2">
           <div className="flex gap-3 items-center justify-center">
             <aside className="hidden lg:block w-90 shrink-0">
               <ProductFilterControls categories={categories} brands={brands} />
@@ -110,7 +121,10 @@ export default function CatalogClient({
         </div>
       )}
 
-      <section className="container w-full max-w-7xl mx-auto px-1">
+      <section
+        id="catalog-products"
+        className="container w-full max-w-7xl mx-auto px-1"
+      >
         <div className={`flex gap-6 ${hasBanners ? "py-0" : "py-6"}`}>
           {/* poner ! */}
           {!hasBanners && (
@@ -119,7 +133,7 @@ export default function CatalogClient({
             </aside>
           )}
           <div>
-            <div className="mb-6 flex flex-col items-start md:flex-row md:items-center lg:justify-between w-full px-4">
+            <div className="mb-6 flex flex-col items-start md:flex-row md:items-center md:justify-between w-full px-4">
               <h1 className="text-xl font-bold font-poppins text-gray-900 md:text-2xl">
                 Catálogo de Productos
               </h1>

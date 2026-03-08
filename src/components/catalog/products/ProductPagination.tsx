@@ -20,7 +20,6 @@ export function ProductPagination({
 
   const handlePageChange = (page: number) => {
     setPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Generar números de página a mostrar

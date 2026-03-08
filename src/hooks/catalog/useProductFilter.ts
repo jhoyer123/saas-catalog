@@ -39,6 +39,16 @@ export function useProductFilter() {
     pageSize: Number(searchParams.get("pageSize")) || 12,
   };
 
+  const scrollToProducts = () => {
+    const section = document.getElementById("catalog-products");
+    if (section) {
+      const header = document.querySelector("header");
+      const headerHeight = header ? header.offsetHeight : 0;
+      const top = section.getBoundingClientRect().top + window.scrollY - headerHeight;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
   // Función base para actualizar un param en la URL
   const updateParam = (key: string, value: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -51,7 +61,8 @@ export function useProductFilter() {
     if (key !== "page" && key !== "pageSize") {
       params.delete("page");
     }
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    scrollToProducts();
   };
 
   // Mapeo de keys del filtro a keys de la URL
@@ -95,7 +106,8 @@ export function useProductFilter() {
   };
 
   const resetFilters = () => {
-    router.push(pathname);
+    router.push(pathname, { scroll: false });
+    scrollToProducts();
   };
 
   const setPage = (page: number) => {
@@ -106,7 +118,8 @@ export function useProductFilter() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("pageSize", String(pageSize));
     params.delete("page");
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    scrollToProducts();
   };
 
   const hasActiveFilters = !!(

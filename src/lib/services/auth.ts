@@ -18,17 +18,16 @@ export const signUpNewUser = async (
     email: dataRegister.email,
     password: dataRegister.password,
     options: {
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
       data: {
         full_name: dataRegister.full_name,
         phone: dataRegister.phone,
       },
     },
   });
-
   if (error) {
     throw new Error(getSupabaseErrorMessage(error));
   }
-
   return { data, error: null };
 };
 

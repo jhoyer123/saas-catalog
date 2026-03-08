@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ store, onOpenFilters }) => {
   const { searchInput, setSearchInput } = useProductFilter();
 
   return (
-    <header className="bg-white border-b w-full sticky top-0 z-20">
+    <header id="catalog-header" className="bg-white border-b w-full fixed top-0 left-0 right-0 z-20">
       <div className="container mx-auto py-2 flex flex-col items-center justify-between gap-4 md:py-1">
         {/* Logo - name store*/}
         <div className="flex items-center justify-between w-full px-4">

@@ -62,7 +62,15 @@ export default function Login() {
 
           {/* Formulario */}
           <FormLogin handleLogin={handleLogin} isPending={isPending} />
-
+          {/* Link para recuperar contraseña */}
+          <div className="text-center mt-4">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-center text-blue-600"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
           {/* Footer opcional del formulario */}
           <footer className="text-center mt-6 text-sm text-gray-600 font-inter">
             ¿No tienes cuenta?{" "}
