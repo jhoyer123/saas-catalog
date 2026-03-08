@@ -33,14 +33,12 @@ export function CartButton({ whatsappNumber }: CartButtonProps) {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="icon"
+      <button
         onClick={() => setOpen(true)}
         aria-label="Abrir carrito de compras"
-        className="relative"
+        className="relative cursor-pointer text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400 rounded"
       >
-        <ShoppingCart className="h-5 w-5" />
+        <ShoppingCart className="h-5 w-5 md:w-7 md:h-7" />
 
         {/* Badge de cantidad */}
         {displayCount > 0 && (
@@ -52,7 +50,7 @@ export function CartButton({ whatsappNumber }: CartButtonProps) {
             {displayCount > 99 ? "99+" : displayCount}
           </span>
         )}
-      </Button>
+      </button>
 
       <CartDrawer
         open={open}

@@ -111,7 +111,7 @@ export default function CatalogClient({
       )}
 
       <section className="container w-full max-w-7xl mx-auto px-1">
-        <div className={`flex gap-6 ${hasBanners ? "py-6" : "py-0"}`}>
+        <div className={`flex gap-6 ${hasBanners ? "py-0" : "py-6"}`}>
           {/* poner ! */}
           {!hasBanners && (
             <aside className="hidden lg:block w-64 xl:w-72 shrink-0 sticky top-4">
