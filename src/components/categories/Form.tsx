@@ -72,9 +72,9 @@ const Form = ({ defaultValues, setOpen, readOnly = false }: Props) => {
         label="Nombre"
         name="name"
         register={register}
-        // deshabilitamos el campo cuando estamos en modo solo lectura
         inputProps={{ placeholder: "Chamarras", disabled: readOnly }}
         errors={errors}
+        required={true}
       />
 
       {/* descripción */}

@@ -4,9 +4,14 @@ import { ProductCard } from "./ProductCard";
 interface ProductGridProps {
   products: ProductCatalogCard[];
   isLoading?: boolean;
+  hasBanners?: boolean;
 }
 
-export function ProductGrid({ products, isLoading = false }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  isLoading = false,
+  hasBanners,
+}: ProductGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -56,7 +61,9 @@ export function ProductGrid({ products, isLoading = false }: ProductGridProps) {
   }
 
   return (
-    <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
+    <div
+      className={`grid gap-2 md:gap-4 grid-cols-2 ${hasBanners ? "sm:grid-cols-3 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3"}`}
+    >
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}

@@ -10,7 +10,12 @@ import { useProductFilter } from "@/hooks/catalog/useProductFilter";
 import { CartButton } from "@/components/cart/CartButton";
 
 interface HeaderProps {
-  store: { name: string; slug: string; logo_url: string | null; whatsapp_number?: string | null };
+  store: {
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    whatsapp_number?: string | null;
+  };
   onOpenFilters?: () => void;
 }
 

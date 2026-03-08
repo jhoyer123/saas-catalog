@@ -95,7 +95,7 @@ export function ProductImageGallery({
                     alt={`${productName} ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="72px"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </div>
                 {/* Underline premium — aparece solo en activo */}
@@ -130,7 +130,7 @@ export function ProductImageGallery({
             fill
             className="object-cover"
             priority
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
 
           {images.length > 1 && (

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface ProductInfoProps {
   product: ProductCatalog;
@@ -31,11 +32,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
       image: product.images[0] || "/images/placeholder.png",
       price: displayPrice!,
     });
-    toast.success("Producto agregado al carrito", { position: "top-right" });
+    toast.success("Producto agregado al carrito", { position: "bottom-right" });
   };
 
+  //whatsapp number
+  const { data } = useSessionData();
+  const telefono = data?.store?.whatsapp_number;
+
   return (
-    <div className="flex flex-col items-center justify-center h-full px-2 py-4 bg-card border border-border rounded-2xl md:px-6 md:py-20">
+    <div className="flex flex-col items-center justify-center h-full px-2 py-4 bg-card border border-border rounded-2xl md:px-6 md:py-10">
       {/* ── BRAND ── */}
       {product.brand && (
         <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
@@ -105,21 +110,25 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* ── CTA BUTTONS (sticky on mobile) ── */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {/* Add to Cart */}
-        <Button onClick={handleAddToCart} disabled={!product.is_available}>
+        <Button
+          onClick={handleAddToCart}
+          disabled={!product.is_available}
+          className="md:text-[16px]"
+        >
           <ShoppingCart className="h-5 w-5" />
           Agregar al Carrito
         </Button>
 
         {/* WhatsApp / Request */}
         <a
-          href={`https://wa.me/59162557286?text=${encodeURIComponent(
-            `Hola! Me interesa el producto: ${product.name}`,
+          href={`https://wa.me/${telefono}?text=${encodeURIComponent(
+            `Hola! Me interesa el producto: ${product.name} - Bs. ${displayPrice!.toFixed(2)}`,
           )}`}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
             buttonVariants({ variant: "default", size: "default" }),
-            "gap-2.5 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white",
+            "gap-2.5 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white md:text-[16px]",
           )}
         >
           <MessageCircle className="h-5 w-5" />

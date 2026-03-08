@@ -305,7 +305,7 @@ export default function InputFile({
               <button
                 type="button"
                 onClick={handleOpenFileDialog}
-                className={`${typeElement === "banner" ? "aspect-16/5" : "aspect-square"} rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-blue-500`}
+                className={`${typeElement === "banner" ? "aspect-video" : "aspect-square"} rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-blue-500`}
               >
                 <Plus className="w-8 h-8" />
                 <span className="text-xs font-medium">Añadir más</span>

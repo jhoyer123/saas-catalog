@@ -11,10 +11,11 @@ import { useModalsProduct } from "@/hooks/products/useModalsProduct";
 import ModalProduct from "@/components/products/modal/ModalProduct";
 import { useProductActions } from "@/hooks/products/useHandleAction";
 import { DebouncedInput } from "@/components/shared/DebouncedInput";
+import SkeletonTable from "@/components/shared/SkeletonTable";
 
 export function ProductsTable() {
   //storeid for get products
-  const { data: sessionData } = useSessionData();
+  const { data: sessionData, isPending } = useSessionData();
   const storeId = sessionData?.store?.id!;
   //hook modals for products with state and functions to open and close
   const { modalState, openModal, closeModal } = useModalsProduct();
@@ -27,6 +28,10 @@ export function ProductsTable() {
     () => createProductsColumns({ onOpenModal: openModal }),
     [openModal],
   );
+
+  if (isPending || !storeId) {
+    return <SkeletonTable />;
+  }
 
   return (
     <>

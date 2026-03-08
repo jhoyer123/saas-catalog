@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface ProductCardProps {
   product: ProductCatalogCard;
@@ -28,57 +29,136 @@ export function ProductCard({ product }: ProductCardProps) {
       image: product.images[0]?.image_url || "/images/placeholder.png",
       price: displayPrice!,
     });
-    toast.success("Producto agregado al carrito", { position: "top-right" });
+    toast.success("Producto agregado al carrito", { position: "bottom-right" });
   };
 
+  const { data } = useSessionData();
+  const telefono = data?.store?.whatsapp_number;
+
+  const handleWhatsApp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // ajusta el número si lo tienes disponible en el store
+    const msg = encodeURIComponent(
+      `Hola, me interesa: ${product.name} - Bs. ${displayPrice!.toFixed(2)}`,
+    );
+    window.open(`https://wa.me/${telefono}?text=${msg}`, "_blank");
+  };
+
+  const discountPercent =
+    product.is_offer_active && product.offer_price
+      ? Math.round(
+          ((product.price - product.offer_price) / product.price) * 100,
+        )
+      : null;
+
+  const WhatsAppIcon = () => (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-4 h-4 fill-current"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+    </svg>
+  );
+
   return (
-    <div className="flex flex-col justify-between group relative w-full bg-card hover:shadow-md transition-all duration-300  border border-border shadow-sm">
+    <div className="flex flex-col justify-between group relative w-full bg-card hover:shadow-md transition-all duration-300 border border-border shadow-sm">
       {/* ───────── IMAGEN ───────── */}
       <Link
         href={`/public/${store_slug}/${product.slug}`}
-        className="relative block aspect-3/4 w-full overflow-hidden bg-gray-300"
+        className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
       >
         <Image
           src={product.images[0]?.image_url || "/images/placeholder.png"}
           alt={product.name}
-          fill // ← fill en vez de width/height
+          fill
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
+
+        {discountPercent && (
+          <div className="absolute top-0 left-2 sm:left-3 z-10">
+            <div className="relative bg-linear-to-b from-red-500 to-rose-600 text-white font-bold shadow-md tracking-wide flex flex-col items-center gap-0.5 min-w-7 sm:min-w-9 px-1.5 sm:px-2.5 pt-0.5 sm:pt-1 pb-2 sm:pb-3">
+              <svg
+                viewBox="0 0 24 24"
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+              <span className="text-[9px] sm:text-[11px]">
+                -{discountPercent}%
+              </span>
+              <div className="absolute -bottom-1.5 sm:-bottom-2 left-0 right-0 flex">
+                <div
+                  className="w-1/2 h-1.5 sm:h-2 bg-rose-600"
+                  style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+                />
+                <div
+                  className="w-1/2 h-1.5 sm:h-2 bg-rose-600"
+                  style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%)" }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Botones hover — solo lg+ */}
+        <div className="hidden lg:flex absolute bottom-2 right-2 z-10 flex-col gap-1.5 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+          <button
+            onClick={handleWhatsApp}
+            aria-label="Consultar por WhatsApp"
+            className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-green-500 hover:text-white text-gray-600 transition-colors duration-200"
+          >
+            <WhatsAppIcon />
+          </button>
+          <button
+            onClick={handleAddToCart}
+            aria-label={`Agregar ${product.name} al carrito`}
+            className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-gray-900 hover:text-white text-gray-600 transition-colors duration-200"
+          >
+            <ShoppingCart className="w-4 h-4" />
+          </button>
+        </div>
       </Link>
 
       {/* ───────── INFO ───────── */}
       <div className="p-2">
-        {/* Nombre */}
         <Link href={`/public/${store_slug}/${product.slug}`}>
-          <h3 className="text-sm sm:text-base md:text-lg font-medium font-inter text-gray-700 leading-snug line-clamp-2 wrap-break-word hover:text-gray-900 transition-colors">
+          <h3 className="text-sm sm:text-base font-medium font-inter text-gray-700 leading-snug line-clamp-2 hover:text-gray-900 transition-colors">
             {product.name}
           </h3>
         </Link>
 
         <div className="mt-1.5 flex items-baseline justify-center gap-2 font-inter flex-wrap">
-          {/* Precio Actual */}
           <span className="text-md sm:text-xl font-bold text-background-foreground">
             Bs. {displayPrice!.toFixed(2)}
           </span>
-
-          {/* Precio de Oferta (Tachado) */}
           {hasDiscount && product.price !== displayPrice && (
-            <span className="text-sm sm:text-base text-muted-foreground line-through font-medium">
+            <span className="text-sm text-muted-foreground line-through font-medium">
               Bs. {product.price.toFixed(2)}
             </span>
           )}
         </div>
 
-        {/* Botón agregar al carrito */}
-        <Button
-          onClick={handleAddToCart}
-          aria-label={`Agregar ${product.name} al carrito`}
-          className="mt-2 flex w-full items-center justify-center gap-4 rounded-lg text-xs font-semibol active:scale-[0.97] cursor-pointer"
-        >
-          <ShoppingCart className="h-3.5 w-3.5" />
-          Agregar
-        </Button>
+        {/* Botones visibles — mobile/tablet (debajo del precio, sin hover) */}
+        <div className="flex lg:hidden gap-2 mt-2">
+          <button
+            onClick={handleWhatsApp}
+            aria-label="Consultar por WhatsApp"
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-green-500 text-green-600 text-xs font-medium hover:bg-green-50 transition-colors"
+          >
+            <WhatsAppIcon />
+          </button>
+          <button
+            onClick={handleAddToCart}
+            aria-label={`Agregar ${product.name} al carrito`}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-700 transition-colors"
+          >
+            <ShoppingCart className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );

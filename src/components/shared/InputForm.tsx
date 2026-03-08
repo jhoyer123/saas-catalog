@@ -10,6 +10,7 @@ import type { ComponentProps } from "react";
 
 interface InputProps<T extends FieldValues> {
   label: string;
+  required?: boolean;
   name: Path<T>;
   register: UseFormRegister<T>;
   errors?: FieldErrors<T>;
@@ -22,10 +23,14 @@ const FormInput = <T extends FieldValues>({
   register,
   errors,
   inputProps,
+  required = false,
 }: InputProps<T>) => {
   return (
     <div className="grid gap-2 w-full">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={name}>
+        {label}
+        {required && <span className="text-red-500">*</span>}
+      </Label>
 
       <ShadInput
         id={name}

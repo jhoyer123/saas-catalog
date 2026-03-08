@@ -78,9 +78,10 @@ export const BannerPreview = ({ banners }: { banners: string[] }) => {
                 src={url}
                 alt={`Banner ${index + 1}`}
                 fill
-                sizes="100vw"
+                sizes="(max-width: 768px) 100vw, 1300px"
                 className="object-cover"
-                loading="lazy"
+                loading="eager"
+                priority
               />
             </div>
           ))}

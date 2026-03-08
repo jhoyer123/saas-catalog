@@ -59,7 +59,13 @@ export const createProductsColumns = ({
       if (images?.length > 0) {
         return (
           <div className="relative h-11 w-11 overflow-hidden rounded-md border bg-muted shrink-0">
-            <Image src={images[0]} alt={name} fill className="object-cover" />
+            <Image
+              src={images[0]}
+              alt={name}
+              fill
+              sizes="44px"
+              className="object-cover"
+            />
           </div>
         );
       }

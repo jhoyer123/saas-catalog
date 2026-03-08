@@ -147,80 +147,91 @@ export type ProductInputServiceUpdate = Omit<
 
 // Este esquema se usa SOLO al activar la oferta.
 // Al desactivar no necesitamos validar nada (solo mandamos is_offer: false).
-export const offerSchema = z
-  .object({
-    is_offer: z.boolean(),
+export const offerSchema = (originalPrice: number) =>
+  z
+    .object({
+      is_offer: z.boolean(),
 
-    offer_price: z
-      .number({ message: "El precio de oferta es obligatorio" })
-      .min(0.01, "El precio debe ser mayor a 0")
-      .optional(),
+      offer_price: z
+        .number({ message: "El precio de oferta es obligatorio" })
+        .min(0.01, "El precio debe ser mayor a 0")
+        .optional(),
 
-    offer_start: z.string().optional(),
-    offer_end: z.string().optional(),
-  })
-  // Solo validamos precio y fechas si is_offer = true
-  .superRefine((data, ctx) => {
-    if (!data.is_offer) return; // desactivando → sin validaciones
+      offer_start: z.string().optional(),
+      offer_end: z.string().optional(),
+    })
+    // Solo validamos precio y fechas si is_offer = true
+    .superRefine((data, ctx) => {
+      if (!data.is_offer) return; // desactivando → sin validaciones
 
-    // precio obligatorio
-    if (!data.offer_price) {
-      ctx.addIssue({
-        code: "custom",
-        message: "El precio de oferta es obligatorio.",
-        path: ["offer_price"],
-      });
-    }
-
-    // fecha inicio obligatoria
-    if (!data.offer_start) {
-      ctx.addIssue({
-        code: "custom",
-        message: "La fecha de inicio es obligatoria.",
-        path: ["offer_start"],
-      });
-    }
-
-    // fecha fin obligatoria
-    if (!data.offer_end) {
-      ctx.addIssue({
-        code: "custom",
-        message: "La fecha de fin es obligatoria.",
-        path: ["offer_end"],
-      });
-    }
-
-    // offer_end posterior a offer_start
-    if (data.offer_start && data.offer_end) {
-      if (new Date(data.offer_end) <= new Date(data.offer_start)) {
+      // precio obligatorio
+      if (!data.offer_price) {
         ctx.addIssue({
           code: "custom",
-          message: "La fecha de fin debe ser posterior a la de inicio.",
-          path: ["offer_end"],
+          message: "El precio de oferta es obligatorio.",
+          path: ["offer_price"],
         });
       }
-    }
 
-    // offer_end en el futuro
-    if (data.offer_end && new Date(data.offer_end) <= new Date()) {
-      ctx.addIssue({
-        code: "custom",
-        message: "La fecha de fin debe ser en el futuro.",
-        path: ["offer_end"],
-      });
-    }
-
-    // offer_start no puede ser en el pasado (tolerancia de 10 minutos)
-    if (data.offer_start) {
-      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-      if (new Date(data.offer_start) < tenMinutesAgo) {
+      // ← validación nueva
+      if (data.offer_price && data.offer_price >= originalPrice) {
         ctx.addIssue({
           code: "custom",
-          message: "La fecha de inicio no puede ser en el pasado.",
+          message: `El precio de oferta debe ser menor al precio original (${originalPrice}).`,
+          path: ["offer_price"],
+        });
+      }
+
+      // fecha inicio obligatoria
+      if (!data.offer_start) {
+        ctx.addIssue({
+          code: "custom",
+          message: "La fecha de inicio es obligatoria.",
           path: ["offer_start"],
         });
       }
-    }
-  });
 
-export type OfferFormValues = z.infer<typeof offerSchema>;
+      // fecha fin obligatoria
+      if (!data.offer_end) {
+        ctx.addIssue({
+          code: "custom",
+          message: "La fecha de fin es obligatoria.",
+          path: ["offer_end"],
+        });
+      }
+
+      // offer_end posterior a offer_start
+      if (data.offer_start && data.offer_end) {
+        if (new Date(data.offer_end) <= new Date(data.offer_start)) {
+          ctx.addIssue({
+            code: "custom",
+            message: "La fecha de fin debe ser posterior a la de inicio.",
+            path: ["offer_end"],
+          });
+        }
+      }
+
+      // offer_end en el futuro
+      if (data.offer_end && new Date(data.offer_end) <= new Date()) {
+        ctx.addIssue({
+          code: "custom",
+          message: "La fecha de fin debe ser en el futuro.",
+          path: ["offer_end"],
+        });
+      }
+
+      // offer_start no puede ser en el pasado (tolerancia de 10 minutos)
+      if (data.offer_start) {
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        if (new Date(data.offer_start) < tenMinutesAgo) {
+          ctx.addIssue({
+            code: "custom",
+            message: "La fecha de inicio no puede ser en el pasado.",
+            path: ["offer_start"],
+          });
+        }
+      }
+    });
+
+//export type OfferFormValues = z.infer<typeof offerSchema>;
+export type OfferFormValues = z.infer<ReturnType<typeof offerSchema>>;

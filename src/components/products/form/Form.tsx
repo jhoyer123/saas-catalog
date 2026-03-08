@@ -66,6 +66,7 @@ export default function FormProduct({
               placeholder: "Ej: Laptop Gamer",
               disabled: isViewMode,
             }}
+            required={true}
           />
 
           <FormSelect
@@ -76,6 +77,7 @@ export default function FormProduct({
             placeholder="Categoría"
             errors={errors}
             disabled={isViewMode}
+            required={true}
           />
         </div>
 
@@ -119,12 +121,15 @@ export default function FormProduct({
               placeholder: "0.00",
               disabled: isViewMode,
             }}
+            required={true}
           />
         </div>
 
         {/* Descripción */}
         <div className="grid gap-2">
-          <Label>Descripción</Label>
+          <Label>
+            Descripción<span className="text-red-500">*</span>
+          </Label>
           <Controller
             name="description"
             control={control}
@@ -145,7 +150,9 @@ export default function FormProduct({
 
         {/* Imágenes */}
         <div className="grid gap-2">
-          <Label>Imágenes del producto</Label>
+          <Label>
+            Imágenes del producto<span className="text-red-500">*</span>
+          </Label>
           <Controller
             name="images"
             control={control}

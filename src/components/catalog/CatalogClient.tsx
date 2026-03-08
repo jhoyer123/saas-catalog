@@ -22,7 +22,12 @@ interface CatalogClientProps {
   categories: { id: string; name: string }[];
   brands: string[];
   banners: Banner[];
-  store: { name: string; slug: string; logo_url: string | null; whatsapp_number: string | null };
+  store: {
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    whatsapp_number: string | null;
+  };
 }
 
 export default function CatalogClient({
@@ -80,7 +85,7 @@ export default function CatalogClient({
   const products = data?.products ?? initialProductData.products;
   const totalPages = data?.totalPages ?? initialProductData.totalPages;
   const total = data?.total ?? initialProductData.total;
-
+  const hasBanners = banners && banners.length > 0;
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
       <Header store={store} onOpenFilters={() => setMobileFiltersOpen(true)} />
@@ -91,39 +96,53 @@ export default function CatalogClient({
         categories={categories}
         brands={brands}
       />
-
-      <div className="max-w-7xl w-full mx-auto py-6">
-        <div className="flex flex-col items-center justify-center lg:flex-row gap-3 px-2">
-          <aside className="hidden lg:block md:w-64 lg:w-72 xl:w-100 shrink-0">
-            <div className="sticky top-4">
+      {/* quitaar ! */}
+      {hasBanners && (
+        <div className="max-w-7xl w-full mx-auto py-6 px-2">
+          <div className="flex gap-3 items-center justify-center">
+            <aside className="hidden lg:block w-90 shrink-0">
               <ProductFilterControls categories={categories} brands={brands} />
+            </aside>
+            <div className="flex-1">
+              <HeroSection banners={banners} />
             </div>
-          </aside>
-          <div className="w-full lg:w-2/3">
-            <HeroSection banners={banners} />
           </div>
         </div>
-      </div>
+      )}
 
       <section className="container w-full max-w-7xl mx-auto px-1">
-        <div className="mb-6 flex flex-col items-start md:flex-row md:items-center lg:justify-between w-full px-4">
-          <h1 className="text-xl font-bold font-poppins text-gray-900 md:text-2xl">
-            Catálogo de Productos
-          </h1>
-          <p className="text-sm font-inter text-gray-600">
-            {total} productos encontrados
-          </p>
+        <div className={`flex gap-6 ${hasBanners ? "py-6" : "py-0"}`}>
+          {/* poner ! */}
+          {!hasBanners && (
+            <aside className="hidden lg:block w-64 xl:w-72 shrink-0 sticky top-4">
+              <ProductFilterControls categories={categories} brands={brands} />
+            </aside>
+          )}
+          <div>
+            <div className="mb-6 flex flex-col items-start md:flex-row md:items-center lg:justify-between w-full px-4">
+              <h1 className="text-xl font-bold font-poppins text-gray-900 md:text-2xl">
+                Catálogo de Productos
+              </h1>
+              <p className="text-sm font-inter text-gray-600">
+                {total} productos encontrados
+              </p>
+            </div>
+
+            <ProductGrid
+              products={products}
+              isLoading={isLoading}
+              hasBanners={hasBanners}
+            />
+
+            {totalPages > 0 && (
+              <ProductPagination
+                totalPages={totalPages}
+                pageSize={12}
+                total={total}
+              />
+            )}
+          </div>
         </div>
-
-        <ProductGrid products={products} isLoading={isLoading} />
-
-        {totalPages > 0 && (
-          <ProductPagination
-            totalPages={totalPages}
-            pageSize={12}
-            total={total}
-          />
-        )}
       </section>
     </main>
   );

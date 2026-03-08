@@ -32,7 +32,7 @@ export function FormOffer({ product, onClose }: FormOfferProps) {
     watch,
     formState: { errors },
   } = useForm<OfferFormValues>({
-    resolver: zodResolver(offerSchema),
+    resolver: zodResolver(offerSchema(product.price)),
     defaultValues: {
       is_offer: product.is_offer,
       offer_price: product.offer_price

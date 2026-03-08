@@ -22,6 +22,7 @@ interface FormSelectProps<T extends FieldValues> {
   placeholder?: string;
   errors?: FieldErrors<T>;
   disabled?: boolean;
+  required?: boolean;
 }
 
 export default function SelectForm<T extends FieldValues>({
@@ -32,10 +33,14 @@ export default function SelectForm<T extends FieldValues>({
   placeholder = "Selecciona una opción",
   errors,
   disabled = false,
+  required = false,
 }: FormSelectProps<T>) {
   return (
     <div className="grid gap-2 w-full">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={name}>
+        {label}
+        {required && <span className="text-red-500">*</span>}
+      </Label>
 
       <Controller
         name={name}

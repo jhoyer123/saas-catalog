@@ -54,7 +54,7 @@ const RichTextEditor = ({ value, onChange, disabled }: Props) => {
 
   return (
     <div>
-      <MenuBar editor={editor} />
+      {!disabled && <MenuBar editor={editor} />}
       <EditorContent editor={editor} />
     </div>
   );

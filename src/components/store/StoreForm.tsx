@@ -108,6 +108,8 @@ const StoreForm = ({ defaultValues }: Props) => {
                 alt="Logo preview"
                 width={128}
                 height={128}
+                loading="eager"
+                priority
                 className="h-full w-full rounded-md object-cover"
               />
             ) : (

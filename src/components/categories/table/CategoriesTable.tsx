@@ -13,6 +13,7 @@ import { useDeleteCategory } from "@/hooks/category/useDeleteCategory";
 import { useToastPromise } from "@/hooks/shared/useToastPromise";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import { DebouncedInput } from "@/components/shared/DebouncedInput";
+import SkeletonTable from "@/components/shared/SkeletonTable";
 
 /**
  * CategoriesTable — self-contained, igual que ProductsTable.
@@ -25,7 +26,7 @@ import { DebouncedInput } from "@/components/shared/DebouncedInput";
  * La página solo renderiza <CategoriesTable /> y el título.
  */
 export function CategoriesTable() {
-  const { data: sessionData } = useSessionData();
+  const { data: sessionData, isPending } = useSessionData();
   const storeId = sessionData?.store?.id!;
 
   // Estado de modales (hook propio, no viene de afuera)
@@ -58,6 +59,10 @@ export function CategoriesTable() {
     () => getCategoriesColumns({ onOpenModal: openModal }),
     [openModal],
   );
+
+  if (isPending || !storeId) {
+    return <SkeletonTable />;
+  }
 
   return (
     <>

@@ -46,8 +46,7 @@ const STATUS_CONFIG: Record<OfferState, StatusConfig> = {
     iconClass: "text-amber-600",
     containerClass: "bg-amber-50 border-amber-200 text-amber-800",
     title: "Sin oferta",
-    description: () =>
-      "Completa el precio y las fechas para activar la oferta.",
+    description: () => "Crea una oferta completando todos los datos.",
   },
   active: {
     icon: CheckCircle2,
@@ -70,7 +69,7 @@ const STATUS_CONFIG: Record<OfferState, StatusConfig> = {
     icon: Clock,
     iconClass: "text-orange-600",
     containerClass: "bg-orange-50 border-orange-200 text-orange-800",
-    title: "Última oferta activada",
+    title: "Esta oferta caducó",
     description: (p) => {
       const end = p.offer_end
         ? new Date(p.offer_end).toLocaleDateString("es-ES", {
@@ -79,7 +78,7 @@ const STATUS_CONFIG: Record<OfferState, StatusConfig> = {
             year: "numeric",
           })
         : null;
-      return `Estos son datos de la última oferta activada. Activa el toggle para volver a activar una nueva oferta.`;
+      return `Crea una nueva, actualizando los datos.`;
     },
   },
   deactivating: {
