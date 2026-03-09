@@ -59,7 +59,7 @@ export default function CatalogClient({
   const sort = searchParams.get("sort") ?? "";
   const pageNum = Number(searchParams.get("page")) || 1;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: [
       "public-products",
       store.slug,
@@ -87,6 +87,8 @@ export default function CatalogClient({
         page: pageNum,
       }),
     staleTime: 5 * 60 * 1000,
+    // Mantiene resultados en memoria 10 min — back-navigation instantáneo
+    gcTime: 10 * 60 * 1000,
     placeholderData: keepPreviousData,
   });
 
@@ -142,11 +144,22 @@ export default function CatalogClient({
               </p>
             </div>
 
-            <ProductGrid
-              products={products}
-              isLoading={isLoading}
-              hasBanners={hasBanners}
-            />
+            {/* Barra de progreso sutil mientras se actualiza con filtros activos */}
+            {isFetching && !isLoading && (
+              <div className="h-0.5 w-full overflow-hidden mb-2 bg-border rounded-full">
+                <div className="h-full w-2/5 bg-primary/50 rounded-full catalog-loading-bar" />
+              </div>
+            )}
+            <div
+              className="transition-opacity duration-200"
+              style={{ opacity: isFetching && !isLoading ? 0.6 : 1 }}
+            >
+              <ProductGrid
+                products={products}
+                isLoading={isLoading}
+                hasBanners={hasBanners}
+              />
+            </div>
 
             {totalPages > 0 && (
               <ProductPagination

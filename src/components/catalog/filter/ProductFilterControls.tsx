@@ -32,6 +32,10 @@ export function ProductFilterControls({
     hasActiveFilters,
     searchInput,
     setSearchInput,
+    priceMinInput,
+    setPriceMinInput,
+    priceMaxInput,
+    setPriceMaxInput,
   } = useProductFilter();
 
   return (
@@ -122,26 +126,16 @@ export function ProductFilterControls({
           <Input
             type="number"
             placeholder="Mín"
-            value={filters.minPrice ?? ""}
-            onChange={(e) =>
-              updateFilter(
-                "minPrice",
-                e.target.value ? parseFloat(e.target.value) : null,
-              )
-            }
+            value={priceMinInput}
+            onChange={(e) => setPriceMinInput(e.target.value)}
             min="0"
             step="10"
           />
           <Input
             type="number"
             placeholder="Máx"
-            value={filters.maxPrice ?? ""}
-            onChange={(e) =>
-              updateFilter(
-                "maxPrice",
-                e.target.value ? parseFloat(e.target.value) : null,
-              )
-            }
+            value={priceMaxInput}
+            onChange={(e) => setPriceMaxInput(e.target.value)}
             min="0"
             step="10"
           />

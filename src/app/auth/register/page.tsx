@@ -48,9 +48,22 @@ export default function Register() {
         {/* header */}
         <header className="mb-8 text-center flex flex-col gap-2 px-4">
           {/* logo */}
-          <span className="text-2xl font-black tracking-tighter leading-none font-poppins">
-            JVG
-          </span>
+          <div className="relative mx-auto mb-8 flex items-center justify-center">
+            {/* Glow exterior */}
+            <div className="absolute w-44 h-44 rounded-full bg-[#FCC4CA]/20 blur-3xl" />
+
+            {/* Contenedor del logo */}
+            <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
+              <Image
+                src="/images/logoCat.webp"
+                alt="JhoyLabs Logo"
+                width={80}
+                height={80}
+                priority
+                className="object-contain"
+              />
+            </div>
+          </div>
           <h1 className="text-3xl font-bold">Registrarse</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Completa el formulario para crear tu cuenta y empezar a gestionar tu

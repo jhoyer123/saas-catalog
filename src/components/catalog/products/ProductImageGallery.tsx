@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
@@ -24,15 +25,34 @@ export function ProductImageGallery({
   const goToNext = () =>
     setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
 
+  const lightbox = zoomed
+    ? createPortal(
+        <div
+          className="fixed inset-0 z-9999 flex items-center justify-center bg-black/92 backdrop-blur-sm p-4 cursor-zoom-out"
+          onClick={() => setZoomed(false)}
+        >
+          <div className="relative max-h-[90vh] max-w-[90vw] aspect-3/4 w-full overflow-hidden">
+            <Image
+              src={images[currentIndex]}
+              alt={productName}
+              fill
+              className="object-contain"
+              sizes="90vw"
+            />
+          </div>
+          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-xs tracking-widest uppercase">
+            Toca para cerrar
+          </p>
+        </div>,
+        document.body,
+      )
+    : null;
+
   return (
     <>
       {/* ── DESKTOP (md+) ── */}
-      <div className="hidden md:flex md:flex-col md:gap-3">
-        {/* Main image */}
-        <div
-          className="relative w-full overflow-hidden rounded-2xl bg-gray-50 group"
-          style={{ aspectRatio: "3/4" }}
-        >
+      <div className="hidden lg:flex lg:flex-col lg:gap-3">
+        <div className="relative w-full max-w-150 mx-auto overflow-hidden rounded-2xl bg-gray-50 group aspect-square">
           {badge && (
             <span className="absolute left-4 top-4 z-10 rounded-full bg-black/80 backdrop-blur-sm px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase text-white">
               {badge}
@@ -51,7 +71,6 @@ export function ProductImageGallery({
             alt={`${productName} - Imagen ${currentIndex + 1}`}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-            priority
             sizes="(max-width: 1280px) 50vw, 640px"
           />
 
@@ -73,9 +92,8 @@ export function ProductImageGallery({
           )}
         </div>
 
-        {/* Thumbnails DEBAJO — sin border, solo opacidad + underline activo */}
         {images.length > 1 && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center justify-center">
             {images.map((image, index) => (
               <button
                 key={index}
@@ -95,10 +113,9 @@ export function ProductImageGallery({
                     alt={`${productName} ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="72px"
                   />
                 </div>
-                {/* Underline premium — aparece solo en activo */}
                 <span
                   className={`block h-0.5 rounded-full transition-all duration-300 ${
                     index === currentIndex
@@ -113,11 +130,8 @@ export function ProductImageGallery({
       </div>
 
       {/* ── MOBILE (< md) ── */}
-      <div className="flex flex-col gap-3 md:hidden">
-        <div
-          className="relative w-full overflow-hidden bg-gray-50"
-          style={{ aspectRatio: "3/4" }}
-        >
+      <div className="flex flex-col gap-3 lg:hidden">
+        <div className="relative w-full overflow-hidden bg-gray-50 aspect-square">
           {badge && (
             <span className="absolute left-4 top-4 z-10 rounded-full bg-black/80 backdrop-blur-sm px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase text-white">
               {badge}
@@ -130,7 +144,7 @@ export function ProductImageGallery({
             fill
             className="object-cover"
             priority
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="100vw"
           />
 
           {images.length > 1 && (
@@ -151,9 +165,8 @@ export function ProductImageGallery({
           )}
         </div>
 
-        {/* Mobile thumbnails */}
         {images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide w-full justify-center">
             {images.map((image, index) => (
               <button
                 key={index}
@@ -187,26 +200,8 @@ export function ProductImageGallery({
         )}
       </div>
 
-      {/* ── ZOOM LIGHTBOX ── */}
-      {zoomed && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/92 backdrop-blur-sm p-4 cursor-zoom-out"
-          onClick={() => setZoomed(false)}
-        >
-          <div className="relative max-h-[90vh] max-w-[90vw] aspect-3/4 w-full overflow-hidden">
-            <Image
-              src={images[currentIndex]}
-              alt={productName}
-              fill
-              className="object-contain"
-              sizes="90vw"
-            />
-          </div>
-          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-xs tracking-widest uppercase">
-            Toca para cerrar
-          </p>
-        </div>
-      )}
+      {/* ── LIGHTBOX — montado en document.body via portal ── */}
+      {lightbox}
     </>
   );
 }

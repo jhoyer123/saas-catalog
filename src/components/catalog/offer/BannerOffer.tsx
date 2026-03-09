@@ -60,7 +60,7 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
             <Image
               src={banner.image_url}
               alt={`Banner ${index + 1}`}
-              quality={80}
+              quality={75}
               fill
               sizes="(max-width: 768px) 100vw, 80vw"
               className="object-cover pointer-events-none"

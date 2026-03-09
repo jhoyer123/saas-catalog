@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { processImage } from "@/lib/helpers/image";
+import { ImageHint } from "../shared/ImageHint";
 
 interface Props {
   defaultValues?: Store;
@@ -126,6 +127,9 @@ const StoreForm = ({ defaultValues }: Props) => {
           {errors.logo && (
             <p className="text-sm text-red-500">{errors.logo.message}</p>
           )}
+          <div className="w-auto">
+            <ImageHint typeElement="logo" />
+          </div>
         </div>
 
         <div className="grid gap-2 w-1/2">

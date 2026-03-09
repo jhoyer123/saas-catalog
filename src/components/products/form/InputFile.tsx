@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Upload, X, Plus } from "lucide-react";
+import { Upload, X, Plus, Info } from "lucide-react";
 import type { UseFormSetValue } from "react-hook-form";
 import { toast } from "sonner";
 //helpers
@@ -10,11 +10,9 @@ import {
   processImage,
 } from "@/lib/helpers/image";
 import { BannerCard, ProductCard } from "@/components/image/ImageCardStore";
+import { ImageHint } from "@/components/shared/ImageHint";
 
-// ============================================
 // TYPES
-// ============================================
-
 export interface ImagePreview {
   file: File;
   url: string;
@@ -220,6 +218,8 @@ export default function InputFile({
 
   return (
     <div className="space-y-3">
+      <ImageHint typeElement={typeElement} disabled={disabled} />
+
       {/* Input oculto */}
       <input
         ref={inputRef}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { ProductCatalog } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
 import { ProductImageGallery } from "@/components/catalog/products/ProductImageGallery";
@@ -26,14 +27,22 @@ export default function ProductDetailClient({
   store,
 }: ProductDetailClientProps) {
   const router = useRouter();
+  const [headerHeight, setHeaderHeight] = useState(0);
 
-  // TanStack Query: usa la data del servidor como initialData,
-  // revalida en background sin petición extra en la primera carga
+  useEffect(() => {
+    const header = document.getElementById("catalog-header");
+    if (!header) return;
+    const ro = new ResizeObserver(() => setHeaderHeight(header.offsetHeight));
+    ro.observe(header);
+    setHeaderHeight(header.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
   const { data: product } = useQuery({
     queryKey: ["public-product", initialProduct.slug],
     queryFn: () => getPublicProductBySlug(initialProduct.slug),
     initialData: initialProduct,
-    staleTime: 5 * 60 * 1000, // 5 min antes de revalidar
+    staleTime: 5 * 60 * 1000,
   });
 
   const getBadge = () => {
@@ -46,6 +55,8 @@ export default function ProductDetailClient({
       <div className="hidden md:block">
         <Header store={store} />
       </div>
+      {/* Spacer dinámico igual que en CatalogClient */}
+      <div className="hidden md:block" style={{ height: headerHeight }} />
 
       <div className="container mx-auto px-4 py-3">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2">
@@ -55,8 +66,11 @@ export default function ProductDetailClient({
       </div>
 
       <section className="container mx-auto px-2 pb-6">
-        <div className="w-full max-w-5xl mx-auto grid gap-8 lg:grid-cols-2 lg:gap-7 justify-center items-center content-center">
-          <div className="lg:sticky lg:top-4 lg:self-start">
+        <div className="w-full max-w-5xl mx-auto grid gap-8 lg:grid-cols-2 lg:gap-7 justify-center items-start">
+          <div
+            className="lg:sticky lg:self-start"
+            style={{ top: headerHeight + 16 }}
+          >
             <ProductImageGallery
               images={product.images}
               productName={product.name}

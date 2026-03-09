@@ -41,7 +41,14 @@ export async function middleware(request: NextRequest) {
     return redirectWithCookies("/auth/login", request, response);
   }
 
-  if (user && request.nextUrl.pathname.startsWith("/auth")) {
+  // Excluir /auth/callback y /auth/reset-password del redirect automático.
+  // - /auth/callback: necesita procesar el token sin importar el estado de sesión.
+  // - /auth/reset-password: tras procesar el token de recovery, el usuario queda
+  //   con sesión activa pero DEBE poder acceder al formulario para cambiar su contraseña.
+  const pathname = request.nextUrl.pathname;
+  const isAuthExcluded =
+    pathname === "/auth/callback" || pathname === "/auth/reset-password";
+  if (user && pathname.startsWith("/auth") && !isAuthExcluded) {
     return redirectWithCookies("/dashboard/panel", request, response);
   }
 

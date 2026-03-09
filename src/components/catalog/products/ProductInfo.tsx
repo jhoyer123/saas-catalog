@@ -1,7 +1,7 @@
 "use client";
 
 import { ProductCatalog } from "@/types/product.types";
-import { ShoppingCart, MessageCircle, Star } from "lucide-react";
+import { ShoppingCart, MessageCircle, Star, Sparkles } from "lucide-react";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,57 @@ import { useSessionData } from "@/hooks/auth/useSessionData";
 interface ProductInfoProps {
   product: ProductCatalog;
 }
+
+// ─── Badge config ───────────────────────────────────────────────
+type BadgeType = "featured" | "recommended" | null;
+
+const BADGE_CONFIG: Record<
+  NonNullable<BadgeType>,
+  {
+    label: string;
+    icon: React.ReactNode;
+    className: string;
+  }
+> = {
+  featured: {
+    icon: <Star className="h-3.5 w-3.5" />,
+    label: "Destacado",
+    className:
+      "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-200/60 shadow-sm",
+  },
+
+  recommended: {
+    icon: <Sparkles className="h-3.5 w-3.5" />,
+    label: "Recomendado",
+    className:
+      "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200/60 shadow-sm",
+  },
+};
+
+function ProductBadge({ type }: { type: BadgeType }) {
+  if (!type) return null;
+
+  const { icon, label, className } = BADGE_CONFIG[type];
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1",
+        "text-[11px] font-semibold tracking-wide",
+        "transition-all duration-200",
+        "backdrop-blur-sm",
+        className,
+      )}
+    >
+      {icon}
+      {label}
+    </span>
+  );
+}
+
+// ─── Cambiar este valor por producto cuando tengas BD ───────────
+// Ejemplo futuro: const badge: BadgeType = product.badge ?? null;
+const DEMO_BADGE: BadgeType = "featured"; // ← cambia aquí mientras tanto
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const addItem = useCartStore((s) => s.addItem);
@@ -24,7 +75,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
     ? Math.round(((product.price - product.offer_price!) / product.price) * 100)
     : 0;
 
-  /** Agrega el producto al carrito con su info básica */
   const handleAddToCart = () => {
     addItem({
       id: product.id,
@@ -35,7 +85,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
     toast.success("Producto agregado al carrito", { position: "bottom-right" });
   };
 
-  //whatsapp number
   const { data } = useSessionData();
   const telefono = data?.store?.whatsapp_number;
 
@@ -53,27 +102,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
         {product.name}
       </h1>
 
-      {/* ── RATING (decorative – wire up your real data) ── */}
-      <div className="mt-3 flex items-center gap-2">
-        <div className="flex">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Star
-              key={i}
-              className={cn(
-                "h-4 w-4",
-                i <= 4
-                  ? "fill-amber-400 text-amber-400"
-                  : "fill-gray-200 text-gray-200",
-              )}
-            />
-          ))}
-        </div>
-        <span className="text-sm font-medium text-gray-500">4.0 / 5.0</span>
-        <span className="text-sm text-gray-400">(128 reseñas)</span>
+      {/* ── BADGE (reemplaza las estrellas) ── */}
+      <div className="flex flex-wrap items-center justify-center gap-2 my-5">
+        <ProductBadge type="featured" />
+        <ProductBadge type="recommended" />
       </div>
-
-      {/* ── DIVIDER ── */}
-      <div className="my-5 h-px bg-linear-to-r from-transparent via-gray-200 to-transparent" />
 
       {/* ── PRICING ── */}
       <div className="flex items-end gap-4 flex-wrap justify-center">
@@ -107,9 +140,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
         />
       </div>
 
-      {/* ── CTA BUTTONS (sticky on mobile) ── */}
+      {/* ── CTA BUTTONS ── */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        {/* Add to Cart */}
         <Button
           onClick={handleAddToCart}
           disabled={!product.is_available}
@@ -119,7 +151,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
           Agregar al Carrito
         </Button>
 
-        {/* WhatsApp / Request */}
         <a
           href={`https://wa.me/${telefono}?text=${encodeURIComponent(
             `Hola! Me interesa el producto: ${product.name} - Bs. ${displayPrice!.toFixed(2)}`,

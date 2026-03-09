@@ -20,7 +20,7 @@ export const useLogin = (): UseMutationResult<
     mutationFn: signInUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      router.push("/dashboard/panel");
+      //router.push("/dashboard/panel");
     },
   });
 };
