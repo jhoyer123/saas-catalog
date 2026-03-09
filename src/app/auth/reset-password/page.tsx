@@ -1,46 +1,75 @@
 "use client";
-
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/supabaseClient";
+import InputPassword from "@/components/auth/InputPassword";
+import { useState, useEffect } from "react";
+
+const schema = z
+  .object({
+    password: z
+      .string()
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirm: z.string(),
+  })
+  .refine((data) => data.password === data.confirm, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirm"],
+  });
+
+type FormValues = z.infer<typeof schema>;
 
 export default function ResetPassword() {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
+  const [serverError, setServerError] = useState("");
+  const [sessionReady, setSessionReady] = useState(false);
 
-  const handleSubmit = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    setError("");
+  // Verificar que hay sesión activa antes de mostrar el form
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        // No hay sesión — el link expiró o ya fue usado
+        router.replace("/auth/forgot-password?reason=expired");
+        return;
+      }
+      setSessionReady(true);
+    });
+  }, []);
 
-    if (password !== confirm) {
-      setError("Las contraseñas no coinciden");
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+  });
 
-    if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
-      return;
-    }
-
-    setIsPending(true);
+  const onSubmit = async ({ password }: FormValues) => {
+    setServerError("");
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setError(error.message);
-      setIsPending(false);
+      setServerError(error.message);
       return;
     }
 
-    // Cerrar sesión para que el middleware no redirija a /dashboard
     await supabase.auth.signOut();
-
-    router.push("/auth/login");
+    router.push("/auth/login?reset=true"); // ← toast de éxito en login
   };
+
+  // Mientras verifica la sesión
+  if (!sessionReady) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-black">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 dark:bg-black">
@@ -52,49 +81,48 @@ export default function ResetPassword() {
         priority
       />
       <main className="w-full max-w-md p-6 relative z-10">
-        <header className="mb-8 text-center flex flex-col gap-2">
-          <span className="text-2xl font-black tracking-tighter font-poppins">
-            JVG
-          </span>
+        <header className="mb-8 text-center flex flex-col gap-2 items-center">
+          <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
+            <Image
+              src="/images/logoCat.webp"
+              alt="JhoyLabs Logo"
+              width={80}
+              height={80}
+              priority
+              className="object-contain"
+            />
+          </div>
           <h1 className="text-3xl font-bold">Nueva contraseña</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Ingresa tu nueva contraseña.
           </p>
         </header>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 px-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Nueva contraseña</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="border rounded-md px-3 py-2 text-sm dark:bg-zinc-900 dark:border-zinc-700"
-            />
-          </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-6 px-4"
+        >
+          <InputPassword<FormValues>
+            label="Nueva contraseña"
+            name="password"
+            register={register}
+            errors={errors}
+          />
+          <InputPassword<FormValues>
+            label="Confirmar contraseña"
+            name="confirm"
+            register={register}
+            errors={errors}
+          />
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Confirmar contraseña</label>
-            <input
-              type="password"
-              required
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="••••••••"
-              className="border rounded-md px-3 py-2 text-sm dark:bg-zinc-900 dark:border-zinc-700"
-            />
-          </div>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {serverError && <p className="text-red-500 text-sm">{serverError}</p>}
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isSubmitting}
             className="bg-black text-white rounded-md py-2 text-sm font-medium disabled:opacity-50"
           >
-            {isPending ? "Guardando..." : "Guardar contraseña"}
+            {isSubmitting ? "Guardando..." : "Guardar contraseña"}
           </button>
         </form>
       </main>

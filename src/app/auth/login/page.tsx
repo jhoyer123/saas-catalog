@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useLogin } from "@/hooks/auth/useLogin";
 import { useToastPromise } from "@/hooks/shared/useToastPromise";
 
@@ -10,18 +9,42 @@ import { LoginData } from "@/lib/schemas/auth";
 import FormLogin from "@/components/auth/FormLogin";
 import Image from "next/image";
 
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+
 export default function Login() {
   const { showPromise } = useToastPromise();
   const { mutateAsync: login, isPending } = useLogin();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const router = useRouter();
 
+  // al inicio del componente, reemplazá el bloque del verified
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("verified") === "true") {
+      toast.success("¡Correo verificado!", {
+        description: "Ya podés iniciar sesión con tu cuenta.",
+        duration: 10000,
+        action: {
+          label: "Ok",
+          onClick: () => {},
+        },
+      });
+    }
+    // en el useEffect del login, agregás el caso reset
+    if (searchParams.get("reset") === "true") {
+      toast.success("Contraseña actualizada", {
+        description: "Ya podés iniciar sesión con tu nueva contraseña.",
+        duration: 10000,
+        action: { label: "Ok", onClick: () => {} },
+      });
+    }
+  }, []);
+
   const handleLogin = (data: LoginData) => {
     showPromise({
       promise: login(data).then((result) => {
-        // .then() se ejecuta cuando login es exitoso,
-        // ANTES de que sonner muestre el mensaje success
-        // así el spinner aparece exactamente en el punto ciego
         setIsRedirecting(true);
         router.push("/dashboard/panel");
         return result;
