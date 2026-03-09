@@ -36,6 +36,9 @@ export default function ResetPassword() {
       return;
     }
 
+    // Cerrar sesión para que el middleware no redirija a /dashboard
+    await supabase.auth.signOut();
+
     router.push("/auth/login");
   };
 

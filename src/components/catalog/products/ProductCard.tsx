@@ -70,11 +70,12 @@ export function ProductCard({ product }: ProductCardProps) {
         className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
       >
         <Image
-          src={product.images[0]?.image_url || "/images/placeholder.png"}
+          src={product.images[0]?.image_url || "/images/placeholder.webp"}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          loading="lazy"
         />
 
         {discountPercent && (

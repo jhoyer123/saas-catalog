@@ -98,7 +98,9 @@ const StoreForm = ({ defaultValues }: Props) => {
       <div className="flex flex-col w-full gap-5 md:flex-row">
         {/* Logo */}
         <div className="grid gap-2 w-1/2">
-          <Label className="font-medium text-sm">Logo de la Tienda</Label>
+          <Label className="font-medium text-sm">
+            Logo de la Tienda <span className="text-red-500">*</span>
+          </Label>
           <div
             onClick={() => fileInputRef.current?.click()}
             className="border-input dark:bg-input/30 flex h-32 w-32 cursor-pointer items-center mx-auto justify-center rounded-md border border-dashed transition hover:opacity-80"
@@ -140,6 +142,7 @@ const StoreForm = ({ defaultValues }: Props) => {
             register={register}
             inputProps={{ placeholder: "Mi tienda" }}
             errors={errors}
+            required
           />
 
           {/* WhatsApp */}
@@ -149,6 +152,7 @@ const StoreForm = ({ defaultValues }: Props) => {
             register={register}
             inputProps={{ placeholder: "12345678" }}
             errors={errors}
+            required
           />
         </div>
       </div>

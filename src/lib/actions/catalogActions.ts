@@ -29,7 +29,12 @@ export const getPublicStore = unstable_cache(
       .eq("slug", storeSlug)
       .single();
     if (error || !data) throw new Error("Tienda no encontrada");
-    return data as { name: string; slug: string; logo_url: string | null; whatsapp_number: string | null };
+    return data as {
+      name: string;
+      slug: string;
+      logo_url: string | null;
+      whatsapp_number: string | null;
+    };
   },
   ["public-store"],
   { revalidate: 3600, tags: ["store"] },
@@ -199,7 +204,6 @@ export const getPublicProducts = unstable_cache(
         `
       id, name, price, is_offer, offer_price, offer_start, offer_end,
       brand, slug, is_available,
-      category:categories(id, name),
       images:product_images(image_url)
       `,
         { count: "exact" },

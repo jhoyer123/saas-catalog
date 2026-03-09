@@ -23,7 +23,10 @@ const Header: React.FC<HeaderProps> = ({ store, onOpenFilters }) => {
   const { searchInput, setSearchInput } = useProductFilter();
 
   return (
-    <header id="catalog-header" className="bg-white border-b w-full fixed top-0 left-0 right-0 z-20">
+    <header
+      id="catalog-header"
+      className="bg-white border-b w-full fixed top-0 left-0 right-0 z-20"
+    >
       <div className="container mx-auto py-2 flex flex-col items-center justify-between gap-4 md:py-1">
         {/* Logo - name store*/}
         <div className="flex items-center justify-between w-full px-4">
@@ -38,7 +41,9 @@ const Header: React.FC<HeaderProps> = ({ store, onOpenFilters }) => {
             />
           </Link>
           {/* name store */}
-          <h1 className="text-2xl font-semibold text-gray-800">{store.name}</h1>
+          <h1 className="text-2xl font-semibold text-gray-800 text-wrap text-center flex items-center justify-center">
+            {store.name}
+          </h1>
           {/* Carrito de compras */}
           <CartButton whatsappNumber={store.whatsapp_number} />
         </div>
