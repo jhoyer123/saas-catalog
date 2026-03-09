@@ -120,7 +120,11 @@ export default function PanelPage({
               className="w-fit"
               disabled={!canShowCatalog}
               onClick={() =>
-                canShowCatalog && window.open(`/public/${store.slug}`, "_blank")
+                canShowCatalog &&
+                window.open(
+                  `https://saas-catalog.vercel.app/public/${store.slug}`,
+                  "_blank",
+                )
               }
             >
               <ExternalLink className="w-4 h-4 mr-2" />
