@@ -1,24 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useLogin } from "@/hooks/auth/useLogin";
 import { useToastPromise } from "@/hooks/shared/useToastPromise";
-
 import { LoginData } from "@/lib/schemas/auth";
 import FormLogin from "@/components/auth/FormLogin";
 import Image from "next/image";
-
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-export default function Login() {
-  const { showPromise } = useToastPromise();
-  const { mutateAsync: login, isPending } = useLogin();
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  const router = useRouter();
-
-  // al inicio del componente, reemplazá el bloque del verified
+// ← componente separado que usa useSearchParams
+function SearchParamsToast() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -26,13 +19,9 @@ export default function Login() {
       toast.success("¡Correo verificado!", {
         description: "Ya podés iniciar sesión con tu cuenta.",
         duration: 10000,
-        action: {
-          label: "Ok",
-          onClick: () => {},
-        },
+        action: { label: "Ok", onClick: () => {} },
       });
     }
-    // en el useEffect del login, agregás el caso reset
     if (searchParams.get("reset") === "true") {
       toast.success("Contraseña actualizada", {
         description: "Ya podés iniciar sesión con tu nueva contraseña.",
@@ -41,6 +30,15 @@ export default function Login() {
       });
     }
   }, []);
+
+  return null; // no renderiza nada visual
+}
+
+export default function Login() {
+  const { showPromise } = useToastPromise();
+  const { mutateAsync: login, isPending } = useLogin();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const router = useRouter();
 
   const handleLogin = (data: LoginData) => {
     showPromise({
@@ -53,7 +51,7 @@ export default function Login() {
         loading: "Iniciando sesión...",
         success: () => "¡Sesión iniciada exitosamente!",
         error: (error) => {
-          setIsRedirecting(false); // si falla, apaga el spinner
+          setIsRedirecting(false);
           return `Error: ${error.message}`;
         },
       },
@@ -82,14 +80,17 @@ export default function Login() {
         className="object-fill opacity-50 relative z-0"
         priority
       />
+
+      {/* ← Suspense requerido por Next.js para useSearchParams en build */}
+      <Suspense fallback={null}>
+        <SearchParamsToast />
+      </Suspense>
+
       <main className="w-full max-w-md p-6 flex relative z-10">
         <div className="flex-1/2">
           <header className="text-center mb-8">
             <div className="relative mx-auto mb-8 flex items-center justify-center">
-              {/* Glow exterior */}
               <div className="absolute w-44 h-44 rounded-full bg-[#FCC4CA]/20 blur-3xl" />
-
-              {/* Contenedor del logo */}
               <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
                 <Image
                   src="/images/logoCat.webp"
