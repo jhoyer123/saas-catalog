@@ -67,12 +67,12 @@ export function CategoriesTable() {
   return (
     <>
       {/* Botón para crear — abre el modal en modo "create" */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight font-poppins">
+      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-xl font-bold tracking-tight font-poppins md:text-2xl">
             Lista de Categorías
           </h1>
-          <p className="text-muted-foreground font-inter">
+          <p className="text-sm text-muted-foreground font-inter lg:text-md">
             Gestiona las categorías de tus productos
           </p>
         </div>

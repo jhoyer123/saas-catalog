@@ -23,7 +23,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     <div className="h-full w-full py-6 px-4">
       <div className="max-w-4xl w-full mx-auto flex flex-col gap-6">
         <div className="flex items-center justify-between">
-          <h1>Detalles del producto</h1>
+          <h1 className="text-xl font-poppins">Detalles del producto</h1>
           <Button variant="default" asChild>
             <Link href="/dashboard/products">Volver</Link>
           </Button>

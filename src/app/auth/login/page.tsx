@@ -86,7 +86,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center overflow-y-auto">
       {/* ← Suspense requerido por Next.js para useSearchParams en build */}
       <Suspense fallback={null}>
         <SearchParamsToast />

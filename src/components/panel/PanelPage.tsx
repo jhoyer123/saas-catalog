@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import type { Store as StoreType } from "@/types/store.types";
 
+import { Copy, Check } from "lucide-react";
+import { useState } from "react";
+
 interface DashboardPageProps {
   hasProducts?: boolean;
   store?: StoreType | null;
@@ -27,6 +30,7 @@ export default function PanelPage({
     store?.logo_url &&
     store?.is_active
   );
+  // El catálogo solo se muestra si la tienda está completa y tiene al menos un producto
   const canShowCatalog = storeIsComplete && hasProducts;
 
   // Steps para onboarding
@@ -46,6 +50,19 @@ export default function PanelPage({
   ];
 
   const allDone = steps.every((s) => s.done);
+
+  // Copiar URL del catálogo
+  const [copied, setCopied] = useState(false);
+
+  const catalogUrl = store?.slug
+    ? `saas-catalog.vercel.app/public/${store.slug}`
+    : "";
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(catalogUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <section className="mx-auto max-w-4xl w-full space-y-8 p-4">
@@ -111,8 +128,20 @@ export default function PanelPage({
             <p className="text-sm text-gray-500">
               Comparte este enlace con tus clientes.
             </p>
-            <div className="bg-gray-50 rounded px-3 py-2 text-sm text-gray-500 truncate font-mono">
-              saas-catalog.vercel.app/public/{store.slug}
+            <div className="bg-gray-50 rounded px-3 py-2 flex items-center justify-between gap-2">
+              <span className="text-sm text-gray-500 truncate font-mono">
+                {catalogUrl}
+              </span>
+              <button
+                onClick={handleCopy}
+                className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
+              >
+                {copied ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </button>
             </div>
             <Button
               variant="outline"
@@ -120,11 +149,7 @@ export default function PanelPage({
               className="w-fit"
               disabled={!canShowCatalog}
               onClick={() =>
-                canShowCatalog &&
-                window.open(
-                  `/public/${store.slug}`,
-                  "_blank",
-                )
+                canShowCatalog && window.open(`/public/${store.slug}`, "_blank")
               }
             >
               <ExternalLink className="w-4 h-4 mr-2" />

@@ -276,7 +276,7 @@ export function DataTableServer<TData>({
       </div>
 
       {/* PAGINATION */}
-      <div className="flex flex-col md:flex-row items-center justify-between px-2">
+      <div className="flex flex-col gap-2 md:flex-row items-center justify-between px-2">
         {/* Contador de resultados */}
         <div className="flex-1 text-sm text-muted-foreground">
           Mostrando{" "}
@@ -289,7 +289,7 @@ export function DataTableServer<TData>({
           de {totalRows} resultado(s)
         </div>
 
-        <div className="flex flex-col md:flex-row items-center space-x-6 lg:space-x-8">
+        <div className="flex flex-col gap-2 md:flex-row items-center space-x-6 lg:space-x-8">
           {/* Selector de filas por página */}
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Filas por página</p>

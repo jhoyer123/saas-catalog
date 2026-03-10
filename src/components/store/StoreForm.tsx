@@ -134,7 +134,7 @@ const StoreForm = ({ defaultValues }: Props) => {
           </div>
         </div>
 
-        <div className="grid gap-2 w-1/2">
+        <div className="grid gap-2 w-full md:w-1/2">
           {/* Nombre */}
           <FormInput
             label="Nombre de la Tienda"

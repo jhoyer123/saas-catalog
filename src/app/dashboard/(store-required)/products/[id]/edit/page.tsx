@@ -21,8 +21,8 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="h-full w-full py-6 px-4">
       <div className="max-w-4xl w-full mx-auto flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1>Editar producto</h1>
+        <div className="flex flex-col gap-4 items-center justify-between  mb-4 lg:flex-row">
+          <h1 className="font-poppins text-xl md:text-2xl">Editar producto</h1>
 
           <div className="flex gap-5">
             <Button variant="secondary" asChild>

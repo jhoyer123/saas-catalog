@@ -12,8 +12,10 @@ export default function Page() {
   return (
     <div className="h-full w-full py-6 px-4">
       <div className="max-w-4xl w-full mx-auto flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1>Crear nuevo producto</h1>
+        <div className="flex flex-col gap-4 items-center justify-between lg:flex-row mb-4">
+          <h1 className="font-poppins text-xl md:text-2xl">
+            Crear nuevo producto
+          </h1>
           <div className="flex gap-5">
             <Button variant="secondary" asChild>
               <Link href="/dashboard/products">Cancelar y volver</Link>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Info,
   ImageIcon,
@@ -29,7 +30,6 @@ const IMAGE_HINTS = {
       { icon: Info, text: "La plataforma optimiza la imagen automáticamente" },
     ],
   },
-
   banner: {
     short: "Guía de imagen",
     title: "Imagen de banner",
@@ -42,7 +42,6 @@ const IMAGE_HINTS = {
       { icon: Info, text: "La plataforma ajusta la imagen automáticamente" },
     ],
   },
-
   logo: {
     short: "Guía de imagen",
     title: "Logo de tu tienda",
@@ -64,16 +63,26 @@ interface ImageHintProps {
 }
 
 export function ImageHint({ typeElement, disabled }: ImageHintProps) {
+  const [open, setOpen] = useState(false);
+
   if (disabled) return null;
 
   const hint = IMAGE_HINTS[typeElement];
   const isBanner = hint.preview === "banner";
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setOpen((prev) => !prev);
+  };
+
   return (
     <TooltipProvider delayDuration={150}>
-      <Tooltip>
+      <Tooltip open={open} onOpenChange={setOpen}>
         <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-help transition-colors">
+          <span
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-help transition-colors"
+            onClick={handleClick}
+          >
             <Info className="w-3.5 h-3.5" />
             {hint.short}
           </span>
@@ -85,7 +94,6 @@ export function ImageHint({ typeElement, disabled }: ImageHintProps) {
           className="w-64 p-4 rounded-xl shadow-xl bg-background border"
         >
           <div className="flex flex-col gap-3">
-            {/* Title */}
             <div className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-foreground/80" />
               <p className="text-sm font-semibold text-foreground">
@@ -93,20 +101,17 @@ export function ImageHint({ typeElement, disabled }: ImageHintProps) {
               </p>
             </div>
 
-            {/* Description */}
             <p className="text-xs text-muted-foreground leading-relaxed">
               {hint.description}
             </p>
 
-            {/* Preview */}
             <div className="flex items-center gap-3 rounded-md border bg-muted/30 p-2">
               <div
                 className={`border border-dashed rounded flex items-center justify-center text-[10px] text-muted-foreground
-                ${isBanner ? "w-16 h-6" : "w-10 h-10"}`}
+                  ${isBanner ? "w-16 h-6" : "w-10 h-10"}`}
               >
                 {isBanner ? "Banner" : "1:1"}
               </div>
-
               <span className="text-xs text-muted-foreground">
                 {isBanner
                   ? "Imagen panorámica similar a portadas."
@@ -114,11 +119,9 @@ export function ImageHint({ typeElement, disabled }: ImageHintProps) {
               </span>
             </div>
 
-            {/* Tips */}
             <div className="flex flex-col gap-2">
               {hint.tips.map((tip, i) => {
                 const Icon = tip.icon;
-
                 return (
                   <div
                     key={i}

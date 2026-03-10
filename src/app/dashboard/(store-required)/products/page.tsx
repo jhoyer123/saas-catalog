@@ -6,12 +6,12 @@ export default function DashboardPage() {
   return (
     <section className="p-4">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+        <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-xl font-bold tracking-tight md:text-2xl font-poppins">
               Lista de Productos
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-inter lg:text-md">
               Gestiona y administra tu catálogo de productos
             </p>
           </div>
