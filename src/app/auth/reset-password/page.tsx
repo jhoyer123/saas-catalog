@@ -64,22 +64,26 @@ export default function ResetPassword() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 dark:bg-black">
       <Image
         src="/images/backgroundAuth.webp"
-        alt="Fondo"
+        alt=""
         fill
-        className="object-cover opacity-50 z-0"
-        priority
+        sizes="100vw"
+        quality={60}
+        className="object-cover opacity-50 relative z-0"
+        loading="lazy"
       />
       <main className="w-full max-w-md p-6 relative z-10">
         <header className="mb-8 text-center flex flex-col gap-2 items-center">
-          <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
-            <Image
-              src="/images/logoCat.webp"
-              alt="JhoyLabs Logo"
-              width={80}
-              height={80}
-              priority
-              className="object-contain"
-            />
+          <div className="relative mx-auto mb-8 flex items-center justify-center">
+            <div className="relative w-32 h-32 rounded-2xl bg-background border shadow-xl flex items-center justify-center">
+              <Image
+                src="/images/logoCat.webp"
+                alt="JhoyLabs Logo"
+                width={80}
+                height={80}
+                priority
+                className="object-contain"
+              />
+            </div>
           </div>
           <h1 className="text-3xl font-bold">Nueva contraseña</h1>
           <p className="text-gray-600 dark:text-gray-400">

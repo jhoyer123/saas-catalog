@@ -75,10 +75,12 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center">
       <Image
         src="/images/backgroundAuth.webp"
-        alt="Fondo de Login"
+        alt=""
         fill
-        className="object-fill opacity-50 relative z-0"
-        priority
+        sizes="100vw"
+        quality={60}
+        className="object-cover opacity-50 relative z-0"
+        loading="lazy"
       />
 
       {/* ← Suspense requerido por Next.js para useSearchParams en build */}
@@ -90,8 +92,7 @@ export default function Login() {
         <div className="flex-1/2">
           <header className="text-center mb-8">
             <div className="relative mx-auto mb-8 flex items-center justify-center">
-              <div className="absolute w-44 h-44 rounded-full bg-[#FCC4CA]/20 blur-3xl" />
-              <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
+              <div className="relative w-32 h-32 rounded-2xl bg-background border shadow-xl flex items-center justify-center">
                 <Image
                   src="/images/logoCat.webp"
                   alt="JhoyLabs Logo"

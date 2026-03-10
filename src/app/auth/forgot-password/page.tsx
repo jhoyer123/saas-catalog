@@ -42,10 +42,12 @@ export default function ForgotPassword() {
       <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 dark:bg-black">
         <Image
           src="/images/backgroundAuth.webp"
-          alt="Fondo"
+          alt=""
           fill
+          sizes="100vw"
+          quality={60}
           className="object-cover opacity-50 z-0"
-          priority
+          loading="lazy"
         />
         <main className="w-full max-w-md p-6 relative z-10 text-center flex flex-col items-center gap-4">
           <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
@@ -75,16 +77,17 @@ export default function ForgotPassword() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 dark:bg-black">
       <Image
         src="/images/backgroundAuth.webp"
-        alt="Fondo"
+        alt=""
         fill
-        className="object-cover opacity-50 z-0"
-        priority
+        sizes="100vw"
+        quality={60}
+        className="object-cover opacity-50 relative z-0"
+        loading="lazy"
       />
       <main className="w-full max-w-md p-6 relative z-10">
         <header className="mb-8 text-center flex flex-col gap-2">
           <div className="relative mx-auto mb-8 flex items-center justify-center">
-            <div className="absolute w-44 h-44 rounded-full bg-[#FCC4CA]/20 blur-3xl" />
-            <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
+            <div className="relative w-32 h-32 rounded-2xl bg-background border shadow-xl flex items-center justify-center">
               <Image
                 src="/images/logoCat.webp"
                 alt="JhoyLabs Logo"

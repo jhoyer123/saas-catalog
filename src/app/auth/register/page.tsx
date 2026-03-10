@@ -39,10 +39,12 @@ export default function Register() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <Image
         src="/images/backgroundAuth.webp"
-        alt="Fondo de Login"
+        alt=""
         fill
+        sizes="100vw"
+        quality={60}
         className="object-cover opacity-50 relative z-0"
-        priority
+        loading="lazy"
       />
       <main className="w-full max-w-md p-6 relative z-10">
         {/* header */}
