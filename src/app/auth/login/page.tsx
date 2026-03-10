@@ -15,23 +15,38 @@ function SearchParamsToast() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const config = {
+      duration: 10000,
+      action: { label: "Ok", onClick: () => {} },
+      classNames: {
+        toast:
+          "group-[.toaster]:bg-white group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-2xl",
+        title: "font-poppins font-bold text-sm text-black",
+        description:
+          "font-inter text-[13px] text-gray-800 opacity-100 leading-relaxed",
+        actionButton:
+          "group-[.toast]:bg-[#6D001A] group-[.toast]:text-white font-bold text-[10px] uppercase tracking-widest",
+      },
+    };
+
     if (searchParams.get("verified") === "true") {
       toast.success("¡Correo verificado!", {
-        description: "Ya podés iniciar sesión con tu cuenta.",
-        duration: 10000,
-        action: { label: "Ok", onClick: () => {} },
+        ...config,
+        description:
+          "Tu cuenta ha sido activada con éxito. Ya puedes iniciar sesión.",
       });
     }
+
     if (searchParams.get("reset") === "true") {
       toast.success("Contraseña actualizada", {
-        description: "Ya podés iniciar sesión con tu nueva contraseña.",
-        duration: 10000,
-        action: { label: "Ok", onClick: () => {} },
+        ...config,
+        description:
+          "Tu nueva contraseña ha sido guardada. Usa tus nuevas credenciales para entrar.",
       });
     }
   }, []);
 
-  return null; // no renderiza nada visual
+  return null;
 }
 
 export default function Login() {

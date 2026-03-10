@@ -31,10 +31,12 @@ export const registerSchema = z
       .min(8, "El número de teléfono debe tener al menos 8 dígitos"),
     password: z
       .string({ message: "Este campo es requerido" })
-      .min(6, "La contraseña debe tener al menos 6 caracteres"),
-    confirmPassword: z
-      .string({ message: "Este campo es requerido" })
-      .min(6, "La confirmación de contraseña debe tener al menos 6 caracteres"),
+      .min(8, "La contraseña debe tener al menos 8 caracteres")
+      .regex(/[a-z]/, "Debe contener al menos una letra minúscula")
+      .regex(/[A-Z]/, "Debe contener al menos una letra mayúscula")
+      .regex(/[0-9]/, "Debe contener al menos un número")
+      .regex(/[^a-zA-Z0-9]/, "Debe contener al menos un carácter especial"),
+    confirmPassword: z.string({ message: "Este campo es requerido" }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contraseñas no coinciden",

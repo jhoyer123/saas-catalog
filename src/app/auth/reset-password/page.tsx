@@ -12,7 +12,11 @@ const schema = z
   .object({
     password: z
       .string()
-      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+      .min(8, "La contraseña debe tener al menos 8 caracteres")
+      .regex(/[a-z]/, "Debe contener al menos una letra minúscula")
+      .regex(/[A-Z]/, "Debe contener al menos una letra mayúscula")
+      .regex(/[0-9]/, "Debe contener al menos un número")
+      .regex(/[^a-zA-Z0-9]/, "Debe contener al menos un carácter especial"),
     confirm: z.string(),
   })
   .refine((data) => data.password === data.confirm, {

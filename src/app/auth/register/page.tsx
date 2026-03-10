@@ -37,15 +37,6 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <Image
-        src="/images/backgroundAuth.webp"
-        alt=""
-        fill
-        sizes="100vw"
-        quality={60}
-        className="object-cover opacity-50 relative z-0"
-        loading="lazy"
-      />
       <main className="w-full max-w-md p-6 relative z-10">
         {/* header */}
         <header className="mb-8 text-center flex flex-col gap-2 px-4">

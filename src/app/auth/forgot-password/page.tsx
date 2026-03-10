@@ -106,7 +106,7 @@ export default function ForgotPassword() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-black text-white rounded-md py-2 text-sm font-medium disabled:opacity-50"
+            className="bg-black text-white rounded-md py-2 text-sm font-medium disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? "Enviando..." : "Enviar link"}
           </button>
