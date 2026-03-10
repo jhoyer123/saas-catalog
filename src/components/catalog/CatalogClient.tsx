@@ -170,6 +170,7 @@ export default function CatalogClient({
                 products={products}
                 isLoading={isLoading}
                 hasBanners={hasBanners}
+                whatssapNumber={store.whatsapp_number}
               />
             </div>
 

@@ -11,6 +11,7 @@ import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface ProductInfoProps {
   product: ProductCatalog;
+  whatssapNumber?: string | null;
 }
 
 // ─── Badge config ───────────────────────────────────────────────
@@ -64,7 +65,7 @@ function ProductBadge({ type }: { type: BadgeType }) {
 // Ejemplo futuro: const badge: BadgeType = product.badge ?? null;
 const DEMO_BADGE: BadgeType = "featured"; // ← cambia aquí mientras tanto
 
-export function ProductInfo({ product }: ProductInfoProps) {
+export function ProductInfo({ product, whatssapNumber }: ProductInfoProps) {
   const addItem = useCartStore((s) => s.addItem);
 
   const displayPrice = product.is_offer_active
@@ -85,8 +86,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     toast.success("Producto agregado al carrito", { position: "bottom-right" });
   };
 
-  const { data } = useSessionData();
-  const telefono = data?.store?.whatsapp_number;
+  const telefono = whatssapNumber;
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-2 py-4 bg-card border border-border rounded-2xl md:px-6 md:py-10">

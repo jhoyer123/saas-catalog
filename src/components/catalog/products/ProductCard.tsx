@@ -5,14 +5,13 @@ import { ProductCatalogCard } from "@/types/product.types";
 import { useParams } from "next/navigation";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface ProductCardProps {
   product: ProductCatalogCard;
+  whatssapNumber?: string | null;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, whatssapNumber }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const hasDiscount = product.is_offer_active;
 
@@ -32,8 +31,7 @@ export function ProductCard({ product }: ProductCardProps) {
     toast.success("Producto agregado al carrito", { position: "bottom-right" });
   };
 
-  const { data } = useSessionData();
-  const telefono = data?.store?.whatsapp_number;
+  const telefono = whatssapNumber;
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.preventDefault();

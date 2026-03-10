@@ -78,7 +78,7 @@ export default function ProductDetailClient({
             />
           </div>
           <div>
-            <ProductInfo product={product} />
+            <ProductInfo product={product} whatssapNumber={store.whatsapp_number} />
           </div>
         </div>
       </section>

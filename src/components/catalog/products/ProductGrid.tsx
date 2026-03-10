@@ -5,12 +5,14 @@ interface ProductGridProps {
   products: ProductCatalogCard[];
   isLoading?: boolean;
   hasBanners?: boolean;
+  whatssapNumber?: string | null;
 }
 
 export function ProductGrid({
   products,
   isLoading = false,
   hasBanners,
+  whatssapNumber,
 }: ProductGridProps) {
   if (isLoading) {
     return (
@@ -65,7 +67,11 @@ export function ProductGrid({
       className={`grid gap-2 md:gap-4 grid-cols-2 ${hasBanners ? "sm:grid-cols-3 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3"}`}
     >
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard
+          key={product.id}
+          product={product}
+          whatssapNumber={whatssapNumber}
+        />
       ))}
     </div>
   );
