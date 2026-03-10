@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SkeletonPanel() {
   return (
-    <section className="mx-auto max-w-4xl w-full space-y-8">
+    <section className="mx-auto max-w-4xl w-full space-y-8 p-4">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-7 w-48" />
@@ -11,7 +11,7 @@ export default function SkeletonPanel() {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Array.from({ length: 2 }).map((_, i) => (
+        {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
             className="border border-gray-200 rounded-lg p-6 space-y-4"

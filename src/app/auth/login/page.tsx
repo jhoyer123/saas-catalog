@@ -7,44 +7,41 @@ import { useToastPromise } from "@/hooks/shared/useToastPromise";
 import { LoginData } from "@/lib/schemas/auth";
 import FormLogin from "@/components/auth/FormLogin";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-// ← componente separado que usa useSearchParams
 function SearchParamsToast() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    const config = {
-      duration: 10000,
-      action: { label: "Ok", onClick: () => {} },
-      classNames: {
-        toast:
-          "group-[.toaster]:bg-white group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-2xl",
-        title: "font-poppins font-bold text-sm text-black",
-        description:
-          "font-inter text-[13px] text-gray-800 opacity-100 leading-relaxed",
-        actionButton:
-          "group-[.toast]:bg-[#6D001A] group-[.toast]:text-white font-bold text-[10px] uppercase tracking-widest",
-      },
-    };
+    const verified = searchParams.get("verified");
+    const reset = searchParams.get("reset");
 
-    if (searchParams.get("verified") === "true") {
+    if (verified === "true") {
       toast.success("¡Correo verificado!", {
-        ...config,
         description:
           "Tu cuenta ha sido activada con éxito. Ya puedes iniciar sesión.",
+        position: "top-right",
+        duration: 10000,
       });
     }
 
-    if (searchParams.get("reset") === "true") {
+    if (reset === "true") {
       toast.success("Contraseña actualizada", {
-        ...config,
         description:
           "Tu nueva contraseña ha sido guardada. Usa tus nuevas credenciales para entrar.",
+        position: "top-right",
+        duration: 10000,
       });
     }
-  }, []);
+
+    // Limpiar params de la URL sin recargar la página
+    if (verified || reset) {
+      router.replace(pathname, { scroll: false });
+    }
+  }, [searchParams]);
 
   return null;
 }
@@ -104,7 +101,7 @@ export default function Login() {
                   width={80}
                   height={80}
                   priority
-                  className="object-contain"
+                  className="object-contain w-auto h-auto"
                 />
               </div>
             </div>

@@ -29,8 +29,7 @@ export type SessionData = {
   hasStore: boolean;
 };
 
-// ── Session ──
-
+// ✅ Así
 export const fetchSessionData = async (): Promise<SessionData | null> => {
   const supabase = createClient();
 
@@ -41,40 +40,43 @@ export const fetchSessionData = async (): Promise<SessionData | null> => {
 
   const userId = session.user.id;
 
-  const [{ data: profile }, { data: store }] = await Promise.all([
+  const [{ data: profile }, { data: stores }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase
       .from("stores")
       .select("*, plans(*)")
       .eq("user_id", userId)
-      .single(),
+      .maybeSingle(), // 👈
   ]);
 
   if (!profile) return null;
 
   return {
     profile,
-    store,
-    plan: store?.plans ?? null,
-    hasStore: !!store,
+    store: stores ?? null,
+    plan: stores?.plans ?? null,
+    hasStore: !!stores,
   };
 };
 
 // ── Product count (para panel) ──
-
 export const fetchProductCount = async (storeId: string): Promise<number> => {
   const supabase = createClient();
 
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from("products")
     .select("id", { count: "exact", head: true })
     .eq("store_id", storeId);
+
+  if (error) {
+    console.error("fetchProductCount error:", error);
+    return 0;
+  }
 
   return count ?? 0;
 };
 
 // ── Products paginated ──
-
 export const fetchProductsPaginated = async (
   storeId: string,
   params: PaginationParams,
