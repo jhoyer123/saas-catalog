@@ -112,7 +112,7 @@ export default function PanelPage({
               Comparte este enlace con tus clientes.
             </p>
             <div className="bg-gray-50 rounded px-3 py-2 text-sm text-gray-500 truncate font-mono">
-              /public/{store.slug}
+              saas-catalog.vercel.app/public/{store.slug}
             </div>
             <Button
               variant="outline"
@@ -122,7 +122,7 @@ export default function PanelPage({
               onClick={() =>
                 canShowCatalog &&
                 window.open(
-                  `https://saas-catalog.vercel.app/public/${store.slug}`,
+                  `/public/${store.slug}`,
                   "_blank",
                 )
               }

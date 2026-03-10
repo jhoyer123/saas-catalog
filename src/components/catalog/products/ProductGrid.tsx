@@ -34,7 +34,7 @@ export function ProductGrid({
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="flex flex-col items-center justify-center py-16 px-4 w-full">
         <div className="text-center">
           <svg
             className="mx-auto h-12 w-12 text-gray-400"

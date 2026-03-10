@@ -38,19 +38,16 @@ export default function Home() {
       </div>
 
       {/* NAVBAR */}
-      <nav className="relative z-30 flex justify-between items-center px-1 py-6 md:px-12">
-        <div className="flex flex-col items-center justify-center">
+      <nav className="relative z-30 flex justify-between items-center px-4 py-6 md:px-12">
+        <div className="flex flex-col items-center justify-center w-16 h-16 md:w-20 md:h-20">
           <Image
             src="/images/logoCat.webp"
             alt="Logo"
             width={70}
             height={70}
             priority
+            className="object-contain w-auto h-auto"
           />
-
-          <span className="text-[10px] uppercase tracking-[0.2em] text-[#6D001A] font-bold mt-1">
-            Catalog Platform
-          </span>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 items-center justify-center">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { getPublicProducts } from "@/lib/actions/catalogActions";
@@ -12,6 +12,7 @@ import { ProductFilterControls } from "@/components/catalog/filter/ProductFilter
 import { MobileFilterSheet } from "@/components/catalog/filter/MobileFilterSheet";
 import { ProductPagination } from "@/components/catalog/products/ProductPagination";
 import { Banner } from "@/types/catalog/catalog.types";
+import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 interface CatalogClientProps {
   initialProductData: {
@@ -37,9 +38,11 @@ export default function CatalogClient({
   banners,
   store,
 }: CatalogClientProps) {
+  // estates for mobile filter sheet and header height (for scroll offset)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
+  // Effect para medir altura del header (filtro sticky) y actualizarla dinámicamente
   useEffect(() => {
     const header = document.getElementById("catalog-header");
     if (!header) return;
@@ -48,8 +51,10 @@ export default function CatalogClient({
     setHeaderHeight(header.offsetHeight);
     return () => ro.disconnect();
   }, []);
-  const searchParams = useSearchParams();
 
+  // Lee los filtros actuales desde la URL para pasarlos a la query de productos
+  const searchParams = useSearchParams();
+  // Extraer cada filtro de los search params, con fallback a string vacío
   const search = searchParams.get("search") ?? "";
   const category = searchParams.get("category") ?? "";
   const brand = searchParams.get("brand") ?? "";
@@ -93,11 +98,20 @@ export default function CatalogClient({
   });
 
   // Fallback a initialProductData: SSR siempre renderiza productos
-  // aunque HydrationBoundary no esté disponible aún en el cliente
-  const products = data?.products ?? initialProductData.products;
+  const now = new Date();
+  let products = (data?.products ?? initialProductData.products).map((p) => ({
+    ...p,
+    is_offer_active: checkIsOfferActive(p, now),
+  }));
+  // Si el filtro "Solo ofertas" está activo, filtrar productos que no tengan oferta activa
+  if (products.length > 0 && onlyOffers === "true") {
+    products = products.filter((p) => p.is_offer_active);
+  }
+
   const totalPages = data?.totalPages ?? initialProductData.totalPages;
   const total = data?.total ?? initialProductData.total;
   const hasBanners = banners && banners.length > 0;
+
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
       <Header store={store} onOpenFilters={() => setMobileFiltersOpen(true)} />
@@ -109,7 +123,6 @@ export default function CatalogClient({
         categories={categories}
         brands={brands}
       />
-      {/* quitaar ! */}
       {hasBanners && (
         <div className="max-w-7xl w-full mx-auto py-3 px-2">
           <div className="flex gap-3 items-center justify-center">
@@ -128,13 +141,12 @@ export default function CatalogClient({
         className="container w-full max-w-7xl mx-auto px-1"
       >
         <div className={`flex gap-6 ${hasBanners ? "py-0" : "py-6"}`}>
-          {/* poner ! */}
           {!hasBanners && (
             <aside className="hidden lg:block w-64 xl:w-72 shrink-0 sticky top-4">
               <ProductFilterControls categories={categories} brands={brands} />
             </aside>
           )}
-          <div>
+          <div className="flex-1">
             <div className="mb-6 flex flex-col items-start md:flex-row md:items-center md:justify-between w-full px-4">
               <h1 className="text-xl font-bold font-poppins text-gray-900 md:text-2xl">
                 Catálogo de Productos

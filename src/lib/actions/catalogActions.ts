@@ -191,7 +191,7 @@ export const getPublicProducts = unstable_cache(
     brand,
     minPrice,
     maxPrice,
-    onlyOffers,
+    //onlyOffers,
     sort = "display_order",
     page = 1,
     pageSize = 12,
@@ -217,7 +217,7 @@ export const getPublicProducts = unstable_cache(
     if (brand) query = query.ilike("brand", `%${brand}%`);
     if (minPrice) query = query.gte("price", Number(minPrice));
     if (maxPrice) query = query.lte("price", Number(maxPrice));
-    if (onlyOffers === "true") query = query.eq("is_offer", true);
+    //if (onlyOffers === "true") query = query.eq("is_offer", true);
 
     switch (sort) {
       case "price_asc":
@@ -238,20 +238,9 @@ export const getPublicProducts = unstable_cache(
 
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
-
-    const now = new Date();
     return {
       products: (data ?? []).map((p) => ({
         ...p,
-        is_offer_active: checkIsOfferActive(
-          {
-            is_offer: p.is_offer ?? false,
-            offer_price: p.offer_price ?? null,
-            offer_start: p.offer_start ?? null,
-            offer_end: p.offer_end ?? null,
-          },
-          now,
-        ),
       })) as unknown as ProductCatalogCard[],
       total: count ?? 0,
       page,
