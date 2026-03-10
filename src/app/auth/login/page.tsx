@@ -73,16 +73,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <Image
-        src="/images/backgroundAuth.webp"
-        alt=""
-        fill
-        sizes="100vw"
-        quality={60}
-        className="object-cover opacity-50 relative z-0"
-        loading="lazy"
-      />
-
       {/* ← Suspense requerido por Next.js para useSearchParams en build */}
       <Suspense fallback={null}>
         <SearchParamsToast />

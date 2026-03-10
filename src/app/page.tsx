@@ -18,7 +18,6 @@ export default function Home() {
             sizes="100vw"
             className="object-cover opacity-70 grayscale-10"
           />
-
           {/* Overlay oscuro suave */}
           <div className="absolute inset-0 bg-linear-to-r from-white/95 via-white/80 to-white/40" />
         </div>
