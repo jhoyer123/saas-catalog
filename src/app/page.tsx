@@ -88,21 +88,23 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="text-gray-700 text-lg max-w-lg">
+            <p className="text-center md:text-start text-gray-700 text-lg max-w-lg">
               Transforma la forma en que muestras tus productos. Diseña un
               catálogo digital profesional y recibe pedidos directamente en tu
               WhatsApp.
             </p>
 
-            <Link href="/auth/register">
-              <Button
-                size="lg"
-                className="bg-[#6D001A] hover:bg-black text-white
+            <div className="flex justify-center md:justify-start">
+              <Link href="/auth/register">
+                <Button
+                  size="lg"
+                  className="bg-[#6D001A] hover:bg-black text-white
                            px-12 h-16 text-sm font-bold uppercase tracking-[0.2em]"
-              >
-                Crear mi catálogo
-              </Button>
-            </Link>
+                >
+                  Crear mi catálogo
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* CARDS */}

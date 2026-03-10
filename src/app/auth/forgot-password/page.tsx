@@ -66,15 +66,6 @@ export default function ForgotPassword() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 dark:bg-black">
-      <Image
-        src="/images/backgroundAuth.webp"
-        alt=""
-        fill
-        sizes="100vw"
-        quality={60}
-        className="object-cover opacity-50 relative z-0"
-        loading="lazy"
-      />
       <main className="w-full max-w-md p-6 relative z-10">
         <header className="mb-8 text-center flex flex-col gap-2">
           <div className="relative mx-auto mb-8 flex items-center justify-center">
