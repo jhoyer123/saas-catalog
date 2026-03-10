@@ -22,6 +22,9 @@ export const useDeleteCategory = () => {
       queryClient.invalidateQueries({
         queryKey: ["categories"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["categories-no-page"],
+      });
     },
   });
 };

@@ -20,6 +20,9 @@ export const useCreateCategory = () => {
       queryClient.invalidateQueries({
         queryKey: ["categories"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["categories-no-page"],
+      });
     },
   });
 };

@@ -4,7 +4,7 @@ import type { CategoryForm } from "@/lib/schemas/category";
 
 /**
  * 🎣 HOOK PARA ACTUALIZAR CATEGORÍA
- * 
+ *
  * Después de actualizar exitosamente:
  * - Invalida el cache de categorías paginadas
  * - React Query refetch automáticamente
@@ -17,8 +17,11 @@ export const useUpdateCategory = () => {
     mutationFn: ({ id, data }: { id: string; data: CategoryForm }) =>
       updateCategory(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ 
-        queryKey: ["categories"] 
+      queryClient.invalidateQueries({
+        queryKey: ["categories"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["categories-no-page"],
       });
     },
   });
