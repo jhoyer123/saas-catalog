@@ -25,6 +25,7 @@ function SearchParamsToast() {
           "Tu cuenta ha sido activada con éxito. Ya puedes iniciar sesión.",
         position: "top-right",
         duration: 10000,
+        richColors: true,
       });
     }
 
@@ -34,6 +35,7 @@ function SearchParamsToast() {
           "Tu nueva contraseña ha sido guardada. Usa tus nuevas credenciales para entrar.",
         position: "top-right",
         duration: 10000,
+        richColors: true,
       });
     }
 

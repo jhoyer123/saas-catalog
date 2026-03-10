@@ -69,7 +69,7 @@ const STATUS_CONFIG: Record<OfferState, StatusConfig> = {
     icon: Clock,
     iconClass: "text-orange-600",
     containerClass: "bg-orange-50 border-orange-200 text-orange-800",
-    title: "Esta oferta caducó",
+    title: "Esta oferta caducó o fue anulada",
     description: (p) => {
       const end = p.offer_end
         ? new Date(p.offer_end).toLocaleDateString("es-ES", {
