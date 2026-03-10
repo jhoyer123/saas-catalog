@@ -31,6 +31,11 @@ export async function GET(request: Request) {
       type: type as "recovery" | "signup" | "invite" | "magiclink" | "email",
     });
     if (!error) {
+      // Signup: cerrar sesión para que el middleware no redirija al dashboard.
+      // El usuario debe llegar al login limpio y ver el toast de verificación.
+      if (type === "signup") {
+        await supabase.auth.signOut();
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
     console.error("[auth/callback] verifyOtp error:", error.message);
