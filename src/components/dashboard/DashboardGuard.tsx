@@ -13,8 +13,9 @@ import UserInactive from "./UserInactive";
 export function DashboardGuard({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSessionData();
 
-  // Mientras carga la sesión, no bloquear (el middleware ya validó auth)
-  if (isPending) return <>{children}</>;
+  // Mientras carga la sesión no mostrar contenido del dashboard.
+  // Esto evita que al cerrar sesión y pulsar "atrás" se vean datos viejos.
+  if (isPending) return null;
 
   // Sin sesión → middleware ya redirige, pero por seguridad
   if (!session) return null;

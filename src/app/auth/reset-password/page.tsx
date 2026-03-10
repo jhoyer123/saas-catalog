@@ -25,20 +25,17 @@ type FormValues = z.infer<typeof schema>;
 export default function ResetPassword() {
   const router = useRouter();
   const [serverError, setServerError] = useState("");
-  const [sessionReady, setSessionReady] = useState(false);
 
-  // Verificar que hay sesión activa antes de mostrar el form
+  // Verificación no-bloqueante: si no hay sesión, redirige en segundo plano.
+  // El formulario se muestra de inmediato para evitar el spinner lento.
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
-        // No hay sesión — el link expiró o ya fue usado
         router.replace("/auth/forgot-password?reason=expired");
-        return;
       }
-      setSessionReady(true);
     });
-  }, []);
+  }, [router]);
 
   const {
     register,
@@ -59,17 +56,9 @@ export default function ResetPassword() {
     }
 
     await supabase.auth.signOut();
-    router.push("/auth/login?reset=true"); // ← toast de éxito en login
+    // replace evita que el usuario vuelva al formulario con el botón atrás
+    window.location.replace("/auth/login?reset=true");
   };
-
-  // Mientras verifica la sesión
-  if (!sessionReady) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-black">
-        <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 dark:bg-black">

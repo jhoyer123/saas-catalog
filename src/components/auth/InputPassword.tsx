@@ -44,17 +44,12 @@ const InputPassword = <T extends FieldValues>({
           placeholder="••••••••"
           {...inputProps}
         />
-        <button type="button" className="">
-          <Eye
-            className={`absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer ${showPassword ? "hidden" : "block"}`}
-            onClick={() => setShowPassword(!showPassword)}
-          />
-        </button>
-        <button type="button">
-          <EyeClosed
-            className={`absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer ${showPassword ? "block" : "hidden"}`}
-            onClick={() => setShowPassword(!showPassword)}
-          />
+        <button
+          type="button"
+          className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
+          onClick={() => setShowPassword((prev) => !prev)}
+        >
+          {showPassword ? <EyeClosed className="size-5" /> : <Eye className="size-5" />}
         </button>
       </div>
       {errors?.[name] && (

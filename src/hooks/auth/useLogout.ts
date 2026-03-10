@@ -8,12 +8,13 @@ export const useLogout = () => {
     mutationFn: signOutUser,
     onSuccess: () => {
       queryClient.clear();
-      window.location.href = "/auth/login";
+      // replace evita que el botón "atrás" vuelva al dashboard
+      window.location.replace("/auth/login");
     },
     onError: () => {
       // Si falla el signOut en el servidor, igual limpias localmente
       queryClient.clear();
-      window.location.href = "/auth/login";
+      window.location.replace("/auth/login");
     },
   });
 };
