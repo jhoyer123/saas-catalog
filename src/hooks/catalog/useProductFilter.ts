@@ -1,4 +1,3 @@
-// src/hooks/catalog/useProductFilter.ts
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -49,7 +48,8 @@ export function useProductFilter() {
       if (!section) return;
       const header = document.getElementById("catalog-header");
       const headerHeight = header ? header.offsetHeight : 0;
-      const top = section.getBoundingClientRect().top + window.scrollY - headerHeight;
+      const top =
+        section.getBoundingClientRect().top + window.scrollY - headerHeight;
       window.scrollTo({ top, behavior: "smooth" });
     }, 50);
     return () => clearTimeout(timer);

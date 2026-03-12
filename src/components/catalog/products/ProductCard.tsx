@@ -5,6 +5,9 @@ import { ProductCatalogCard } from "@/types/product.types";
 import { useParams } from "next/navigation";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
+// 1. Imports nuevos
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
 
 interface ProductCardProps {
   product: ProductCatalogCard;
@@ -12,6 +15,17 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, whatssapNumber }: ProductCardProps) {
+  // Dentro del componente para el prefetch
+  const queryClient = useQueryClient();
+
+  const handlePrefetch = () => {
+    queryClient.prefetchQuery({
+      queryKey: ["public-product", product.slug],
+      queryFn: () => fetchPublicProductBySlug(product.slug),
+      staleTime: 1000 * 60 * 5,
+    });
+  };
+
   const addItem = useCartStore((s) => s.addItem);
   const hasDiscount = product.is_offer_active;
 
@@ -65,6 +79,8 @@ export function ProductCard({ product, whatssapNumber }: ProductCardProps) {
       {/* ───────── IMAGEN ───────── */}
       <Link
         href={`/public/${store_slug}/${product.slug}`}
+        //onMouseEnter={handlePrefetch}  // ← agregar prefetch en hover
+        onTouchStart={handlePrefetch}
         className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
       >
         <Image

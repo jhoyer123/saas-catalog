@@ -24,14 +24,14 @@ export function MobileFilterSheet({
 }: MobileFilterSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-75 sm:w-100 overflow-y-auto">
+      <SheetContent side="left" className="w-66 sm:w-100 overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Filtros</SheetTitle>
           <SheetDescription>
             Personaliza tu búsqueda de productos
           </SheetDescription>
         </SheetHeader>
-        <div className="px-2">
+        <div className="px-1">
           <ProductFilterControls categories={categories} brands={brands} />
         </div>
       </SheetContent>

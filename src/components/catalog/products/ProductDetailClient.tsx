@@ -9,7 +9,9 @@ import { ProductImageGallery } from "@/components/catalog/products/ProductImageG
 import { ProductInfo } from "@/components/catalog/products/ProductInfo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { getPublicProductBySlug } from "@/lib/actions/catalogActions";
+//import { getPublicProductBySlug } from "@/lib/actions/catalogActions";
+// Agregar
+import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
 
 interface ProductDetailClientProps {
   product: ProductCatalog;
@@ -40,7 +42,8 @@ export default function ProductDetailClient({
 
   const { data: product } = useQuery({
     queryKey: ["public-product", initialProduct.slug],
-    queryFn: () => getPublicProductBySlug(initialProduct.slug),
+    //queryFn: () => getPublicProductBySlug(initialProduct.slug),
+    queryFn: () => fetchPublicProductBySlug(initialProduct.slug),
     initialData: initialProduct,
     staleTime: 5 * 60 * 1000,
   });
@@ -78,7 +81,10 @@ export default function ProductDetailClient({
             />
           </div>
           <div>
-            <ProductInfo product={product} whatssapNumber={store.whatsapp_number} />
+            <ProductInfo
+              product={product}
+              whatssapNumber={store.whatsapp_number}
+            />
           </div>
         </div>
       </section>

@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { getPublicProducts } from "@/lib/actions/catalogActions";
+//import { getPublicProducts } from "@/lib/actions/catalogActions";
+import { fetchPublicProducts } from "@/lib/services/catalogServiceProduct";
 import type { ProductCatalogCard } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
 import HeroSection from "@/components/catalog/offer/HeroSection";
@@ -12,7 +13,7 @@ import { ProductFilterControls } from "@/components/catalog/filter/ProductFilter
 import { MobileFilterSheet } from "@/components/catalog/filter/MobileFilterSheet";
 import { ProductPagination } from "@/components/catalog/products/ProductPagination";
 import { Banner } from "@/types/catalog/catalog.types";
-import { checkIsOfferActive } from "@/lib/helpers/validations";
+//import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 interface CatalogClientProps {
   initialProductData: {
@@ -78,7 +79,7 @@ export default function CatalogClient({
       pageNum,
     ],
     queryFn: () =>
-      getPublicProducts({
+      fetchPublicProducts({
         storeSlug: store.slug,
         search: search || undefined,
         category: category || undefined,
@@ -92,22 +93,10 @@ export default function CatalogClient({
         page: pageNum,
       }),
     staleTime: 5 * 60 * 1000,
-    // Mantiene resultados en memoria 10 min — back-navigation instantáneo
-    gcTime: 10 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     placeholderData: keepPreviousData,
   });
-
-  // Fallback a initialProductData: SSR siempre renderiza productos
-  const now = new Date();
-  let products = (data?.products ?? initialProductData.products).map((p) => ({
-    ...p,
-    is_offer_active: checkIsOfferActive(p, now),
-  }));
-  // Si el filtro "Solo ofertas" está activo, filtrar productos que no tengan oferta activa
-  if (products.length > 0 && onlyOffers === "true") {
-    products = products.filter((p) => p.is_offer_active);
-  }
-
+  const products = data?.products ?? initialProductData.products;
   const totalPages = data?.totalPages ?? initialProductData.totalPages;
   const total = data?.total ?? initialProductData.total;
   const hasBanners = banners && banners.length > 0;

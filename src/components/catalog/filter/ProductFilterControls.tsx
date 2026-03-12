@@ -39,9 +39,11 @@ export function ProductFilterControls({
   } = useProductFilter();
 
   return (
-    <div className="bg-card rounded-lg border border-border p-3 space-y-3 lg:p-6">
-      <div className="items-center justify-between hidden lg:flex">
-        <h2 className="font-poppins">Filtros</h2>
+    <div className="bg-card rounded-lg lg:border lg:border-border p-3 space-y-3 lg:p-6">
+      <div className="items-center justify-between flex">
+        <h2 className="font-poppins text-base lg:text-xl hidden lg:flex">
+          Filtros
+        </h2>
         {hasActiveFilters && (
           <Button
             variant="ghost"

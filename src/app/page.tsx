@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { LayoutDashboard, Link2, ShoppingBag, LogIn } from "lucide-react";
+import { LayoutDashboard, Link2, ShoppingBag } from "lucide-react";
 
 export default function Home() {
   return (

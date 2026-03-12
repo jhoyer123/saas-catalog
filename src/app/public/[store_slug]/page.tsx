@@ -6,7 +6,11 @@ import {
   getPublicStore,
 } from "@/lib/actions/catalogActions";
 import CatalogClient from "@/components/catalog/CatalogClient";
-import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import {
+  QueryClient,
+  HydrationBoundary,
+  dehydrate,
+} from "@tanstack/react-query";
 
 type SearchParams = {
   search?: string;
@@ -23,6 +27,9 @@ type Props = {
   params: Promise<{ store_slug: string }>;
   searchParams: Promise<SearchParams>;
 };
+
+// Esto le dice a Next.js que esta página es estática
+export const dynamic = "force-static";
 
 export default async function Page({ params, searchParams }: Props) {
   const { store_slug } = await params;
@@ -48,8 +55,8 @@ export default async function Page({ params, searchParams }: Props) {
     minPrice ?? "",
     maxPrice ?? "",
     onlyOffers ?? "",
-    sort ?? "",
-    pageNum,
+    sort ?? "", // ← sort
+    pageNum, // ← pageNum al final, igual que en CatalogClient
   ];
 
   const [initialProductData, categories, brands, banners, store] =
