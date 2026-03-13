@@ -107,7 +107,7 @@ export default function CatalogClient({
       <Header store={store} />
       <div style={{ height: headerHeight }} />
       <div
-        className="bg-card py-2 sticky z-10 top-0 h-full w-full flex items-center justify-center lg:hidden"
+        className="bg-card py-2 sticky z-20 top-0 h-full w-full flex items-center justify-center lg:hidden"
         style={{ top: headerHeight }}
       >
         <InputSearch onOpenFilters={() => setMobileFiltersOpen(true)} />
