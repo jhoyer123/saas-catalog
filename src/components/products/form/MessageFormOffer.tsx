@@ -87,7 +87,7 @@ const STATUS_CONFIG: Record<OfferState, StatusConfig> = {
     containerClass: "bg-rose-50 border-rose-200 text-rose-800",
     title: "¿Desactivar oferta?",
     description: (p) =>
-      `Se quitará la oferta de $${p.offer_price?.toFixed(2)}. Los datos quedarán guardados como referencia y tendras que actualizar las fechas para volver a activarla.`,
+      `Se quitará la oferta de $${p.offer_price?.toFixed(2)}. Para volver a activarla deberás actualizar los datos nuevamente.`,
   },
   reactivating: {
     icon: Clock,

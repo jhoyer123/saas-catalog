@@ -30,8 +30,18 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: "Dashboard", url: "/dashboard/panel", icon: Frame },
-  { name: "Categorias", url: "/dashboard/categories", icon: Layers, requiresStore: true },
-  { name: "Productos", url: "/dashboard/products", icon: Package, requiresStore: true },
+  {
+    name: "Categorias",
+    url: "/dashboard/categories",
+    icon: Layers,
+    requiresStore: true,
+  },
+  {
+    name: "Productos",
+    url: "/dashboard/products",
+    icon: Package,
+    requiresStore: true,
+  },
   { name: "Mi Tienda", url: "/dashboard/store", icon: Store },
 ];
 
@@ -56,7 +66,9 @@ export function AppSidebar() {
         </SidebarContent>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={session?.profile || { full_name: "", email: "", avatar: "" }} />
+        <NavUser
+          user={session?.profile || { full_name: "", email: "", avatar: "" }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

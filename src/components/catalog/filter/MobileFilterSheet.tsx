@@ -24,7 +24,10 @@ export function MobileFilterSheet({
 }: MobileFilterSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-66 sm:w-100 overflow-y-auto">
+      <SheetContent
+        side="left"
+        className="w-66 sm:w-100 overflow-y-auto duration-0 transition-none"
+      >
         <SheetHeader>
           <SheetTitle>Filtros</SheetTitle>
           <SheetDescription>

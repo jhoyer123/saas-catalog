@@ -20,7 +20,7 @@ interface ProductDetailClientProps {
     name: string;
     slug: string;
     logo_url: string | null;
-    whatsapp_number: string | null;
+    whatsapp_number?: string | null;
   };
 }
 
@@ -55,11 +55,8 @@ export default function ProductDetailClient({
 
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
-      <div className="hidden md:block">
-        <Header store={store} />
-      </div>
-      {/* Spacer dinámico igual que en CatalogClient */}
-      <div className="hidden md:block" style={{ height: headerHeight }} />
+      <Header store={store} />
+      <div style={{ height: headerHeight }} />
 
       <div className="container mx-auto px-4 py-3">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2">

@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface ProductInfoProps {
   product: ProductCatalog;

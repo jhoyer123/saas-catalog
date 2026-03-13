@@ -13,6 +13,7 @@ import { ProductFilterControls } from "@/components/catalog/filter/ProductFilter
 import { MobileFilterSheet } from "@/components/catalog/filter/MobileFilterSheet";
 import { ProductPagination } from "@/components/catalog/products/ProductPagination";
 import { Banner } from "@/types/catalog/catalog.types";
+import { InputSearch } from "./header/InputSearch";
 //import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 interface CatalogClientProps {
@@ -103,9 +104,14 @@ export default function CatalogClient({
 
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
-      <Header store={store} onOpenFilters={() => setMobileFiltersOpen(true)} />
+      <Header store={store} />
       <div style={{ height: headerHeight }} />
-
+      <div
+        className="bg-card py-2 sticky z-10 top-0 h-full w-full flex items-center justify-center lg:hidden"
+        style={{ top: headerHeight }}
+      >
+        <InputSearch onOpenFilters={() => setMobileFiltersOpen(true)} />
+      </div>
       <MobileFilterSheet
         open={mobileFiltersOpen}
         onOpenChange={setMobileFiltersOpen}
@@ -127,11 +133,16 @@ export default function CatalogClient({
 
       <section
         id="catalog-products"
-        className="container w-full max-w-7xl mx-auto px-1"
+        className="container w-full h-full max-w-7xl mx-auto px-1"
       >
-        <div className={`flex gap-6 ${hasBanners ? "py-0" : "py-6"}`}>
+        <div
+          className={`flex h-full  ${hasBanners ? "py-0 gap-6" : "py-6 gap-3"}`}
+        >
           {!hasBanners && (
-            <aside className="hidden lg:block w-64 xl:w-72 shrink-0 sticky top-4">
+            <aside
+              className="hidden lg:block w-64 xl:w-80 shrink-0 sticky self-start"
+              style={{ top: headerHeight }}
+            >
               <ProductFilterControls categories={categories} brands={brands} />
             </aside>
           )}
