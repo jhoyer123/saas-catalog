@@ -46,6 +46,7 @@ export default function ProductDetailClient({
     queryFn: () => fetchPublicProductBySlug(initialProduct.slug),
     initialData: initialProduct,
     staleTime: 5 * 60 * 1000,
+    refetchOnMount: "always",
   });
 
   const getBadge = () => {

@@ -26,7 +26,9 @@ export default function StorePage() {
         {/* ── Sección 1: Datos de la tienda ── */}
         <div className="flex flex-col gap-4 border rounded-lg border-input p-2 w-full bg-card font-inter md:p-6">
           <div className="flex flex-col gap-1 border-b pb-4">
-            <h3 className="text-lg font-semibold font-poppins">Datos de la tienda</h3>
+            <h3 className="text-lg font-semibold font-poppins">
+              Datos de la tienda
+            </h3>
             <p className="text-sm text-muted-foreground font-inter">
               Gestiona y administra los datos principales de tu tienda.
               <span className="text-red-400 ml-1">Campos obligatorios</span>
@@ -38,7 +40,9 @@ export default function StorePage() {
         {/* ── Sección 2: Banners del catálogo ── */}
         <div className="flex flex-col gap-4 border rounded-lg border-input p-2 w-full bg-card font-inter md:p-6 ">
           <div className="flex flex-col gap-1 border-b border-input pb-4">
-            <h3 className="text-lg font-semibold font-poppins">Banners del catálogo</h3>
+            <h3 className="text-lg font-semibold font-poppins">
+              Banners del catálogo
+            </h3>
             <p className="text-sm text-muted-foreground font-inter">
               Gestiona los banners que se mostrarán en tu catálogo: promociones,
               eventos especiales o información importante para tus clientes.
