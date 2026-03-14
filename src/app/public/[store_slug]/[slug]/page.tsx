@@ -1,7 +1,14 @@
-import { getPublicProductBySlug, getPublicStore } from "@/lib/actions/catalogActions";
+import {
+  getPublicProductBySlug,
+  getPublicStore,
+} from "@/lib/actions/catalogActions";
 import ProductDetailClient from "@/components/catalog/products/ProductDetailClient";
 import { notFound } from "next/navigation";
-import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import {
+  QueryClient,
+  HydrationBoundary,
+  dehydrate,
+} from "@tanstack/react-query";
 
 export const revalidate = 3600;
 
@@ -25,7 +32,11 @@ export default async function Page({ params }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ProductDetailClient product={product} storeSlug={store_slug} store={store} />
+      <ProductDetailClient
+        product={product}
+        storeSlug={store_slug}
+        store={store}
+      />
     </HydrationBoundary>
   );
 }
