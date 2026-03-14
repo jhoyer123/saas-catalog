@@ -96,6 +96,7 @@ export default function CatalogClient({
     staleTime: 5 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     placeholderData: keepPreviousData,
+    refetchOnMount: "always",
   });
   const products = data?.products ?? initialProductData.products;
   const totalPages = data?.totalPages ?? initialProductData.totalPages;
