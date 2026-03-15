@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   useProductFilter,
   ProductFilters,
@@ -37,6 +38,14 @@ export function ProductFilterControls({
     priceMaxInput,
     setPriceMaxInput,
   } = useProductFilter();
+
+  const [onlyOffersChecked, setOnlyOffersChecked] = useState(
+    filters.isOffer === true,
+  );
+
+  useEffect(() => {
+    setOnlyOffersChecked(filters.isOffer === true);
+  }, [filters.isOffer]);
 
   return (
     <div className="bg-card rounded-lg lg:border lg:border-border p-3 space-y-3 lg:p-6">
@@ -149,10 +158,12 @@ export function ProductFilterControls({
         <input
           type="checkbox"
           id="onlyOffers"
-          checked={filters.isOffer === true}
-          onChange={(e) =>
-            updateFilter("isOffer", e.target.checked ? true : null)
-          }
+          checked={onlyOffersChecked}
+          onChange={(e) => {
+            const checked = e.target.checked;
+            setOnlyOffersChecked(checked);
+            updateFilter("isOffer", checked ? true : null);
+          }}
           className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
         />
         <Label

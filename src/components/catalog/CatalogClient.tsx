@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  useQuery,
-  keepPreviousData,
-} from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchPublicProducts } from "@/lib/services/catalogServiceProduct";
 import type { ProductCatalogCard } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
@@ -16,6 +12,7 @@ import { MobileFilterSheet } from "@/components/catalog/filter/MobileFilterSheet
 import { ProductPagination } from "@/components/catalog/products/ProductPagination";
 import { Banner } from "@/types/catalog/catalog.types";
 import { InputSearch } from "./header/InputSearch";
+import { useProductFilter } from "@/hooks/catalog/useProductFilter";
 
 interface CatalogClientProps {
   initialProductData: {
@@ -44,6 +41,7 @@ export default function CatalogClient({
   // estates for mobile filter sheet and header height (for scroll offset)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const { filters } = useProductFilter();
 
   // Effect para medir altura del header (filtro sticky) y actualizarla dinámicamente
   useEffect(() => {
@@ -55,17 +53,14 @@ export default function CatalogClient({
     return () => ro.disconnect();
   }, []);
 
-  // Lee los filtros actuales desde la URL para pasarlos a la query de productos
-  const searchParams = useSearchParams();
-  // Extraer cada filtro de los search params, con fallback a string vacío
-  const search = searchParams.get("search") ?? "";
-  const category = searchParams.get("category") ?? "";
-  const brand = searchParams.get("brand") ?? "";
-  const minPrice = searchParams.get("minPrice") ?? "";
-  const maxPrice = searchParams.get("maxPrice") ?? "";
-  const onlyOffers = searchParams.get("onlyOffers") ?? "";
-  const sort = searchParams.get("sort") ?? "";
-  const pageNum = Number(searchParams.get("page")) || 1;
+  const search = filters.search;
+  const category = filters.category ?? "";
+  const brand = filters.brand ?? "";
+  const minPrice = filters.minPrice !== null ? String(filters.minPrice) : "";
+  const maxPrice = filters.maxPrice !== null ? String(filters.maxPrice) : "";
+  const onlyOffers = filters.isOffer === true ? "true" : "";
+  const sort = filters.sortBy ?? "";
+  const pageNum = filters.page;
 
   const productQueryKey = [
     "public-products",

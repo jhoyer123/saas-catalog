@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { create } from "zustand";
 import { useDebounce } from "@/hooks/catalog/useDebounce";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect } from "react";
 
 export interface ProductFilters {
   search: string;
@@ -16,176 +16,229 @@ export interface ProductFilters {
   pageSize: number;
 }
 
+const DEFAULT_FILTERS: ProductFilters = {
+  search: "",
+  category: null,
+  minPrice: null,
+  maxPrice: null,
+  isOffer: null,
+  brand: null,
+  sortBy: null,
+  page: 1,
+  pageSize: 12,
+};
+
+type ProductFilterStore = {
+  filters: ProductFilters;
+  searchInput: string;
+  priceMinInput: string;
+  priceMaxInput: string;
+  initialized: boolean;
+  isPending: boolean;
+  initializeFromUrl: () => void;
+  setSearchInput: (value: string) => void;
+  setPriceMinInput: (value: string) => void;
+  setPriceMaxInput: (value: string) => void;
+  setPending: (pending: boolean) => void;
+  setSearchFilter: (value: string) => void;
+  setMinPriceFilter: (value: string) => void;
+  setMaxPriceFilter: (value: string) => void;
+  updateFilter: <K extends keyof ProductFilters>(
+    key: K,
+    value: ProductFilters[K],
+  ) => void;
+  resetFilters: () => void;
+  setPage: (page: number) => void;
+  setPageSize: (pageSize: number) => void;
+};
+
+function syncUrl(filters: ProductFilters) {
+  if (typeof window === "undefined") return;
+
+  const params = new URLSearchParams();
+  if (filters.search) params.set("search", filters.search);
+  if (filters.category) params.set("category", filters.category);
+  if (filters.brand) params.set("brand", filters.brand);
+  if (filters.minPrice !== null) params.set("minPrice", String(filters.minPrice));
+  if (filters.maxPrice !== null) params.set("maxPrice", String(filters.maxPrice));
+  if (filters.isOffer === true) params.set("onlyOffers", "true");
+  if (filters.sortBy) params.set("sort", filters.sortBy);
+  if (filters.page > 1) params.set("page", String(filters.page));
+  if (filters.pageSize !== 12) params.set("pageSize", String(filters.pageSize));
+
+  const query = params.toString();
+  const target = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+  window.history.replaceState(null, "", target);
+}
+
+const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
+  filters: DEFAULT_FILTERS,
+  searchInput: "",
+  priceMinInput: "",
+  priceMaxInput: "",
+  initialized: false,
+  isPending: false,
+
+  initializeFromUrl: () => {
+    if (get().initialized || typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const nextFilters: ProductFilters = {
+      search: params.get("search") ?? "",
+      category: params.get("category"),
+      minPrice: params.get("minPrice") ? Number(params.get("minPrice")) : null,
+      maxPrice: params.get("maxPrice") ? Number(params.get("maxPrice")) : null,
+      isOffer: params.get("onlyOffers") === "true" ? true : null,
+      brand: params.get("brand"),
+      sortBy: (params.get("sort") as ProductFilters["sortBy"]) ?? null,
+      page: Number(params.get("page")) || 1,
+      pageSize: Number(params.get("pageSize")) || 12,
+    };
+
+    set({
+      filters: nextFilters,
+      searchInput: nextFilters.search,
+      priceMinInput:
+        nextFilters.minPrice !== null ? String(nextFilters.minPrice) : "",
+      priceMaxInput:
+        nextFilters.maxPrice !== null ? String(nextFilters.maxPrice) : "",
+      initialized: true,
+    });
+  },
+
+  setSearchInput: (value) => set({ searchInput: value }),
+  setPriceMinInput: (value) => set({ priceMinInput: value }),
+  setPriceMaxInput: (value) => set({ priceMaxInput: value }),
+  setPending: (pending) => set({ isPending: pending }),
+
+  setSearchFilter: (value) => {
+    const nextFilters = {
+      ...get().filters,
+      search: value,
+      page: 1,
+    };
+    set({ filters: nextFilters, isPending: true });
+    syncUrl(nextFilters);
+    set({ isPending: false });
+  },
+
+  setMinPriceFilter: (value) => {
+    const nextFilters = {
+      ...get().filters,
+      minPrice: value ? Number(value) : null,
+      page: 1,
+    };
+    set({ filters: nextFilters, isPending: true });
+    syncUrl(nextFilters);
+    set({ isPending: false });
+  },
+
+  setMaxPriceFilter: (value) => {
+    const nextFilters = {
+      ...get().filters,
+      maxPrice: value ? Number(value) : null,
+      page: 1,
+    };
+    set({ filters: nextFilters, isPending: true });
+    syncUrl(nextFilters);
+    set({ isPending: false });
+  },
+
+  updateFilter: (key, value) => {
+    if (key === "minPrice" || key === "maxPrice") return;
+
+    const nextFilters = {
+      ...get().filters,
+      [key]: value,
+      page: key === "page" || key === "pageSize" ? get().filters.page : 1,
+    } as ProductFilters;
+
+    set({ filters: nextFilters, isPending: true });
+    syncUrl(nextFilters);
+    set({ isPending: false });
+  },
+
+  resetFilters: () => {
+    const nextFilters = { ...DEFAULT_FILTERS };
+    set({
+      filters: nextFilters,
+      searchInput: "",
+      priceMinInput: "",
+      priceMaxInput: "",
+      isPending: true,
+    });
+    syncUrl(nextFilters);
+    set({ isPending: false });
+  },
+
+  setPage: (page) => {
+    const safePage = Math.max(1, page);
+    const nextFilters = { ...get().filters, page: safePage };
+    set({ filters: nextFilters, isPending: true });
+    syncUrl(nextFilters);
+    set({ isPending: false });
+  },
+
+  setPageSize: (pageSize) => {
+    const safeSize = Math.max(1, pageSize);
+    const nextFilters = { ...get().filters, pageSize: safeSize, page: 1 };
+    set({ filters: nextFilters, isPending: true });
+    syncUrl(nextFilters);
+    set({ isPending: false });
+  },
+}));
+
 export function useProductFilter() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const [isPending, startTransition] = useTransition();
-
-  // ── Scroll post-navegación ────────────────────────────────────────────────
-  // La ref marca si debe scrollear. El effect se dispara cuando
-  // searchParams.toString() cambia (= después del re-render con nuevos params).
-  const pendingScrollRef = useRef(false);
-  const isFirstRender = useRef(true);
-  const paramsString = searchParams.toString();
+  const {
+    filters,
+    isPending,
+    searchInput,
+    setSearchInput,
+    priceMinInput,
+    setPriceMinInput,
+    priceMaxInput,
+    setPriceMaxInput,
+    updateFilter,
+    resetFilters,
+    setPage,
+    setPageSize,
+    initializeFromUrl,
+    setSearchFilter,
+    setMinPriceFilter,
+    setMaxPriceFilter,
+  } = useProductFilterStore();
 
   useEffect(() => {
-    // Ignorar el primer render (carga inicial)
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (!pendingScrollRef.current) return;
-    pendingScrollRef.current = false;
-
-    // Pequeño delay para dar chance al browser de completar layout/paint
-    const timer = setTimeout(() => {
-      // En pantallas lg+ los filtros están al lado, no hace falta scrollear
-      if (window.innerWidth >= 1024) return;
-
-      const section = document.getElementById("catalog-products");
-      if (!section) return;
-      const header = document.getElementById("catalog-header");
-      const headerHeight = header ? header.offsetHeight : 0;
-      const top =
-        section.getBoundingClientRect().top + window.scrollY - headerHeight;
-      window.scrollTo({ top, behavior: "smooth" });
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [paramsString]);
-
-  // Lee los filtros actuales desde la URL
-  const filters: ProductFilters = {
-    search: searchParams.get("search") ?? "",
-    category: searchParams.get("category"),
-    minPrice: searchParams.get("minPrice")
-      ? Number(searchParams.get("minPrice"))
-      : null,
-    maxPrice: searchParams.get("maxPrice")
-      ? Number(searchParams.get("maxPrice"))
-      : null,
-    isOffer: searchParams.get("onlyOffers") === "true" ? true : null,
-    brand: searchParams.get("brand"),
-    sortBy: (searchParams.get("sort") as ProductFilters["sortBy"]) ?? null,
-    page: Number(searchParams.get("page")) || 1,
-    pageSize: Number(searchParams.get("pageSize")) || 12,
-  };
-
-  /**
-   * Actualiza un param en la URL.
-   * - Usa router.replace (no ensucia el historial del navegador).
-   * - Wrappea en startTransition para que React no bloquee el render.
-   * - scroll: true solo para filtros discretos (categoria, marca, etc.)
-   *   Los inputs con debounce pasan scroll=false para no hacer scroll en cada tecla.
-   */
-  const updateParam = (key: string, value: string | null, scroll = false) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    if (key !== "page" && key !== "pageSize") {
-      params.delete("page");
-    }
-    if (scroll) pendingScrollRef.current = true;
-    startTransition(() => {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    });
-  };
-
-  // Mapeo de keys del filtro a keys de la URL
-  const keyMap: Record<keyof ProductFilters, string> = {
-    search: "search",
-    category: "category",
-    minPrice: "minPrice",
-    maxPrice: "maxPrice",
-    isOffer: "onlyOffers",
-    brand: "brand",
-    sortBy: "sort",
-    page: "page",
-    pageSize: "pageSize",
-  };
+    initializeFromUrl();
+  }, [initializeFromUrl]);
 
   // ── Debounce para search (300ms) ──────────────────────────────────────────
-  const [searchInput, setSearchInput] = useState(
-    searchParams.get("search") ?? "",
-  );
   const debouncedSearch = useDebounce(searchInput, 300);
 
   useEffect(() => {
-    const currentSearch = searchParams.get("search") ?? "";
-    if (debouncedSearch !== currentSearch) {
-      updateParam("search", debouncedSearch || null, true);
+    if (debouncedSearch !== filters.search) {
+      setSearchFilter(debouncedSearch);
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, filters.search, setSearchFilter]);
 
   // ── Debounce para precios (500ms) ─────────────────────────────────────────
   // Sin esto, cada tecla en el input dispara router.replace + Supabase query.
-  const [priceMinInput, setPriceMinInput] = useState(
-    searchParams.get("minPrice") ?? "",
-  );
-  const [priceMaxInput, setPriceMaxInput] = useState(
-    searchParams.get("maxPrice") ?? "",
-  );
   const debouncedMinPrice = useDebounce(priceMinInput, 500);
   const debouncedMaxPrice = useDebounce(priceMaxInput, 500);
 
   useEffect(() => {
-    const current = searchParams.get("minPrice") ?? "";
+    const current = filters.minPrice !== null ? String(filters.minPrice) : "";
     if (debouncedMinPrice !== current) {
-      updateParam("minPrice", debouncedMinPrice || null, true);
+      setMinPriceFilter(debouncedMinPrice);
     }
-  }, [debouncedMinPrice]);
+  }, [debouncedMinPrice, filters.minPrice, setMinPriceFilter]);
 
   useEffect(() => {
-    const current = searchParams.get("maxPrice") ?? "";
+    const current = filters.maxPrice !== null ? String(filters.maxPrice) : "";
     if (debouncedMaxPrice !== current) {
-      updateParam("maxPrice", debouncedMaxPrice || null, true);
+      setMaxPriceFilter(debouncedMaxPrice);
     }
-  }, [debouncedMaxPrice]);
-
-  const updateFilter = <K extends keyof ProductFilters>(
-    key: K,
-    value: ProductFilters[K],
-  ) => {
-    // minPrice y maxPrice los maneja el state local + debounce exclusivamente
-    if (key === "minPrice" || key === "maxPrice") return;
-
-    const urlKey = keyMap[key];
-
-    if (value === null || value === "" || value === false) {
-      updateParam(urlKey, null, true);
-      return;
-    }
-
-    updateParam(urlKey, String(value), true);
-  };
-
-  const resetFilters = () => {
-    setSearchInput("");
-    setPriceMinInput("");
-    setPriceMaxInput("");
-    pendingScrollRef.current = true;
-    startTransition(() => {
-      router.replace(pathname, { scroll: false });
-    });
-  };
-
-  const setPage = (page: number) => {
-    updateParam("page", String(page), true);
-  };
-
-  const setPageSize = (pageSize: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("pageSize", String(pageSize));
-    params.delete("page");
-    pendingScrollRef.current = true;
-    startTransition(() => {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    });
-  };
+  }, [debouncedMaxPrice, filters.maxPrice, setMaxPriceFilter]);
 
   const hasActiveFilters = !!(
     filters.search ||
