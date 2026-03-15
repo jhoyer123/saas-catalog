@@ -28,8 +28,7 @@ type Props = {
   searchParams: Promise<SearchParams>;
 };
 
-// Esto le dice a Next.js que esta página es estática
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export default async function Page({ params, searchParams }: Props) {
   const { store_slug } = await params;

@@ -4,10 +4,8 @@ import { useState, useEffect } from "react";
 import {
   useQuery,
   keepPreviousData,
-  useQueryClient,
 } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-//import { getPublicProducts } from "@/lib/actions/catalogActions";
 import { fetchPublicProducts } from "@/lib/services/catalogServiceProduct";
 import type { ProductCatalogCard } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
@@ -18,7 +16,6 @@ import { MobileFilterSheet } from "@/components/catalog/filter/MobileFilterSheet
 import { ProductPagination } from "@/components/catalog/products/ProductPagination";
 import { Banner } from "@/types/catalog/catalog.types";
 import { InputSearch } from "./header/InputSearch";
-//import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 interface CatalogClientProps {
   initialProductData: {
@@ -47,7 +44,6 @@ export default function CatalogClient({
   // estates for mobile filter sheet and header height (for scroll offset)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
-  const queryClient = useQueryClient();
 
   // Effect para medir altura del header (filtro sticky) y actualizarla dinámicamente
   useEffect(() => {
@@ -103,20 +99,8 @@ export default function CatalogClient({
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: keepPreviousData,
-    refetchOnWindowFocus: false,
+    //refetchOnWindowFocus: false,
   });
-
-  useEffect(() => {
-    const firstLoadKey = `catalog-first-refresh:${store.slug}`;
-    if (sessionStorage.getItem(firstLoadKey)) return;
-
-    sessionStorage.setItem(firstLoadKey, "1");
-    void queryClient.refetchQueries({
-      queryKey: productQueryKey,
-      exact: true,
-      type: "active",
-    });
-  }, [productQueryKey, queryClient, store.slug]);
 
   const products = data?.products ?? initialProductData.products;
   const totalPages = data?.totalPages ?? initialProductData.totalPages;

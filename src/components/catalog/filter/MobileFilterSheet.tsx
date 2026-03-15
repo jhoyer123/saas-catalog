@@ -35,7 +35,9 @@ export function MobileFilterSheet({
           </SheetDescription>
         </SheetHeader>
         <div className="px-1">
-          <ProductFilterControls categories={categories} brands={brands} />
+          {open ? (
+            <ProductFilterControls categories={categories} brands={brands} />
+          ) : null}
         </div>
       </SheetContent>
     </Sheet>

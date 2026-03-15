@@ -182,72 +182,93 @@ export const getPublicProductBySlug = unstable_cache(
  * @param param0
  * @returns
  */
-//Productos — store_id viene del caché, sin doble round-trip
-export const getPublicProducts = unstable_cache(
-  async ({
-    storeSlug,
-    search,
-    category,
-    brand,
-    minPrice,
-    maxPrice,
-    //onlyOffers,
-    sort = "display_order",
-    page = 1,
-    pageSize = 12,
-  }: GetPublicProductsParams) => {
-    const storeId = await getStoreIdBySlug(storeSlug); // ~0ms desde caché
+// Productos del catálogo público.
+// No se cachean a nivel de servidor porque el estado de las ofertas cambia con el tiempo.
+export async function getPublicProducts({
+  storeSlug,
+  search,
+  category,
+  brand,
+  minPrice,
+  maxPrice,
+  onlyOffers,
+  sort = "display_order",
+  page = 1,
+  pageSize = 12,
+}: GetPublicProductsParams) {
+  const storeId = await getStoreIdBySlug(storeSlug);
+  const table = onlyOffers === "true" ? "active_offers" : "products";
 
-    let query = supabasePublic
-      .from("products")
-      .select(
-        `
-      id, name, price, is_offer, offer_price, offer_start, offer_end,
-      brand, slug, is_available,
+  let query = supabasePublic
+    .from(table)
+    .select(
+      `
+      id, name, description, price, is_offer, offer_price, offer_start, offer_end,
+      brand, slug,
       images:product_images(image_url)
       `,
-        { count: "exact" },
-      )
-      .limit(1, { foreignTable: "product_images" })
-      .eq("store_id", storeId)
-      .eq("is_available", true);
+      { count: "exact" },
+    )
+    .limit(1, { foreignTable: "product_images" })
+    .eq("store_id", storeId)
+    .eq("is_available", true);
 
-    if (search) query = query.ilike("name", `%${search}%`);
-    if (category) query = query.eq("category_id", category);
-    if (brand) query = query.ilike("brand", `%${brand}%`);
-    if (minPrice) query = query.gte("price", Number(minPrice));
-    if (maxPrice) query = query.lte("price", Number(maxPrice));
-    //if (onlyOffers === "true") query = query.eq("is_offer", true);
+  if (search) query = query.ilike("name", `%${search}%`);
+  if (category) query = query.eq("category_id", category);
+  if (brand) query = query.ilike("brand", `%${brand}%`);
+  if (minPrice) query = query.gte("price", Number(minPrice));
+  if (maxPrice) query = query.lte("price", Number(maxPrice));
 
-    switch (sort) {
-      case "price_asc":
-        query = query.order("price", { ascending: true });
-        break;
-      case "price_desc":
-        query = query.order("price", { ascending: false });
-        break;
-      case "newest":
-        query = query.order("created_at", { ascending: false });
-        break;
-      default:
-        query = query.order("display_order", { ascending: true });
-    }
+  switch (sort) {
+    case "price_asc":
+      query = query.order("price", { ascending: true });
+      break;
+    case "price_desc":
+      query = query.order("price", { ascending: false });
+      break;
+    case "newest":
+      query = query.order("created_at", { ascending: false });
+      break;
+    default:
+      query = query.order("display_order", { ascending: true });
+  }
 
-    const from = (page - 1) * pageSize;
-    query = query.range(from, from + pageSize - 1);
+  const from = (page - 1) * pageSize;
+  query = query.range(from, from + pageSize - 1);
 
-    const { data, error, count } = await query;
-    if (error) throw new Error(error.message);
-    return {
-      products: (data ?? []).map((p) => ({
-        ...p,
-      })) as unknown as ProductCatalogCard[],
-      total: count ?? 0,
-      page,
-      pageSize,
-      totalPages: Math.ceil((count ?? 0) / pageSize),
-    };
-  },
-  ["public-products"],
-  { revalidate: 3600, tags: ["products"] },
-);
+  const { data, error, count } = await query;
+
+  if (error) throw new Error(error.message);
+
+  const now = new Date();
+
+  return {
+    products: (data ?? []).map((product) => ({
+      id: product.id,
+      name: product.name,
+      description: product.description ?? null,
+      price: product.price,
+      is_offer: product.is_offer ?? false,
+      offer_price: product.offer_price ?? null,
+      offer_start: product.offer_start ?? null,
+      offer_end: product.offer_end ?? null,
+      brand: product.brand ?? null,
+      slug: product.slug,
+      categories: null,
+      images: product.images ?? [],
+      is_offer_active: checkIsOfferActive(
+        {
+          is_offer: product.is_offer ?? false,
+          offer_price: product.offer_price ?? null,
+          offer_start: product.offer_start ?? null,
+          offer_end: product.offer_end ?? null,
+        },
+        now,
+      ),
+    })) as ProductCatalogCard[],
+    total: count ?? 0,
+    page,
+    pageSize,
+    totalPages: Math.ceil((count ?? 0) / pageSize),
+  };
+}
