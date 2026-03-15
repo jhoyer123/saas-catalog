@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  useQuery,
+  keepPreviousData,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 //import { getPublicProducts } from "@/lib/actions/catalogActions";
 import { fetchPublicProducts } from "@/lib/services/catalogServiceProduct";
@@ -43,6 +47,7 @@ export default function CatalogClient({
   // estates for mobile filter sheet and header height (for scroll offset)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const queryClient = useQueryClient();
 
   // Effect para medir altura del header (filtro sticky) y actualizarla dinámicamente
   useEffect(() => {
@@ -66,19 +71,21 @@ export default function CatalogClient({
   const sort = searchParams.get("sort") ?? "";
   const pageNum = Number(searchParams.get("page")) || 1;
 
+  const productQueryKey = [
+    "public-products",
+    store.slug,
+    search,
+    category,
+    brand,
+    minPrice,
+    maxPrice,
+    onlyOffers,
+    sort,
+    pageNum,
+  ] as const;
+
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: [
-      "public-products",
-      store.slug,
-      search,
-      category,
-      brand,
-      minPrice,
-      maxPrice,
-      onlyOffers,
-      sort,
-      pageNum,
-    ],
+    queryKey: productQueryKey,
     queryFn: () =>
       fetchPublicProducts({
         storeSlug: store.slug,
@@ -94,10 +101,23 @@ export default function CatalogClient({
         page: pageNum,
       }),
     staleTime: 5 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     placeholderData: keepPreviousData,
-    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    const firstLoadKey = `catalog-first-refresh:${store.slug}`;
+    if (sessionStorage.getItem(firstLoadKey)) return;
+
+    sessionStorage.setItem(firstLoadKey, "1");
+    void queryClient.refetchQueries({
+      queryKey: productQueryKey,
+      exact: true,
+      type: "active",
+    });
+  }, [productQueryKey, queryClient, store.slug]);
+
   const products = data?.products ?? initialProductData.products;
   const totalPages = data?.totalPages ?? initialProductData.totalPages;
   const total = data?.total ?? initialProductData.total;
