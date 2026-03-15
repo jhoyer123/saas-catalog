@@ -5,12 +5,65 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
 import { Banner } from "@/types/catalog/catalog.types";
+import { useState, useEffect } from "react";
+
+const FALLBACK_BANNER = "/images/placeholder.webp"; // ← tu imagen de fallback
 
 interface BannerOfferProps {
   banners: Banner[];
 }
 
+// Hook de fallback (mismo patrón que en la galería)
+function useBannerFallback(src: string) {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return {
+    imgSrc,
+    onError: () => setImgSrc(FALLBACK_BANNER),
+  };
+}
+
+// Wrapper por banner individual
+function BannerImage({
+  src,
+  alt,
+  priority,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+}) {
+  const { imgSrc, onError } = useBannerFallback(src);
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      quality={75}
+      fill
+      sizes="(max-width: 768px) 100vw, 80vw"
+      className="object-cover pointer-events-none"
+      priority={priority}
+      loading={priority ? "eager" : "lazy"}
+      draggable={false}
+      onError={onError}
+    />
+  );
+}
+
+// Capa de seguridad si banners llega vacío
+const EMPTY_BANNER: Banner = {
+  id: "fallback",
+  image_url: FALLBACK_BANNER,
+};
+
 const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
+  const safeBanners = banners && banners.length > 0 ? banners : [EMPTY_BANNER];
+
   const {
     currentIndex,
     isAnimating,
@@ -24,7 +77,7 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
     onPointerMove,
     onPointerUp,
     onPointerCancel,
-  } = useBannerCarousel(banners);
+  } = useBannerCarousel(safeBanners);
 
   return (
     <div
@@ -33,7 +86,6 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
       onMouseEnter={clearTimer}
       onMouseLeave={() => !isDragging.current && startTimer()}
     >
-      {/* Track: se mueve horizontalmente según translateX */}
       <div
         ref={trackRef}
         className="flex will-change-transform touch-pan-y"
@@ -51,28 +103,21 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
         onPointerCancel={onPointerCancel}
         onDragStart={(e) => e.preventDefault()}
       >
-        {banners.map((banner, index) => (
+        {safeBanners.map((banner, index) => (
           <div
             key={banner.id}
             className="relative w-full shrink-0 aspect-video"
             aria-hidden={index !== currentIndex}
           >
-            <Image
+            <BannerImage // ← reemplaza el <Image> directo
               src={banner.image_url}
               alt={`Banner ${index + 1}`}
-              quality={75}
-              fill
-              sizes="(max-width: 768px) 100vw, 80vw"
-              className="object-cover pointer-events-none"
               priority={index === 0}
-              loading={index === 0 ? "eager" : "lazy"}
-              draggable={false}
             />
           </div>
         ))}
       </div>
 
-      {/* Flechas de navegación */}
       <button
         onClick={() => goTo(currentIndex - 1)}
         aria-label="Banner anterior"
@@ -88,12 +133,11 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
         <ChevronRight className="w-5 h-5" />
       </button>
 
-      {/* Dots: indican en qué banner estás */}
       <div
         className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10"
         role="tablist"
       >
-        {banners.map((banner, index) => (
+        {safeBanners.map((banner, index) => (
           <button
             key={banner.id}
             role="tab"

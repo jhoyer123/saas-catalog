@@ -1,6 +1,6 @@
 // Forma de cada banner que viene de la base de datos
 export interface Banner {
-  id: number;
+  id: string;
   image_url: string;
 }
 

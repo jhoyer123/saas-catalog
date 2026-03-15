@@ -17,11 +17,6 @@ export function useUpdateProduct() {
       id: string;
       dataProducto: ProductInputServiceUpdate;
     }) => updateProduct(id, dataProducto, sessionData?.store?.id!),
-    /* onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["product"] });
-      router.push("/dashboard/products");
-    }, */
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["products"] }),
