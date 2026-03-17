@@ -10,19 +10,26 @@ import { useToastPromise } from "@/hooks/shared/useToastPromise";
 import { useCreateCategory } from "@/hooks/category/useCreateCategory";
 import { useUpdateCategory } from "@/hooks/category/useUpdateCategory";
 import { useSessionData } from "@/hooks/auth/useSessionData";
+import { useEffect } from "react";
 
 interface Props {
   defaultValues?: Category;
   setOpen: () => void;
   // cuando es true, los campos son solo lectura (modo "view")
   readOnly?: boolean;
+  onDirtyChange?: (isDirty: boolean) => void; // 👈
 }
 
-const Form = ({ defaultValues, setOpen, readOnly = false }: Props) => {
+const Form = ({
+  defaultValues,
+  setOpen,
+  readOnly = false,
+  onDirtyChange,
+}: Props) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<CategoryForm>({
     resolver: zodResolver(CategorySchema),
     defaultValues: {
@@ -30,6 +37,10 @@ const Form = ({ defaultValues, setOpen, readOnly = false }: Props) => {
       description: defaultValues?.description || "",
     },
   });
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]); // 👈
 
   // create update
   const { showPromise } = useToastPromise();

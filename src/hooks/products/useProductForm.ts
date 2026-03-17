@@ -49,6 +49,22 @@ export function useProductForm({
     },
   });
 
+  // Cuando initialData llega (o cambia), sincroniza el form
+  useEffect(() => {
+    if (initialData && isUpdate) {
+      form.reset({
+        name: initialData.name ?? "",
+        sku: initialData.sku ?? "",
+        brand: initialData.brand ?? "",
+        price: initialData.price ?? 0,
+        description: initialData.description ?? "",
+        category_id: initialData.category_id ?? "",
+        imageExisting: initialData.images ?? [],
+        imageToDelete: [],
+      });
+    }
+  }, [initialData]);
+
   //refinar las categorias para el select (memo para evitar recrear el array en cada render)
   const categoryOptions = useMemo(
     () =>
@@ -59,14 +75,12 @@ export function useProductForm({
     [categories],
   );
 
-  // Registrar imageToDelete
   useEffect(() => {
     if (isUpdate) {
       form.register("imageToDelete");
     }
   }, [form.register, isUpdate]);
 
-  // Submit
   const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
   ) => {
@@ -82,7 +96,6 @@ export function useProductForm({
           images: Array.from((data as ProductFormInput).images),
         };
 
-    //execute action
     if (isCreate) {
       createProduct(transformed as ProductInputService, () => {
         form.reset({
@@ -119,6 +132,7 @@ export function useProductForm({
     control: form.control,
     handleSubmit: form.handleSubmit(handleFormSubmit),
     errors: form.formState.errors,
+    isDirty: form.formState.isDirty,
     setValue: form.setValue,
     reset: form.reset,
     isViewMode: isView,

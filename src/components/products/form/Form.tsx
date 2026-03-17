@@ -13,6 +13,7 @@ import FormSelect from "@/components/shared/SelectForm";
 import InputFile from "@/components/products/form/InputFile";
 import { ProductCatalog } from "@/types/product.types";
 import { CategorySimple } from "@/types/category.types";
+import { useEffect } from "react";
 
 interface FormProductProps {
   mode: "create" | "update" | "view";
@@ -20,12 +21,14 @@ interface FormProductProps {
   categories: CategorySimple[];
   isLoadingProduct?: boolean;
   isLoadingCategories?: boolean;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export default function FormProduct({
   mode,
   initialData,
   categories,
+  onDirtyChange,
 }: FormProductProps) {
   const {
     register,
@@ -36,7 +39,13 @@ export default function FormProduct({
     isViewMode,
     categoryOptions,
     isPending,
+    isDirty,
   } = useProductForm({ mode, initialData, categories });
+
+  // Llamar a onFormChange cada vez que isDirty cambie
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   return (
     <>
@@ -163,7 +172,7 @@ export default function FormProduct({
                 onBlur={onBlur}
                 error={errors.images?.message as string}
                 maxFiles={3}
-                maxSizeMB={2}
+                maxSizeMB={25}
                 imgExisting={initialData?.images ?? []}
                 setValue={setValue}
                 disabled={isViewMode}

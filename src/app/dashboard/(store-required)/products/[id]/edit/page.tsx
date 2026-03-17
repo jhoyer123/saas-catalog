@@ -6,13 +6,17 @@ import { Button } from "@/components/ui/button";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import { useGetProductById } from "@/hooks/products/useGetProductById";
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  // Obtener el ID del producto desde los parámetros de la URL y cargar los datos necesarios
   const { id } = use(params);
   const { data: product, isLoading: isLoadingProduct } = useGetProductById(id);
   const { data: categories, isLoading: isLoadingCategories } =
     useGetCategoryNoPage();
+
+  // Solo se habilita el boton si cambian los datos
+  const [isDirty, setIsDirty] = useState(false);
 
   if (isLoadingProduct || isLoadingCategories || !product || !categories) {
     return <SkeletonForm />;
@@ -28,7 +32,12 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
             <Button variant="secondary" asChild>
               <Link href="/dashboard/products">Volver</Link>
             </Button>
-            <Button variant="default" type="submit" form="product-form">
+            <Button
+              variant="default"
+              type="submit"
+              form="product-form"
+              disabled={!isDirty}
+            >
               Guardar cambios
             </Button>
           </div>
@@ -37,6 +46,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           mode="update"
           initialData={product}
           categories={categories ?? []}
+          onDirtyChange={setIsDirty}
         />
       </div>
     </div>

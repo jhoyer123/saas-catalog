@@ -13,6 +13,7 @@ import {
 import Form from "@/components/categories/Form";
 import type { CategoryModalMode } from "@/hooks/category/useModalsCategory";
 import type { Category } from "@/types/category.types";
+import { useEffect, useState } from "react";
 
 // ModalCategory solo maneja create / edit / view
 // El modo "delete" lo maneja DeleteModal por separado (igual que en productos)
@@ -51,13 +52,27 @@ interface Props {
 }
 
 export function ModalCategory({ modalState, onClose }: Props) {
+  const [isDirty, setIsDirty] = useState(false); // 👈
+
+  // Resetea isDirty cada vez que el modal abre/cierra
+  useEffect(() => {
+    if (!modalState.open) setIsDirty(false); // 👈
+  }, [modalState.open]);
+
+  const isEditing = modalState.mode === "edit";
+
   // Solo renderiza para los modos de formulario (no delete)
   if (!modalState.mode || modalState.mode === "delete") return null;
 
   const config = MODAL_CONFIG[modalState.mode as FormMode];
 
   return (
-    <Dialog open={modalState.open} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open={modalState.open}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <form>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -70,6 +85,7 @@ export function ModalCategory({ modalState, onClose }: Props) {
             setOpen={onClose}
             defaultValues={modalState.category ?? undefined}
             readOnly={modalState.mode === "view"}
+            onDirtyChange={setIsDirty} // 👈
           />
 
           <DialogFooter>
@@ -81,7 +97,11 @@ export function ModalCategory({ modalState, onClose }: Props) {
 
             {/* Solo create y edit muestran botón de guardar */}
             {config.submitLabel && (
-              <Button type="submit" form="category-form">
+              <Button
+                type="submit"
+                form="category-form"
+                disabled={isEditing && !isDirty}
+              >
                 {config.submitLabel}
               </Button>
             )}
