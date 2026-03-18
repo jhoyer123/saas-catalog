@@ -35,7 +35,7 @@ export const createProduct = async (
   const { data, error } = await supabase
     .from("products")
     .insert({
-      sku: dataProducto.sku,
+      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
       name: dataProducto.name,
       slug: generateSlug(dataProducto.name),
       price: dataProducto.price,
