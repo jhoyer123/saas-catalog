@@ -39,7 +39,6 @@ type ProductFilterStore = {
   setSearchInput: (value: string) => void;
   setPriceMinInput: (value: string) => void;
   setPriceMaxInput: (value: string) => void;
-  setPending: (pending: boolean) => void;
   setSearchFilter: (value: string) => void;
   setMinPriceFilter: (value: string) => void;
   setMaxPriceFilter: (value: string) => void;
@@ -59,15 +58,20 @@ function syncUrl(filters: ProductFilters) {
   if (filters.search) params.set("search", filters.search);
   if (filters.category) params.set("category", filters.category);
   if (filters.brand) params.set("brand", filters.brand);
-  if (filters.minPrice !== null) params.set("minPrice", String(filters.minPrice));
-  if (filters.maxPrice !== null) params.set("maxPrice", String(filters.maxPrice));
+  if (filters.minPrice !== null)
+    params.set("minPrice", String(filters.minPrice));
+  if (filters.maxPrice !== null)
+    params.set("maxPrice", String(filters.maxPrice));
   if (filters.isOffer === true) params.set("onlyOffers", "true");
   if (filters.sortBy) params.set("sort", filters.sortBy);
   if (filters.page > 1) params.set("page", String(filters.page));
   if (filters.pageSize !== 12) params.set("pageSize", String(filters.pageSize));
 
   const query = params.toString();
-  const target = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+  const target = query
+    ? `${window.location.pathname}?${query}`
+    : window.location.pathname;
+
   window.history.replaceState(null, "", target);
 }
 
@@ -83,6 +87,7 @@ const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
     if (get().initialized || typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
+
     const nextFilters: ProductFilters = {
       search: params.get("search") ?? "",
       category: params.get("category"),
@@ -106,39 +111,52 @@ const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
     });
   },
 
-  setSearchInput: (value) => set({ searchInput: value }),
+  setSearchInput: (value) => set({ searchInput: value.trimStart() }),
   setPriceMinInput: (value) => set({ priceMinInput: value }),
   setPriceMaxInput: (value) => set({ priceMaxInput: value }),
-  setPending: (pending) => set({ isPending: pending }),
 
   setSearchFilter: (value) => {
+    const sanitized = value.trim();
+    const current = get().filters.search;
+
+    if (sanitized === current) return;
+
     const nextFilters = {
       ...get().filters,
-      search: value,
+      search: sanitized,
       page: 1,
     };
+
     set({ filters: nextFilters, isPending: true });
     syncUrl(nextFilters);
     set({ isPending: false });
   },
 
   setMinPriceFilter: (value) => {
+    const parsed = value ? Number(value) : null;
+    if (parsed === get().filters.minPrice) return;
+
     const nextFilters = {
       ...get().filters,
-      minPrice: value ? Number(value) : null,
+      minPrice: parsed,
       page: 1,
     };
+
     set({ filters: nextFilters, isPending: true });
     syncUrl(nextFilters);
     set({ isPending: false });
   },
 
   setMaxPriceFilter: (value) => {
+    const parsed = value ? Number(value) : null;
+    if (parsed === get().filters.maxPrice) return;
+
     const nextFilters = {
       ...get().filters,
-      maxPrice: value ? Number(value) : null,
+      maxPrice: parsed,
       page: 1,
     };
+
     set({ filters: nextFilters, isPending: true });
     syncUrl(nextFilters);
     set({ isPending: false });
@@ -146,6 +164,8 @@ const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
 
   updateFilter: (key, value) => {
     if (key === "minPrice" || key === "maxPrice") return;
+
+    if (get().filters[key] === value) return;
 
     const nextFilters = {
       ...get().filters,
@@ -160,6 +180,7 @@ const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
 
   resetFilters: () => {
     const nextFilters = { ...DEFAULT_FILTERS };
+
     set({
       filters: nextFilters,
       searchInput: "",
@@ -167,13 +188,17 @@ const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
       priceMaxInput: "",
       isPending: true,
     });
+
     syncUrl(nextFilters);
     set({ isPending: false });
   },
 
   setPage: (page) => {
     const safePage = Math.max(1, page);
+    if (safePage === get().filters.page) return;
+
     const nextFilters = { ...get().filters, page: safePage };
+
     set({ filters: nextFilters, isPending: true });
     syncUrl(nextFilters);
     set({ isPending: false });
@@ -181,7 +206,14 @@ const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
 
   setPageSize: (pageSize) => {
     const safeSize = Math.max(1, pageSize);
-    const nextFilters = { ...get().filters, pageSize: safeSize, page: 1 };
+    if (safeSize === get().filters.pageSize) return;
+
+    const nextFilters = {
+      ...get().filters,
+      pageSize: safeSize,
+      page: 1,
+    };
+
     set({ filters: nextFilters, isPending: true });
     syncUrl(nextFilters);
     set({ isPending: false });
@@ -210,35 +242,24 @@ export function useProductFilter() {
 
   useEffect(() => {
     initializeFromUrl();
-  }, [initializeFromUrl]);
+  }, []);
 
-  // ── Debounce para search (300ms) ──────────────────────────────────────────
-  const debouncedSearch = useDebounce(searchInput, 300);
-
-  useEffect(() => {
-    if (debouncedSearch !== filters.search) {
-      setSearchFilter(debouncedSearch);
-    }
-  }, [debouncedSearch, filters.search, setSearchFilter]);
-
-  // ── Debounce para precios (500ms) ─────────────────────────────────────────
-  // Sin esto, cada tecla en el input dispara router.replace + Supabase query.
-  const debouncedMinPrice = useDebounce(priceMinInput, 500);
-  const debouncedMaxPrice = useDebounce(priceMaxInput, 500);
+  const debouncedSearch = useDebounce(searchInput, 1000);
 
   useEffect(() => {
-    const current = filters.minPrice !== null ? String(filters.minPrice) : "";
-    if (debouncedMinPrice !== current) {
-      setMinPriceFilter(debouncedMinPrice);
-    }
-  }, [debouncedMinPrice, filters.minPrice, setMinPriceFilter]);
+    setSearchFilter(debouncedSearch);
+  }, [debouncedSearch]);
+
+  const debouncedMinPrice = useDebounce(priceMinInput, 1000);
+  const debouncedMaxPrice = useDebounce(priceMaxInput, 1000);
 
   useEffect(() => {
-    const current = filters.maxPrice !== null ? String(filters.maxPrice) : "";
-    if (debouncedMaxPrice !== current) {
-      setMaxPriceFilter(debouncedMaxPrice);
-    }
-  }, [debouncedMaxPrice, filters.maxPrice, setMaxPriceFilter]);
+    setMinPriceFilter(debouncedMinPrice);
+  }, [debouncedMinPrice]);
+
+  useEffect(() => {
+    setMaxPriceFilter(debouncedMaxPrice);
+  }, [debouncedMaxPrice]);
 
   const hasActiveFilters = !!(
     filters.search ||

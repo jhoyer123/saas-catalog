@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchPublicProducts } from "@/lib/services/catalogServiceProduct";
 import type { ProductCatalogCard } from "@/types/product.types";
@@ -13,6 +13,27 @@ import { ProductPagination } from "@/components/catalog/products/ProductPaginati
 import { Banner } from "@/types/catalog/catalog.types";
 import { InputSearch } from "./header/InputSearch";
 import { useProductFilter } from "@/hooks/catalog/useProductFilter";
+
+// Hook reutilizable para medir altura
+function useElementHeight(id: string) {
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const update = () => setHeight(el.offsetHeight);
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+
+    update();
+
+    return () => ro.disconnect();
+  }, [id]);
+
+  return height;
+}
 
 interface CatalogClientProps {
   initialProductData: {
@@ -38,20 +59,48 @@ export default function CatalogClient({
   banners,
   store,
 }: CatalogClientProps) {
-  // estates for mobile filter sheet and header height (for scroll offset)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const headerHeight = useElementHeight("catalog-header");
+  const inputBarHeight = useElementHeight("catalog-input-bar");
+
   const { filters } = useProductFilter();
 
-  // Effect para medir altura del header (filtro sticky) y actualizarla dinámicamente
+  // Evitar múltiples scrolls
+  const filterKey = JSON.stringify(filters);
+
+  const isMounted = useRef(false);
+
+  const prevFilterKey = useRef(filterKey);
   useEffect(() => {
-    const header = document.getElementById("catalog-header");
-    if (!header) return;
-    const ro = new ResizeObserver(() => setHeaderHeight(header.offsetHeight));
-    ro.observe(header);
-    setHeaderHeight(header.offsetHeight);
-    return () => ro.disconnect();
-  }, []);
+    // Primera vez no hacer nada
+    if (!isMounted.current) {
+      isMounted.current = true;
+      prevFilterKey.current = filterKey;
+      return;
+    }
+
+    // Si no cambiaron filtros no hacer scroll
+    if (prevFilterKey.current === filterKey) return;
+
+    prevFilterKey.current = filterKey;
+
+    const section = document.getElementById("catalog-products");
+    if (!section) return;
+
+    const top =
+      section.getBoundingClientRect().top +
+      window.scrollY -
+      headerHeight -
+      inputBarHeight;
+
+    requestAnimationFrame(() => {
+      window.scrollTo({ top, behavior: "smooth" });
+    });
+  }, [filterKey, headerHeight, inputBarHeight]);
+
+  // Normalización para queryKey estable
+  const normalize = (v: unknown) => v ?? "";
 
   const search = filters.search;
   const category = filters.category ?? "";
@@ -65,13 +114,13 @@ export default function CatalogClient({
   const productQueryKey = [
     "public-products",
     store.slug,
-    search,
-    category,
-    brand,
-    minPrice,
-    maxPrice,
-    onlyOffers,
-    sort,
+    normalize(search),
+    normalize(category),
+    normalize(brand),
+    normalize(minPrice),
+    normalize(maxPrice),
+    normalize(onlyOffers),
+    normalize(sort),
     pageNum,
   ] as const;
 
@@ -94,36 +143,41 @@ export default function CatalogClient({
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: keepPreviousData,
-    //refetchOnWindowFocus: false,
   });
 
   const products = data?.products ?? initialProductData.products;
   const totalPages = data?.totalPages ?? initialProductData.totalPages;
   const total = data?.total ?? initialProductData.total;
-  const hasBanners = banners && banners.length > 0;
+  const hasBanners = banners.length > 0;
 
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
       <Header store={store} />
-      <div style={{ height: headerHeight }} />
+
       <div
+        id="catalog-input-bar"
         className="bg-card py-2 sticky z-20 top-0 h-full w-full flex items-center justify-center lg:hidden"
         style={{ top: headerHeight }}
       >
         <InputSearch onOpenFilters={() => setMobileFiltersOpen(true)} />
       </div>
+
+      <div style={{ height: headerHeight }} />
+
       <MobileFilterSheet
         open={mobileFiltersOpen}
         onOpenChange={setMobileFiltersOpen}
         categories={categories}
         brands={brands}
       />
+
       {hasBanners && (
         <div className="max-w-7xl w-full mx-auto py-3 px-2">
           <div className="flex gap-3 items-center justify-center">
             <aside className="hidden lg:block w-90 shrink-0">
               <ProductFilterControls categories={categories} brands={brands} />
             </aside>
+
             <div className="flex-1">
               <HeroSection banners={banners} />
             </div>
@@ -136,7 +190,7 @@ export default function CatalogClient({
         className="container w-full h-full max-w-7xl mx-auto px-1"
       >
         <div
-          className={`flex h-full  ${hasBanners ? "py-0 gap-6" : "py-6 gap-3"}`}
+          className={`flex h-full ${hasBanners ? "py-0 gap-6" : "py-6 gap-3"}`}
         >
           {!hasBanners && (
             <aside
@@ -146,6 +200,7 @@ export default function CatalogClient({
               <ProductFilterControls categories={categories} brands={brands} />
             </aside>
           )}
+
           <div className="flex-1">
             <div className="mb-6 flex flex-col items-start md:flex-row md:items-center md:justify-between w-full px-4">
               <h1 className="text-xl font-bold font-poppins text-gray-900 md:text-2xl">
@@ -156,15 +211,17 @@ export default function CatalogClient({
               </p>
             </div>
 
-            {/* Barra de progreso sutil mientras se actualiza con filtros activos */}
+            {/* ✅ Loader mejorado */}
             {isFetching && !isLoading && (
               <div className="h-0.5 w-full overflow-hidden mb-2 bg-border rounded-full">
                 <div className="h-full w-2/5 bg-primary/50 rounded-full catalog-loading-bar" />
               </div>
             )}
+
             <div
-              className="transition-opacity duration-200"
-              style={{ opacity: isFetching && !isLoading ? 0.6 : 1 }}
+              className={`transition-opacity duration-200 ${
+                isFetching && !isLoading ? "opacity-60 pointer-events-none" : ""
+              }`}
             >
               <ProductGrid
                 products={products}

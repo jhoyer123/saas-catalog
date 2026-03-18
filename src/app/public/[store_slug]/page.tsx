@@ -54,8 +54,8 @@ export default async function Page({ params, searchParams }: Props) {
     minPrice ?? "",
     maxPrice ?? "",
     onlyOffers ?? "",
-    sort ?? "", // ← sort
-    pageNum, // ← pageNum al final, igual que en CatalogClient
+    sort ?? "",
+    pageNum,
   ];
 
   const [initialProductData, categories, brands, banners, store] =

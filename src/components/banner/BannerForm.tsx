@@ -108,7 +108,7 @@ export default function BannerForm({
           onChange={(files) => setValue("images", files)}
           error={errors.images?.message as string | undefined}
           maxFiles={3}
-          maxSizeMB={5}
+          maxSizeMB={25}
           imgExisting={existingBanners}
           setValue={setValue}
           typeElement="banner"
