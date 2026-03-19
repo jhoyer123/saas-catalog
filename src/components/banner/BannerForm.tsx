@@ -55,7 +55,6 @@ export default function BannerForm({
   const onSubmit = (data: BannerFormValues) => {
     const newFiles = data.images ? Array.from(data.images) : [];
 
-    //console.log("data", data);
     showPromise({
       promise: async () => {
         if (UpdateOrCreate) {
@@ -84,36 +83,45 @@ export default function BannerForm({
     (images && images.length > 0) ||
     (imageToDelete && imageToDelete.length > 0);
 
-  // ============================================
-  // RENDER
-  // ============================================
+  const isPending = uploadB.isPending || updateB.isPending;
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
-    >
-      <div className="flex items-end justify-end mb-10">
-        <Button
-          type="submit"
-          disabled={uploadB.isPending || updateB.isPending || !hasChanges}
-        >
-          {uploadB.isPending || updateB.isPending
-            ? "Guardando..."
-            : "Guardar Banners"}
-        </Button>
-      </div>
-      <div className="space-y-2">
-        <InputFile
-          value={images}
-          onChange={(files) => setValue("images", files)}
-          error={errors.images?.message as string | undefined}
-          maxFiles={3}
-          maxSizeMB={25}
-          imgExisting={existingBanners}
-          setValue={setValue}
-          typeElement="banner"
-        />
-      </div>
-    </form>
+    <>
+      {/* Overlay de bloqueo */}
+      {isPending && (
+        <div className="fixed inset-0 z-9999 bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3 shadow-xl">
+            <span className="text-sm text-gray-600">Procesando...</span>
+          </div>
+        </div>
+      )}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
+      >
+        <div className="flex items-end justify-end mb-10">
+          <Button
+            type="submit"
+            disabled={uploadB.isPending || updateB.isPending || !hasChanges}
+          >
+            {uploadB.isPending || updateB.isPending
+              ? "Guardando..."
+              : "Guardar Banners"}
+          </Button>
+        </div>
+        <div className="space-y-2">
+          <InputFile
+            value={images}
+            onChange={(files) => setValue("images", files)}
+            error={errors.images?.message as string | undefined}
+            maxFiles={3}
+            maxSizeMB={25}
+            imgExisting={existingBanners}
+            setValue={setValue}
+            typeElement="banner"
+          />
+        </div>
+      </form>
+    </>
   );
 }

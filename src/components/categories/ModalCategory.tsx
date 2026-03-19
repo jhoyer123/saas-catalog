@@ -52,11 +52,11 @@ interface Props {
 }
 
 export function ModalCategory({ modalState, onClose }: Props) {
-  const [isDirty, setIsDirty] = useState(false); // 👈
-
+  const [isDirty, setIsDirty] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   // Resetea isDirty cada vez que el modal abre/cierra
   useEffect(() => {
-    if (!modalState.open) setIsDirty(false); // 👈
+    if (!modalState.open) setIsDirty(false);
   }, [modalState.open]);
 
   const isEditing = modalState.mode === "edit";
@@ -67,13 +67,20 @@ export function ModalCategory({ modalState, onClose }: Props) {
   const config = MODAL_CONFIG[modalState.mode as FormMode];
 
   return (
-    <Dialog
-      open={modalState.open}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <form>
+    <>
+      {isPending && (
+        <div className="fixed inset-0 z-9999 bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3 shadow-xl">
+            <span className="text-sm text-gray-600">Procesando...</span>
+          </div>
+        </div>
+      )}
+      <Dialog
+        open={modalState.open}
+        onOpenChange={(open) => {
+          if (!open) onClose();
+        }}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>{config.title}</DialogTitle>
@@ -85,12 +92,13 @@ export function ModalCategory({ modalState, onClose }: Props) {
             setOpen={onClose}
             defaultValues={modalState.category ?? undefined}
             readOnly={modalState.mode === "view"}
-            onDirtyChange={setIsDirty} // 👈
+            onDirtyChange={setIsDirty}
+            onPendingChange={setIsPending}
           />
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">
+              <Button variant="outline" disabled={isPending}>
                 {modalState.mode === "view" ? "Cerrar" : "Cancelar"}
               </Button>
             </DialogClose>
@@ -100,14 +108,14 @@ export function ModalCategory({ modalState, onClose }: Props) {
               <Button
                 type="submit"
                 form="category-form"
-                disabled={isEditing && !isDirty}
+                disabled={isEditing && !isDirty || isPending}
               >
                 {config.submitLabel}
               </Button>
             )}
           </DialogFooter>
         </DialogContent>
-      </form>
-    </Dialog>
+      </Dialog>
+    </>
   );
 }

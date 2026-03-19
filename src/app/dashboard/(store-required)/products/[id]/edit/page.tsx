@@ -36,7 +36,6 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
               variant="default"
               type="submit"
               form="product-form"
-              disabled={!isDirty}
             >
               Guardar cambios
             </Button>

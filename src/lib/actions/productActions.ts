@@ -99,7 +99,6 @@ export const updateProduct = async (
   storeId: string,
 ) => {
   const supabase = await createClient();
-
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -109,7 +108,7 @@ export const updateProduct = async (
   const { data, error } = await supabase
     .from("products")
     .update({
-      sku: dataProducto.sku,
+      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
       name: dataProducto.name,
       price: dataProducto.price,
       slug: generateSlug(dataProducto.name),

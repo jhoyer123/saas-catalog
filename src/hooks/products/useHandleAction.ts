@@ -20,7 +20,9 @@ export function useProductActions() {
   const { showPromise } = useToastPromise();
 
   const withPending = async (fn: () => Promise<void>) => {
-    if (isPending) return; // ← protección
+    if (isPending) {
+      throw new Error("Hay una operacion en curso. Intenta nuevamente.");
+    }
     setIsPending(true);
     try {
       await fn();

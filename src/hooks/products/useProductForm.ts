@@ -32,7 +32,14 @@ export function useProductForm({
 
   const { createProduct, updateProduct, isPending } = useProductActions();
 
-  const form = useForm({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isDirty },
+    setValue,
+    reset,
+  } = useForm({
     resolver: zodResolver(
       isUpdate ? productFormSchemaUpdate : productFormSchema,
     ),
@@ -50,9 +57,9 @@ export function useProductForm({
   });
 
   // Cuando initialData llega (o cambia), sincroniza el form
-  useEffect(() => {
+ /*  useEffect(() => {
     if (initialData && isUpdate) {
-      form.reset({
+      reset({
         name: initialData.name ?? "",
         sku: initialData.sku ?? "",
         brand: initialData.brand ?? "",
@@ -63,7 +70,7 @@ export function useProductForm({
         imageToDelete: [],
       });
     }
-  }, [initialData]);
+  }, [initialData?.id]); */
 
   //refinar las categorias para el select (memo para evitar recrear el array en cada render)
   const categoryOptions = useMemo(
@@ -77,9 +84,9 @@ export function useProductForm({
 
   useEffect(() => {
     if (isUpdate) {
-      form.register("imageToDelete");
+      register("imageToDelete");
     }
-  }, [form.register, isUpdate]);
+  }, [register, isUpdate]);
 
   const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
@@ -98,7 +105,7 @@ export function useProductForm({
 
     if (isCreate) {
       createProduct(transformed as ProductInputService, () => {
-        form.reset({
+        reset({
           name: "",
           brand: "",
           sku: "",
@@ -114,7 +121,7 @@ export function useProductForm({
         initialData?.id!,
         transformed as ProductInputServiceUpdate,
         () => {
-          form.reset({
+          reset({
             name: "",
             brand: "",
             sku: "",
@@ -128,13 +135,13 @@ export function useProductForm({
   };
 
   return {
-    register: form.register,
-    control: form.control,
-    handleSubmit: form.handleSubmit(handleFormSubmit),
-    errors: form.formState.errors,
-    isDirty: form.formState.isDirty,
-    setValue: form.setValue,
-    reset: form.reset,
+    register: register,
+    control: control,
+    handleSubmit: handleSubmit(handleFormSubmit),
+    errors: errors,
+    isDirty: isDirty,
+    setValue: setValue,
+    reset: reset,
     isViewMode: isView,
     initialData,
     categoryOptions,

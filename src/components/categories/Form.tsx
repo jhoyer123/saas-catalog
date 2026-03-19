@@ -17,7 +17,8 @@ interface Props {
   setOpen: () => void;
   // cuando es true, los campos son solo lectura (modo "view")
   readOnly?: boolean;
-  onDirtyChange?: (isDirty: boolean) => void; // 👈
+  onDirtyChange?: (isDirty: boolean) => void;
+  onPendingChange?: (isPending: boolean) => void;
 }
 
 const Form = ({
@@ -25,6 +26,7 @@ const Form = ({
   setOpen,
   readOnly = false,
   onDirtyChange,
+  onPendingChange,
 }: Props) => {
   const {
     register,
@@ -40,7 +42,7 @@ const Form = ({
 
   useEffect(() => {
     onDirtyChange?.(isDirty);
-  }, [isDirty, onDirtyChange]); // 👈
+  }, [isDirty, onDirtyChange]);
 
   // create update
   const { showPromise } = useToastPromise();
@@ -69,44 +71,52 @@ const Form = ({
       duration: 4000,
     });
 
-    setOpen();
+    //setOpen();
+    promise.then(() => setOpen());
   };
 
-  return (
-    <form
-      id="category-form"
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4"
-    >
-      {/* Nombre */}
-      <FormInput
-        label="Nombre"
-        name="name"
-        register={register}
-        inputProps={{ placeholder: "Chamarras", disabled: readOnly }}
-        errors={errors}
-        required={true}
-      />
+  // Sincroniza isPending hacia el modal
+  useEffect(() => {
+    onPendingChange?.(createCategory.isPending || updateCategory.isPending);
+  }, [createCategory.isPending, updateCategory.isPending]);
 
-      {/* descripción */}
-      <div className="grid gap-2">
-        <Label className="font-medium text-sm">Descripción</Label>
-        <textarea
-          id="description"
-          {...register("description")}
-          placeholder="Descripción de la categoría"
-          // deshabilitamos el textarea en modo solo lectura
-          disabled={readOnly}
-          className="file:text-foreground resize-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-          rows={4}
-        ></textarea>
-        {errors.description && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.description.message}
-          </p>
-        )}
-      </div>
-    </form>
+  return (
+    <>
+      <form
+        id="category-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        {/* Nombre */}
+        <FormInput
+          label="Nombre"
+          name="name"
+          register={register}
+          inputProps={{ placeholder: "Chamarras", disabled: readOnly }}
+          errors={errors}
+          required={true}
+        />
+
+        {/* descripción */}
+        <div className="grid gap-2">
+          <Label className="font-medium text-sm">Descripción</Label>
+          <textarea
+            id="description"
+            {...register("description")}
+            placeholder="Descripción de la categoría"
+            // deshabilitamos el textarea en modo solo lectura
+            disabled={readOnly}
+            className="file:text-foreground resize-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+            rows={4}
+          ></textarea>
+          {errors.description && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.description.message}
+            </p>
+          )}
+        </div>
+      </form>
+    </>
   );
 };
 

@@ -84,93 +84,107 @@ const StoreForm = ({ defaultValues }: Props) => {
     });
   };
 
+  const isPending = isCreating || isUpdating;
+
   return (
-    <form
-      id="store-form"
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
-    >
-      <div className="flex items-end justify-end mb-10">
-        <Button type="submit" disabled={isCreating || isUpdating || !isDirty}>
-          {isCreating || isUpdating ? "Guardando..." : "Guardar Datos"}
-        </Button>
-      </div>
-      <div className="flex flex-col w-full gap-5 md:flex-row">
-        {/* Logo */}
-        <div className="grid gap-2 w-1/2">
-          <Label className="font-medium text-sm">
-            Logo de la Tienda <span className="text-red-500">*</span>
-          </Label>
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="border-input dark:bg-input/30 flex h-32 w-32 cursor-pointer items-center mx-auto justify-center rounded-md border border-dashed transition hover:opacity-80"
-          >
-            {preview ? (
-              <Image
-                src={preview}
-                alt="Logo preview"
-                width={128}
-                height={128}
-                loading="eager"
-                priority
-                className="h-full w-full rounded-md object-cover"
-              />
-            ) : (
-              <span className="text-muted-foreground text-sm">Subir logo</span>
+    <>
+      {/* Overlay de bloqueo */}
+      {isPending && (
+        <div className="fixed inset-0 z-9999 bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3 shadow-xl">
+            <span className="text-sm text-gray-600">Procesando...</span>
+          </div>
+        </div>
+      )}
+      <form
+        id="store-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
+      >
+        <div className="flex items-end justify-end mb-10">
+          <Button type="submit" disabled={isCreating || isUpdating || !isDirty}>
+            {isCreating || isUpdating ? "Guardando..." : "Guardar Datos"}
+          </Button>
+        </div>
+        <div className="flex flex-col w-full gap-5 md:flex-row">
+          {/* Logo */}
+          <div className="grid gap-2 w-1/2">
+            <Label className="font-medium text-sm">
+              Logo de la Tienda <span className="text-red-500">*</span>
+            </Label>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-input dark:bg-input/30 flex h-32 w-32 cursor-pointer items-center mx-auto justify-center rounded-md border border-dashed transition hover:opacity-80"
+            >
+              {preview ? (
+                <Image
+                  src={preview}
+                  alt="Logo preview"
+                  width={128}
+                  height={128}
+                  loading="eager"
+                  priority
+                  className="h-full w-full rounded-md object-cover"
+                />
+              ) : (
+                <span className="text-muted-foreground text-sm">
+                  Subir logo
+                </span>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            {errors.logo && (
+              <p className="text-sm text-red-500">{errors.logo.message}</p>
             )}
+            <div className="w-auto">
+              <ImageHint typeElement="logo" />
+            </div>
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".jpg,.jpeg,.png,.webp"
-            className="hidden"
-            onChange={handleFileChange}
+
+          <div className="grid gap-2 w-full md:w-1/2">
+            {/* Nombre */}
+            <FormInput
+              label="Nombre de la Tienda"
+              name="name"
+              register={register}
+              inputProps={{ placeholder: "Mi tienda" }}
+              errors={errors}
+              required
+            />
+
+            {/* WhatsApp */}
+            <FormInput
+              label="WhatsApp de la Tienda"
+              name="whatsapp_number"
+              register={register}
+              inputProps={{ placeholder: "12345678" }}
+              errors={errors}
+              required
+            />
+          </div>
+        </div>
+
+        {/* Descripción */}
+        <div className="grid gap-2">
+          <Label className="font-medium text-sm">Descripción</Label>
+          <textarea
+            {...register("description")}
+            placeholder="Descripción de tu tienda"
+            className="file:text-foreground resize-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
+            rows={4}
           />
-          {errors.logo && (
-            <p className="text-sm text-red-500">{errors.logo.message}</p>
+          {errors.description && (
+            <p className="text-sm text-red-500">{errors.description.message}</p>
           )}
-          <div className="w-auto">
-            <ImageHint typeElement="logo" />
-          </div>
         </div>
-
-        <div className="grid gap-2 w-full md:w-1/2">
-          {/* Nombre */}
-          <FormInput
-            label="Nombre de la Tienda"
-            name="name"
-            register={register}
-            inputProps={{ placeholder: "Mi tienda" }}
-            errors={errors}
-            required
-          />
-
-          {/* WhatsApp */}
-          <FormInput
-            label="WhatsApp de la Tienda"
-            name="whatsapp_number"
-            register={register}
-            inputProps={{ placeholder: "12345678" }}
-            errors={errors}
-            required
-          />
-        </div>
-      </div>
-
-      {/* Descripción */}
-      <div className="grid gap-2">
-        <Label className="font-medium text-sm">Descripción</Label>
-        <textarea
-          {...register("description")}
-          placeholder="Descripción de tu tienda"
-          className="file:text-foreground resize-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-          rows={4}
-        />
-        {errors.description && (
-          <p className="text-sm text-red-500">{errors.description.message}</p>
-        )}
-      </div>
-    </form>
+      </form>
+    </>
   );
 };
 

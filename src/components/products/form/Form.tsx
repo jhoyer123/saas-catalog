@@ -43,10 +43,9 @@ export default function FormProduct({
   } = useProductForm({ mode, initialData, categories });
 
   // Llamar a onFormChange cada vez que isDirty cambie
-  useEffect(() => {
+  /* useEffect(() => {
     onDirtyChange?.(isDirty);
-  }, [isDirty, onDirtyChange]);
-
+  }, [isDirty, onDirtyChange]); */
   return (
     <>
       {/* Overlay de bloqueo */}
@@ -63,7 +62,7 @@ export default function FormProduct({
         className="w-full mx-auto grid gap-6"
         id="product-form"
       >
-        {/* Fila 1: Nombre + Categoría */}
+        {/* Fila Nombre + Categoría */}
         <div className="grid md:grid-cols-2 gap-6">
           <FormInput
             label="Nombre"
