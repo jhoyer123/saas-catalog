@@ -1,7 +1,3 @@
-// ============================================
-// HELPERS
-// ============================================
-
 import { ImagePreview } from "@/components/products/form/InputFile";
 
 /**
@@ -27,12 +23,10 @@ export function createFileListFromArray(files: File[]): FileList {
  * Valida un archivo individual
  */
 export function validateFile(file: File, maxSizeMB: number): string | null {
-  // Validar tipo
   if (!file.type.startsWith("image/")) {
     return `${file.name} no es una imagen válida`;
   }
 
-  // Validar tamaño
   const sizeMB = file.size / (1024 * 1024);
   if (sizeMB > maxSizeMB) {
     return `${file.name} excede el tamaño máximo de ${maxSizeMB}MB`;
@@ -80,7 +74,7 @@ export async function processImage(
     targetHeight = 800,
     backgroundColor = "#ffffff",
     quality = 0.85,
-    maxSizeBytes = 200 * 1024, // 200kb por defecto
+    maxSizeBytes = 150 * 1024, // 150kb por defecto
   } = options;
 
   // 1. Cargar la imagen en un elemento HTMLImageElement
@@ -180,32 +174,52 @@ function calculateLetterbox(
 async function exportToWebP(
   canvas: HTMLCanvasElement,
   originalName: string,
-  quality: number,
+  initialQuality: number,
   maxSizeBytes: number,
 ): Promise<File> {
-  let currentQuality = quality;
-  let blob: Blob | null = null;
+  let quality = initialQuality;
+  let workingCanvas = canvas;
 
-  // Intentar reducir calidad hasta respetar el límite
-  // Mínimo de calidad: 0.5 para no romper la imagen
-  while (currentQuality >= 0.5) {
-    blob = await canvasToBlob(canvas, "image/webp", currentQuality);
+  // 🔁 Loop principal
+  while (true) {
+    let blob = await canvasToBlob(workingCanvas, "image/webp", quality);
 
-    if (blob.size <= maxSizeBytes) break;
+    if (blob.size <= maxSizeBytes) {
+      return buildFile(blob, originalName);
+    }
 
-    currentQuality -= 0.05;
+    // 🔻 FASE 1: bajar calidad (pero con límite sano)
+    if (quality > 0.6) {
+      quality -= 0.05;
+      continue;
+    }
+
+    // 🔻 FASE 2: reducir resolución
+    const nextWidth = Math.floor(workingCanvas.width * 0.85);
+    const nextHeight = Math.floor(workingCanvas.height * 0.85);
+
+    // 🔴 límite mínimo (evitar imágenes feas)
+    if (nextWidth < 600) {
+      return buildFile(blob, originalName); // mejor esto que destruir la imagen
+    }
+
+    const newCanvas = document.createElement("canvas");
+    newCanvas.width = nextWidth;
+    newCanvas.height = nextHeight;
+
+    const ctx = newCanvas.getContext("2d")!;
+    ctx.drawImage(workingCanvas, 0, 0, nextWidth, nextHeight);
+
+    workingCanvas = newCanvas;
+
+    // 🔄 MUY IMPORTANTE: resetear calidad
+    quality = initialQuality;
   }
+}
 
-  // Si aun así supera el límite, usamos la última versión (calidad 0.5)
-  if (!blob) {
-    blob = await canvasToBlob(canvas, "image/webp", 0.5);
-  }
-
-  // Construir nombre del archivo con extensión .webp
+function buildFile(blob: Blob, originalName: string): File {
   const baseName = originalName.replace(/\.[^/.]+$/, "");
-  const newName = `${baseName}.webp`;
-
-  return new File([blob], newName, { type: "image/webp" });
+  return new File([blob], `${baseName}.webp`, { type: "image/webp" });
 }
 
 /**

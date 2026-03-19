@@ -14,8 +14,13 @@ export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CategoryForm }) =>
-      updateCategory(id, data),
+    mutationFn: async ({ id, data }: { id: string; data: CategoryForm }) => {
+      const result = await updateCategory(id, data);
+      if (result && typeof result === "object" && "error" in result) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["categories"],

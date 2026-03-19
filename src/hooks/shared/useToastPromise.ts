@@ -1,4 +1,3 @@
-// components/ui/toast-promise.tsx
 "use client";
 
 import { toast, ExternalToast } from "sonner";
@@ -26,7 +25,7 @@ interface ToastPromiseProps<T> {
 }
 
 export function useToastPromise() {
-  const showPromise = <T,>({
+  const showPromise = <T>({
     promise,
     messages,
     position,

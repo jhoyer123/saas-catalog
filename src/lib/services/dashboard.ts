@@ -29,7 +29,7 @@ export type SessionData = {
   hasStore: boolean;
 };
 
-// ✅ Así
+// Así
 export const fetchSessionData = async (): Promise<SessionData | null> => {
   const supabase = createClient();
 
@@ -46,7 +46,7 @@ export const fetchSessionData = async (): Promise<SessionData | null> => {
       .from("stores")
       .select("*, plans(*)")
       .eq("user_id", userId)
-      .maybeSingle(), // 👈
+      .maybeSingle(),
   ]);
 
   if (!profile) return null;

@@ -10,8 +10,12 @@ import { useUpdateProduct } from "./useUpdateProduct";
 import { useToggleOffer } from "./useHandleOffer";
 import { useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 export function useProductActions() {
   const [isPending, setIsPending] = useState(false);
+
+  const router = useRouter();
 
   const { mutateAsync: create } = useCreateProduct();
   const { mutateAsync: update } = useUpdateProduct();
@@ -41,6 +45,7 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           await create(data);
+          router.push("/dashboard/products");
           onSuccess?.();
         });
       },
@@ -70,7 +75,8 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           await update({ id, dataProducto: data });
-          onSuccess?.(); // ← aquí, dentro de la promesa
+          router.push("/dashboard/products");
+          onSuccess?.();
         });
       },
       messages: {

@@ -20,12 +20,12 @@ const RichTextEditor = ({ value, onChange, disabled }: Props) => {
       StarterKit.configure({
         bulletList: {
           HTMLAttributes: {
-            class: "list-disc ml-3",
+            class: "list-disc pl-8",
           },
         },
         orderedList: {
           HTMLAttributes: {
-            class: "list-decimal ml-3",
+            class: "list-decimal pl-8",
           },
         },
       }),

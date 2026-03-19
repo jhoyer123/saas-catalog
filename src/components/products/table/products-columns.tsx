@@ -51,7 +51,7 @@ export const createProductsColumns = ({
   {
     accessorKey: "images",
     enableSorting: false,
-    header: "Imagen",
+    header: "Producto",
     cell: ({ row }) => {
       const images = row.getValue("images") as string[];
       const name = row.getValue("name") as string;
@@ -107,7 +107,7 @@ export const createProductsColumns = ({
     header: "Cod. Unico",
     cell: ({ row }) => (
       <span className="font-mono text-xs text-muted-foreground">
-        {row.getValue("sku")}
+        {row.getValue("sku") ?? "Sin código"}
       </span>
     ),
   },

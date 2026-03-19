@@ -7,12 +7,6 @@ import type {
   ProductInputService,
   ProductInputServiceUpdate,
 } from "@/lib/schemas/product";
-import type {
-  PaginationParams,
-  PaginatedResponse,
-} from "@/types/pagination.types";
-import type { ProductCatalog } from "@/types/product.types";
-import { checkIsOfferActive } from "../helpers/validations";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 /**
@@ -30,7 +24,7 @@ export const createProduct = async (
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
+  if (!session) return { error: "No autenticado" };
 
   const { data, error } = await supabase
     .from("products")
@@ -50,19 +44,31 @@ export const createProduct = async (
   if (error) {
     if (error.code === "23505") {
       if (error.message.includes("name")) {
-        throw new Error("Ya existe un producto con este nombre");
+        console.error("createProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este nombre",
+        };
       }
       if (error.message.includes("sku")) {
-        throw new Error("Ya existe un producto con este codigo");
+        console.error("createProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este codigo",
+        };
       }
+
       if (error.message.includes("slug")) {
-        throw new Error("Ya existe un producto con este slug");
+        console.error("createProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este slug",
+        };
       }
     }
     if (error.code === "P0001") {
-      throw new Error(error.message);
+      console.error("createProduct DB ERROR:", error);
+      return { error: error.message };
     }
-    throw new Error("Error al crear el producto");
+    console.error("createProduct DB ERROR:", error);
+    return { error: "Error al crear el producto" };
   }
 
   for (let i = 0; i < dataProducto.images.length; i++) {
@@ -78,7 +84,10 @@ export const createProduct = async (
     });
 
     if (insert.error) {
-      throw new Error(insert.error.message);
+      console.error("Error al subir la imagen:", insert.error);
+      return {
+        error: `Error al subir la imagen: ${insert.error.message}`,
+      };
     }
   }
 
@@ -102,7 +111,7 @@ export const updateProduct = async (
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
+  if (!session) return { error: "No autenticado" };
 
   //Actualizar datos del producto
   const { data, error } = await supabase
@@ -119,8 +128,35 @@ export const updateProduct = async (
     .eq("id", id)
     .select()
     .single();
+  if (error) {
+    if (error.code === "23505") {
+      if (error.message.includes("name")) {
+        console.error("updateProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este nombre",
+        };
+      }
+      if (error.message.includes("sku")) {
+        console.error("updateProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este codigo",
+        };
+      }
 
-  if (error) throw new Error(error.message);
+      if (error.message.includes("slug")) {
+        console.error("updateProduct DB ERROR", error);
+        return {
+          error: "Ya existe un producto con este slug",
+        };
+      }
+    }
+    if (error.code === "P0001") {
+      console.error("updateProduct DB ERROR:", error);
+      return { error: error.message };
+    }
+    console.error("updateProduct DB ERROR:", error);
+    return { error: "Error al actualizar el producto" };
+  }
 
   //Eliminar imágenes marcadas
   if (dataProducto.imageToDelete?.length! > 0) {
@@ -130,7 +166,10 @@ export const updateProduct = async (
       .delete()
       .in("image_url", dataProducto.imageToDelete!);
 
-    if (dbError) throw new Error(dbError.message);
+    if (dbError) {
+      console.error("updateProduct DB ERROR:", dbError);
+      return { error: "Error al eliminar las imágenes del producto" };
+    }
 
     //Eliminar archivos del bucket
     const paths = dataProducto.imageToDelete!.map((url: string) => {
@@ -142,7 +181,10 @@ export const updateProduct = async (
       .from("products")
       .remove(paths);
 
-    if (storageError) throw new Error(storageError.message);
+    if (storageError) {
+      console.error("updateProduct Storage ERROR:", storageError);
+      return { error: `Error al eliminar la imagen: ${storageError.message}` };
+    }
   }
 
   //Subir nuevas imágenes
@@ -160,7 +202,11 @@ export const updateProduct = async (
       });
 
       if (insert.error) {
-        throw new Error(insert.error.message);
+        console.error(
+          "updateProduct Storage ERROR error al subir la imagen:",
+          insert.error,
+        );
+        return { error: "Error al subir la imagen: " + i };
       }
     }
   }
@@ -174,16 +220,13 @@ export const updateProduct = async (
  * @param id
  * @param storeId
  */
-export const deleteProductAction = async (
-  id: string,
-  storeId: string,
-): Promise<void> => {
+export const deleteProductAction = async (id: string, storeId: string) => {
   const supabase = await createClient();
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
+  if (!session) return { error: "No autenticado" };
 
   // Obtener archivos antes de borrar la DB
   const folderPath = `${storeId}/${id}`;
@@ -196,7 +239,10 @@ export const deleteProductAction = async (
     p_product_id: id,
   });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("deleteProductAction DB ERROR:", error);
+    return { error: "Error al eliminar el producto" };
+  }
 
   // Borrar del storage
   if (files && files.length > 0) {
@@ -206,158 +252,6 @@ export const deleteProductAction = async (
 
   revalidateTag("products", {});
   revalidatePath("/dashboard/panel");
-};
-
-/**
- * action for get products paginated
- * @param storeId
- * @param params
- * @returns
- */
-export const getProductsPaginatedAction = async (
-  storeId: string,
-  params: PaginationParams,
-): Promise<PaginatedResponse<ProductCatalog>> => {
-  const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
-
-  const {
-    page = 1,
-    pageSize = 10,
-    search = "",
-    sortBy = "created_at",
-    sortOrder = "asc",
-  } = params;
-
-  let query = supabase
-    .from("products")
-    .select(
-      `
-      *,
-      category:categories(name),
-      images:product_images(image_url)
-      `,
-      { count: "exact" },
-    )
-    .limit(1, { foreignTable: "product_images" })
-    .eq("store_id", storeId);
-
-  if (search) {
-    query = query.or(
-      `name.ilike.%${search}%,sku.ilike.%${search}%,brand.ilike.%${search}%`,
-    );
-  }
-
-  query = query
-    .order(sortBy, { ascending: sortOrder === "asc" })
-    .range((page - 1) * pageSize, page * pageSize - 1);
-
-  const { data, count, error } = await query;
-
-  if (error) throw new Error(error.message);
-
-  const now = new Date();
-
-  const mapped = (data || []).map((p) => {
-    const isOfferActive = checkIsOfferActive(
-      {
-        is_offer: p.is_offer ?? false,
-        offer_price: p.offer_price ?? null,
-        offer_start: p.offer_start ?? null,
-        offer_end: p.offer_end ?? null,
-      },
-      now,
-    );
-
-    return {
-      id: p.id,
-      store_id: p.store_id,
-      category_id: p.category_id,
-      name_category: p.category?.name ?? "Sin categoría",
-      name: p.name,
-      sku: p.sku ?? null,
-      price: p.price,
-      description: p.description,
-      is_available: p.is_available,
-      display_order: p.display_order ?? 0,
-      created_at: p.created_at,
-      updated_at: p.updated_at,
-      is_offer: p.is_offer ?? false,
-      offer_price: p.offer_price ?? null,
-      offer_end: p.offer_end ?? null,
-      offer_start: p.offer_start ?? null,
-      slug: p.slug,
-      brand: p.brand ?? null,
-      is_offer_active: isOfferActive,
-      images:
-        p.images?.map((img: { image_url: string }) => img.image_url) ?? [],
-    };
-  });
-
-  return {
-    data: mapped,
-    total: count ?? 0,
-    page,
-    pageSize,
-    totalPages: Math.ceil((count ?? 0) / pageSize),
-  };
-};
-
-/**
- * action for get product by id
- * @param id
- * @returns
- */
-export const getProductByIdAction = async (
-  id: string,
-): Promise<ProductCatalog> => {
-  const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
-
-  const { data, error } = await supabase
-    .from("products")
-    .select(
-      `
-    *,
-    category:categories(name),
-    images:product_images(image_url)
-    `,
-    )
-    .eq("id", id)
-    .single();
-
-  if (error) throw new Error(error.message);
-
-  const mapped: ProductCatalog = {
-    id: data.id,
-    store_id: data.store_id,
-    category_id: data.category_id,
-    name_category: data.category?.name ?? "Sin categoría",
-    name: data.name,
-    sku: data.sku ?? null,
-    price: data.price,
-    description: data.description,
-    is_available: data.is_available,
-    display_order: data.display_order ?? 0,
-    created_at: data.created_at,
-    updated_at: data.updated_at,
-    is_offer: data.is_offer ?? false,
-    offer_price: data.offer_price ?? null,
-    slug: data.slug,
-    brand: data.brand ?? null,
-    images:
-      data.images?.map((img: { image_url: string }) => img.image_url) ?? [],
-  };
-
-  return mapped;
 };
 
 /**
@@ -374,15 +268,13 @@ export interface ToggleOfferParams {
   offer_end: string | null;
 }
 
-export const toggleOfferAction = async (
-  params: ToggleOfferParams,
-): Promise<void> => {
+export const toggleOfferAction = async (params: ToggleOfferParams) => {
   const supabase = await createClient();
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
+  if (!session) return { error: "No autenticado" };
 
   const { error } = await supabase
     .from("products")
@@ -397,6 +289,9 @@ export const toggleOfferAction = async (
     })
     .eq("id", params.id);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("toggleOfferAction DB ERROR:", error);
+    return { error: "Error al actualizar la oferta del producto" };
+  }
   revalidateTag("products", {});
 };

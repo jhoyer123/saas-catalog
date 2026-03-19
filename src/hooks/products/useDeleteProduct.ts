@@ -7,8 +7,13 @@ export function useDeleteProduct() {
   const { data: sessionData } = useSessionData();
 
   return useMutation({
-    mutationFn: (id: string) =>
-      deleteProductAction(id, sessionData?.store?.id!),
+    mutationFn: async (id: string) => {
+      const result = await deleteProductAction(id, sessionData?.store?.id!);
+      if (result && typeof result === "object" && "error" in result) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },

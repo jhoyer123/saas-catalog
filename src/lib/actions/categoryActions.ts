@@ -3,9 +3,7 @@
 import { createClient } from "@/lib/supabase/supabaseServer";
 import type { CategoryForm } from "@/lib/schemas/category";
 import { generateSlug } from "@/lib/utils/slug";
-import { CreateCategoryInput, CategorySimple } from "@/types/category.types";
-import { Category } from "@/types/category.types";
-import { PaginationParams, PaginatedResponse } from "@/types/pagination.types";
+import { CreateCategoryInput } from "@/types/category.types";
 import { revalidateTag } from "next/cache";
 
 /**
@@ -18,7 +16,7 @@ export const createCategory = async (dataInput: CreateCategoryInput) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) return null;
+  if (!session) return { error: "No autenticado" };
 
   const { data, error } = await supabase.from("categories").insert({
     store_id: dataInput.store_id,
@@ -28,7 +26,12 @@ export const createCategory = async (dataInput: CreateCategoryInput) => {
   });
 
   if (error) {
-    throw new Error(error.message);
+    if (error.code === "23505") {
+      console.error("ERROR createCategory: ", error);
+      return { error: "Ya existe una categoría con este nombre" };
+    }
+    console.error("ERROR createCategory: ", error);
+    return { error: "Error al crear la categoría" };
   }
 
   revalidateTag("categories", {});
@@ -47,7 +50,7 @@ export const updateCategory = async (id: string, dataInput: CategoryForm) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) return null;
+  if (!session) return { error: "No autenticado" };
 
   const { data, error } = await supabase
     .from("categories")
@@ -59,7 +62,12 @@ export const updateCategory = async (id: string, dataInput: CategoryForm) => {
     .eq("id", id);
 
   if (error) {
-    throw new Error(error.message);
+    if (error.code === "23505") {
+      console.error("ERROR updateCategory: ", error);
+      return { error: "Ya existe una categoría con este nombre" };
+    }
+    console.error("ERROR updateCategory: ", error);
+    return { error: "Error al actualizar la categoría" };
   }
 
   revalidateTag("categories", {});
@@ -71,105 +79,23 @@ export const updateCategory = async (id: string, dataInput: CategoryForm) => {
  * service for delete a category in the database
  * @param id
  */
-export const deleteCategory = async (
-  categoryId: string,
-  storeId: string,
-): Promise<void> => {
+export const deleteCategory = async (categoryId: string, storeId: string) => {
   const supabase = await createClient();
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
+  if (!session) return { error: "No autenticado" };
 
   const { error } = await supabase.rpc("delete_category", {
     p_category_id: categoryId,
     p_store_id: storeId,
   });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("ERROR deleteCategory: ", error);
+    return { error: "Error al eliminar la categoría" };
+  }
   revalidateTag("categories", {});
   revalidateTag("products", {});
-};
-
-/**
- * service for get a categories without pagination
- */
-export const getCategories = async (
-  storeId: string,
-): Promise<CategorySimple[] | null> => {
-  const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return null;
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id, name")
-    .eq("store_id", storeId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data;
-};
-
-/**
- * service for get all categories of a store with pagination
- * @param params
- * Este Server Action se ejecuta SIEMPRE en el servidor
- * Puede acceder a cookies y usar supabaseServer
- * Se puede llamar desde Client Components sin problemas
- */
-export const getCategoriesPaginate = async (
-  params: PaginationParams,
-  storeId: string,
-): Promise<PaginatedResponse<Category>> => {
-  const supabase = await createClient();
-  const {
-    page = 1,
-    pageSize = 10,
-    search = "",
-    sortBy = "created_at",
-    sortOrder = "desc",
-  } = params;
-  const offset = (page - 1) * pageSize;
-
-  let query = supabase.from("categories").select(
-    `
-        *,
-        product_count:products(count)
-      `,
-    { count: "exact" },
-  );
-
-  query = query.eq("store_id", storeId);
-
-  if (search) {
-    query = query.or(
-      `name.ilike.%${search}%,description.ilike.%${search}%,slug.ilike.%${search}%`,
-    );
-  }
-
-  query = query.order(sortBy, { ascending: sortOrder === "asc" });
-  query = query.range(offset, offset + pageSize - 1);
-
-  const { data, error, count } = await query;
-  if (error) throw new Error("No se pudieron cargar las categorías");
-
-  // Supabase devuelve product_count como [{ count: 3 }], lo normalizamos
-  const normalized = (data || []).map((cat) => ({
-    ...cat,
-    product_count: (cat.product_count as { count: number }[])[0]?.count ?? 0,
-  }));
-
-  const total = count || 0;
-  return {
-    data: normalized,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  };
 };

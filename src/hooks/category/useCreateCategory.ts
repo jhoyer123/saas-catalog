@@ -15,7 +15,13 @@ export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateCategoryInput) => createCategory(data),
+    mutationFn: async (data: CreateCategoryInput) => {
+      const result = await createCategory(data);
+      if (result && typeof result === "object" && "error" in result) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["categories"],
