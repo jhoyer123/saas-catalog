@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /public/
+
+# Bloquear acceso directo a Storage de Supabase
+User-agent: *
+Disallow: /*.supabase.co/storage/

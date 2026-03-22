@@ -12,52 +12,15 @@ import {
   dehydrate,
 } from "@tanstack/react-query";
 
-/* type SearchParams = {
-  search?: string;
-  category?: string;
-  brand?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  onlyOffers?: string;
-  sort?: "price_asc" | "price_desc" | "newest" | "display_order";
-  page?: string;
-}; */
-
 type Props = {
   params: Promise<{ store_slug: string }>;
-  //searchParams: Promise<SearchParams>;
 };
 
-//export const dynamic = "force-dynamic";
+export const revalidate = false;
 
-export default async function Page({ params /*, searchParams*/ }: Props) {
+export default async function Page({ params }: Props) {
   const { store_slug } = await params;
-  /* const {
-    search,
-    category,
-    brand,
-    minPrice,
-    maxPrice,
-    onlyOffers,
-    sort,
-    page,
-  } = await searchParams;
- */
-
   const queryClient = new QueryClient();
-  //const pageNum = Number(page) || 1;
-  /* const productKey = [
-    "public-products",
-    store_slug,
-    search ?? "",
-    category ?? "",
-    brand ?? "",
-    minPrice ?? "",
-    maxPrice ?? "",
-    onlyOffers ?? "",
-    sort ?? "",
-    pageNum,
-  ]; */
   const productKey = [
     "public-products",
     store_slug,

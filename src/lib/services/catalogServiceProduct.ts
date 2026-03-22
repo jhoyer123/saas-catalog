@@ -76,8 +76,7 @@ export async function fetchPublicProducts({
     .select(
       `
       id, name, price, is_offer, offer_price, offer_start, offer_end,
-      slug, description,brand:brands(name),
-      images:product_images(image_url)
+      slug, images:product_images(image_url)
       `,
       { count: "exact" },
     )
@@ -119,13 +118,13 @@ export async function fetchPublicProducts({
   const products: ProductCatalogCard[] = (data ?? []).map((p) => ({
     id: p.id,
     name: p.name,
-    description: p.description ?? null,
+    //description: p.description ?? null,
     price: p.price,
     is_offer: p.is_offer ?? false,
     offer_price: p.offer_price ?? null,
     offer_start: p.offer_start ?? null,
     offer_end: p.offer_end ?? null,
-    brand: (p.brand as unknown as { name: string } | null)?.name ?? null,
+    //brand: (p.brand as unknown as { name: string } | null)?.name ?? null,
     slug: p.slug,
     //categories: null,
     images: p.images ?? [],
@@ -139,6 +138,7 @@ export async function fetchPublicProducts({
       now,
     ),
   }));
+  //console.log("fetch product");
   return {
     products,
     total: count ?? 0,
@@ -160,7 +160,7 @@ export async function fetchPublicProductBySlug(
     .from("products")
     .select(
       `
-      *,
+      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,
       brand:brands(name),
       category:categories(name),
       images:product_images(image_url)
@@ -176,18 +176,18 @@ export async function fetchPublicProductBySlug(
 
   return {
     id: data.id,
-    store_id: data.store_id,
-    category_id: data.category_id,
-    brand_id: data.brand_id ?? null,
-    name_category: data.category?.name ?? "Sin categoría",
+    //store_id: data.store_id,
+    //category_id: data.category_id,
+    //brand_id: data.brand_id ?? null,
+    //name_category: data.category?.name ?? "Sin categoría",
     name: data.name,
-    sku: data.sku ?? null,
+    //sku: data.sku ?? null,
     price: data.price,
     description: data.description,
-    is_available: data.is_available,
-    display_order: data.display_order ?? 0,
-    created_at: data.created_at,
-    updated_at: data.updated_at,
+    //is_available: data.is_available,
+    //display_order: data.display_order ?? 0,
+    //created_at: data.created_at,
+    //updated_at: data.updated_at,
     is_offer: data.is_offer ?? false,
     offer_price: data.offer_price ?? null,
     offer_start: data.offer_start ?? null,

@@ -144,7 +144,7 @@ async function getPublicProductsInitialRaw(storeSlug: string) {
   const { data, error, count } = await supabasePublic
     .from("products")
     .select(
-      `id, name, description, price, is_offer, offer_price, offer_start, offer_end,slug, images:product_images(image_url)`,
+      `id, name, price, is_offer, offer_price, offer_start, offer_end, slug, images:product_images(image_url)`,
       { count: "exact" },
     )
     .limit(1, { foreignTable: "product_images" })
@@ -159,7 +159,7 @@ async function getPublicProductsInitialRaw(storeSlug: string) {
     products: (data ?? []).map((product) => ({
       id: product.id,
       name: product.name,
-      description: product.description ?? null,
+      //description: product.description ?? null,
       price: product.price,
       is_offer: product.is_offer ?? false,
       offer_price: product.offer_price ?? null,

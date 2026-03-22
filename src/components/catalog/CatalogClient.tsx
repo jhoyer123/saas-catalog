@@ -54,7 +54,7 @@ interface CatalogClientProps {
 }
 
 export default function CatalogClient({
-  initialProductData,
+  //initialProductData,
   categories,
   brands,
   banners,

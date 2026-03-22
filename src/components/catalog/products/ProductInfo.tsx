@@ -132,17 +132,17 @@ export function ProductInfo({
         </h3>
         <div
           className="prose prose-sm font-inter max-w-none text-gray-600 leading-relaxed [&>p]:mb-2"
-          dangerouslySetInnerHTML={{ __html: product.description }}
+          dangerouslySetInnerHTML={{
+            __html: product.description
+              ? product.description
+              : "No hay descripción disponible.",
+          }}
         />
       </div>
 
       {/* ── CTA BUTTONS ── */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Button
-          onClick={handleAddToCart}
-          disabled={!product.is_available}
-          className="md:text-[16px]"
-        >
+        <Button onClick={handleAddToCart} className="md:text-[16px]">
           <ShoppingCart className="h-5 w-5" />
           Agregar al Carrito
         </Button>
