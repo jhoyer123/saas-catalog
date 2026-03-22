@@ -3,6 +3,7 @@
 import Form from "@/components/products/form/Form";
 import SkeletonForm from "@/components/shared/SkeletonForm";
 import { Button } from "@/components/ui/button";
+import { useGetBrandsNoPage } from "@/hooks/brand/useGetBrandsNoPage";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import { useGetProductById } from "@/hooks/products/useGetProductById";
 import Link from "next/link";
@@ -14,8 +15,15 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { data: product, isLoading: isLoadingProduct } = useGetProductById(id);
   const { data: categories, isLoading: isLoadingCategories } =
     useGetCategoryNoPage();
-
-  if (isLoadingProduct || isLoadingCategories || !product || !categories) {
+  const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
+  if (
+    isLoadingProduct ||
+    isLoadingCategories ||
+    isLoadingBrands ||
+    !product ||
+    !categories ||
+    !brands
+  ) {
     return <SkeletonForm />;
   }
 
@@ -32,8 +40,10 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           mode="view"
           initialData={product}
           categories={categories ?? []}
-          isLoadingCategories={isLoadingCategories}
-          isLoadingProduct={isLoadingProduct}
+          //isLoadingCategories={isLoadingCategories}
+          brands={brands ?? []}
+          //isLoadingBrands={isLoadingBrands}
+          //isLoadingProduct={isLoadingProduct}
         />
       </div>
     </div>

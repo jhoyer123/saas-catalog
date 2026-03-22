@@ -8,17 +8,35 @@ export function useCreateProduct() {
 
   //get data session
   const { data: sessionData } = useSessionData();
+  const storeId = sessionData?.store?.id;
+  const slugStore = sessionData?.store?.slug;
 
   return useMutation({
     mutationFn: async (dataProducto: ProductInputService) => {
-      const result = await createProduct(dataProducto, sessionData?.store?.id!);
+      const result = await createProduct(dataProducto, storeId!, slugStore!);
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }
       return result;
     },
-    onSuccess: () => {
+    /* onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["categories-paginated"] });
+    }, */
+    onSuccess: (_data, variables) => {
+      const invalidations = [
+        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        queryClient.invalidateQueries({ queryKey: ["categories"] }),
+      ];
+
+      // solo invalida brands si el producto se creó con marca
+      if (variables.brand_id) {
+        invalidations.push(
+          queryClient.invalidateQueries({ queryKey: ["brands"] }),
+        );
+      }
+
+      return Promise.all(invalidations);
     },
   });
 }

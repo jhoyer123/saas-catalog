@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateCategory } from "@/lib/actions/categoryActions";
 import type { CategoryForm } from "@/lib/schemas/category";
+import { useSessionData } from "../auth/useSessionData";
 
 /**
  * 🎣 HOOK PARA ACTUALIZAR CATEGORÍA
@@ -13,9 +14,13 @@ import type { CategoryForm } from "@/lib/schemas/category";
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
+  //get data session
+  const { data: sessionData } = useSessionData();
+  const slugStore = sessionData?.store?.slug;
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: CategoryForm }) => {
-      const result = await updateCategory(id, data);
+      const result = await updateCategory(id, data, slugStore!);
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }

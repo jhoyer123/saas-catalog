@@ -1,5 +1,5 @@
 import {
-  getPublicProducts,
+  getPublicProductsInitial,
   getPublicCategories,
   getPublicBrands,
   getPublicBanners,
@@ -12,7 +12,7 @@ import {
   dehydrate,
 } from "@tanstack/react-query";
 
-type SearchParams = {
+/* type SearchParams = {
   search?: string;
   category?: string;
   brand?: string;
@@ -21,18 +21,18 @@ type SearchParams = {
   onlyOffers?: string;
   sort?: "price_asc" | "price_desc" | "newest" | "display_order";
   page?: string;
-};
+}; */
 
 type Props = {
   params: Promise<{ store_slug: string }>;
-  searchParams: Promise<SearchParams>;
+  //searchParams: Promise<SearchParams>;
 };
 
-export const dynamic = "force-dynamic";
+//export const dynamic = "force-dynamic";
 
-export default async function Page({ params, searchParams }: Props) {
+export default async function Page({ params /*, searchParams*/ }: Props) {
   const { store_slug } = await params;
-  const {
+  /* const {
     search,
     category,
     brand,
@@ -42,10 +42,11 @@ export default async function Page({ params, searchParams }: Props) {
     sort,
     page,
   } = await searchParams;
+ */
 
   const queryClient = new QueryClient();
-  const pageNum = Number(page) || 1;
-  const productKey = [
+  //const pageNum = Number(page) || 1;
+  /* const productKey = [
     "public-products",
     store_slug,
     search ?? "",
@@ -56,21 +57,23 @@ export default async function Page({ params, searchParams }: Props) {
     onlyOffers ?? "",
     sort ?? "",
     pageNum,
+  ]; */
+  const productKey = [
+    "public-products",
+    store_slug,
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    1,
   ];
 
   const [initialProductData, categories, brands, banners, store] =
     await Promise.all([
-      getPublicProducts({
-        storeSlug: store_slug,
-        search,
-        category,
-        brand,
-        minPrice,
-        maxPrice,
-        onlyOffers,
-        sort,
-        page: pageNum,
-      }),
+      getPublicProductsInitial(store_slug),
       getPublicCategories(store_slug),
       getPublicBrands(store_slug),
       getPublicBanners(store_slug),

@@ -76,7 +76,7 @@ export async function fetchPublicProducts({
     .select(
       `
       id, name, price, is_offer, offer_price, offer_start, offer_end,
-      brand, slug, description,
+      slug, description,brand:brands(name),
       images:product_images(image_url)
       `,
       { count: "exact" },
@@ -87,7 +87,7 @@ export async function fetchPublicProducts({
 
   if (search) query = query.ilike("name", `%${search}%`);
   if (category) query = query.eq("category_id", category);
-  if (brand) query = query.ilike("brand", `%${brand}%`);
+  if (brand) query = query.eq("brand_id", brand);
   if (minPrice) query = query.gte("price", Number(minPrice));
   if (maxPrice) query = query.lte("price", Number(maxPrice));
 
@@ -125,9 +125,9 @@ export async function fetchPublicProducts({
     offer_price: p.offer_price ?? null,
     offer_start: p.offer_start ?? null,
     offer_end: p.offer_end ?? null,
-    brand: p.brand ?? null,
+    brand: (p.brand as unknown as { name: string } | null)?.name ?? null,
     slug: p.slug,
-    categories: null, // no se necesita en la card
+    //categories: null,
     images: p.images ?? [],
     is_offer_active: checkIsOfferActive(
       {
@@ -161,6 +161,7 @@ export async function fetchPublicProductBySlug(
     .select(
       `
       *,
+      brand:brands(name),
       category:categories(name),
       images:product_images(image_url)
       `,
@@ -177,6 +178,7 @@ export async function fetchPublicProductBySlug(
     id: data.id,
     store_id: data.store_id,
     category_id: data.category_id,
+    brand_id: data.brand_id ?? null,
     name_category: data.category?.name ?? "Sin categoría",
     name: data.name,
     sku: data.sku ?? null,
@@ -191,16 +193,7 @@ export async function fetchPublicProductBySlug(
     offer_start: data.offer_start ?? null,
     offer_end: data.offer_end ?? null,
     slug: data.slug,
-    brand: data.brand ?? null,
-    is_offer_active: checkIsOfferActive(
-      {
-        is_offer: data.is_offer ?? false,
-        offer_price: data.offer_price ?? null,
-        offer_start: data.offer_start ?? null,
-        offer_end: data.offer_end ?? null,
-      },
-      now,
-    ),
+    brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images: (data.images ?? []).map(
       (img: { image_url: string }) => img.image_url,
     ),

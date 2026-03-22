@@ -18,7 +18,8 @@ const productBaseSchema = z.object({
   name: z.string().min(1, "El nombre del producto es obligatorio"),
   sku: z.string().optional(),
   slug: z.string().optional(),
-  brand: z.string().optional(),
+  //brand: z.string().optional(),
+  brand_id: z.string().optional(),
   price: z.coerce
     .number({ message: "El precio es obligatorio" })
     .min(0.01, "El precio debe ser mayor a 0"),

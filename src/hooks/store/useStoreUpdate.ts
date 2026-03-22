@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { updateStore } from "@/lib/actions/storeActions";
 import type { StoreForm } from "@/lib/schemas/store";
+import { useSessionData } from "../auth/useSessionData";
 
 interface UpdateStoreInput {
   id: string;
@@ -18,9 +19,18 @@ export const useUpdateStore = (): UseMutationResult<
   UpdateStoreInput
 > => {
   const queryClient = useQueryClient();
+  const { data } = useSessionData();
+  const userId = data?.profile?.id;
+  const slugStore = data?.store?.slug;
 
   return useMutation({
-    mutationFn: ({ id, data }: UpdateStoreInput) => updateStore(id, data),
+    mutationFn: async ({ id, data }: UpdateStoreInput) => {
+      const result = await updateStore(id, data, slugStore!);
+      if (result && typeof result === "object" && "error" in result) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session-data"] });
     },

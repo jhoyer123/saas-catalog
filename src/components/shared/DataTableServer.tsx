@@ -144,7 +144,8 @@ export function DataTableServer<TData>({
         sortBy,
         sortOrder,
       }),
-    staleTime: 30_000, // 30 segundos de cache
+    staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
+    gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
 
   // Extraer datos de la respuesta (con fallbacks)

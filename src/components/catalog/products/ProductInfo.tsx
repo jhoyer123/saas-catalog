@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 interface ProductInfoProps {
   product: ProductCatalog;
   whatssapNumber?: string | null;
+  isOfferActive: boolean;
+  discountPercent?: number | null;
 }
 
 // ─── Badge config ───────────────────────────────────────────────
@@ -60,20 +62,15 @@ function ProductBadge({ type }: { type: BadgeType }) {
   );
 }
 
-// ─── Cambiar este valor por producto cuando tengas BD ───────────
-// Ejemplo futuro: const badge: BadgeType = product.badge ?? null;
-const DEMO_BADGE: BadgeType = "featured"; // ← cambia aquí mientras tanto
-
-export function ProductInfo({ product, whatssapNumber }: ProductInfoProps) {
+export function ProductInfo({
+  product,
+  whatssapNumber,
+  isOfferActive,
+  discountPercent,
+}: ProductInfoProps) {
   const addItem = useCartStore((s) => s.addItem);
 
-  const displayPrice = product.is_offer_active
-    ? product.offer_price
-    : product.price;
-
-  const discountPercentage = product.is_offer_active
-    ? Math.round(((product.price - product.offer_price!) / product.price) * 100)
-    : 0;
+  const displayPrice = isOfferActive ? product.offer_price : product.price;
 
   const handleAddToCart = () => {
     addItem({
@@ -113,13 +110,13 @@ export function ProductInfo({ product, whatssapNumber }: ProductInfoProps) {
           Bs. {displayPrice!.toFixed(2)}
         </span>
 
-        {product.is_offer_active && (
+        {isOfferActive && (
           <div className="mb-1 flex flex-col items-start">
             <span className="text-lg text-gray-400 line-through">
               Bs. {product.price.toFixed(2)}
             </span>
             <span className="rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
-              AHORRA {discountPercentage}%
+              AHORRA {discountPercent}%
             </span>
           </div>
         )}

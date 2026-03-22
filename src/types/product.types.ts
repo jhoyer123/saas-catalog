@@ -2,6 +2,7 @@ export interface ProductCatalog {
   id: string;
   store_id: string;
   category_id: string;
+  brand_id: string | null;
   name_category: string; // nombre de la categoría para mostrar
   name: string;
   price: number;
@@ -63,6 +64,6 @@ export interface ProductCatalogCard {
   offer_end: string | null;
   brand: string | null;
   slug: string;
-  categories: { name: string } | null;
+  //categories: { name: string } | null;
   images: { image_url: string }[];
 }

@@ -9,7 +9,14 @@ import {
 import { NavUser } from "../sidebar/nav-user";
 import HeaderSidebar from "../sidebar/HeaderSidebar";
 import { NavProjects } from "../sidebar/nav-projects";
-import { Frame, Layers, LucideIcon, Package, Store } from "lucide-react";
+import {
+  BadgeCheck,
+  Frame,
+  Layers,
+  LucideIcon,
+  Package,
+  Store,
+} from "lucide-react";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import SkeletonSidebar from "./SkeletonSidebar";
 
@@ -34,6 +41,12 @@ const navItems: NavItem[] = [
     name: "Categorias",
     url: "/dashboard/categories",
     icon: Layers,
+    requiresStore: true,
+  },
+  {
+    name: "Marcas",
+    url: "/dashboard/brands",
+    icon: BadgeCheck,
     requiresStore: true,
   },
   {

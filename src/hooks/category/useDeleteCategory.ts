@@ -13,12 +13,14 @@ import { useSessionData } from "../auth/useSessionData";
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
 
-  //categoryId es el id de la categoría a eliminar
-  const { data } = useSessionData();
+  //get data session
+  const { data: sessionData } = useSessionData();
+  const storeId = sessionData?.store?.id;
+  const slugStore = sessionData?.store?.slug;
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const result = await deleteCategory(id, data?.store?.id!);
+      const result = await deleteCategory(id, storeId!, slugStore!);
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }

@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Search } from "lucide-react";
+import { BrandCatalog } from "@/types/brand.types";
 
 interface ProductFilterControlsProps {
   categories: { id: string; name: string }[];
-  brands: string[];
+  brands: BrandCatalog[];
 }
 
 export function ProductFilterControls({
@@ -119,8 +120,8 @@ export function ProductFilterControls({
             <SelectContent position="popper">
               <SelectItem value="all">Todas las marcas</SelectItem>
               {brands.map((brand) => (
-                <SelectItem key={brand} value={brand}>
-                  {brand}
+                <SelectItem key={brand.id} value={brand.id}>
+                  {brand.name}
                 </SelectItem>
               ))}
             </SelectContent>

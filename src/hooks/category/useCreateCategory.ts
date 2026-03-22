@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCategory } from "@/lib/actions/categoryActions";
-import type { CategoryForm } from "@/lib/schemas/category";
 import { CreateCategoryInput } from "@/types/category.types";
+import { useSessionData } from "../auth/useSessionData";
 
 /**
  * HOOK PARA CREAR CATEGORÍA
@@ -13,10 +13,13 @@ import { CreateCategoryInput } from "@/types/category.types";
  */
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
+  //get data session
+  const { data: sessionData } = useSessionData();
+  const slugStore = sessionData?.store?.slug;
 
   return useMutation({
     mutationFn: async (data: CreateCategoryInput) => {
-      const result = await createCategory(data);
+      const result = await createCategory(data, slugStore!);
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }

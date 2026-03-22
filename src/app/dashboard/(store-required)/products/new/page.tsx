@@ -2,12 +2,20 @@
 
 import Form from "@/components/products/form/Form";
 import { Button } from "@/components/ui/button";
+import { useGetBrandsNoPage } from "@/hooks/brand/useGetBrandsNoPage";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import Link from "next/link";
+import SkeletonForm from "../[id]/view/loading";
 
 export default function Page() {
   //get categories for select in form
-  const { data: categories } = useGetCategoryNoPage();
+  const { data: categories, isLoading: isLoadingCategories } =
+    useGetCategoryNoPage();
+  const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
+
+  if (isLoadingCategories || isLoadingBrands || !categories || !brands) {
+    return <SkeletonForm />;
+  }
 
   return (
     <div className="h-full w-full py-6 px-4">
@@ -25,7 +33,11 @@ export default function Page() {
             </Button>
           </div>
         </div>
-        <Form mode="create" categories={categories || []} />
+        <Form
+          mode="create"
+          categories={categories || []}
+          brands={brands || []}
+        />
       </div>
     </div>
   );

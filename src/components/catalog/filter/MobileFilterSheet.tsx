@@ -8,12 +8,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ProductFilterControls } from "./ProductFilterControls";
+import { BrandCatalog } from "@/types/brand.types";
 
 interface MobileFilterSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: { id: string; name: string }[];
-  brands: string[];
+  brands: BrandCatalog[];
 }
 
 export function MobileFilterSheet({

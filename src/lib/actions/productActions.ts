@@ -18,6 +18,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 export const createProduct = async (
   dataProducto: ProductInputService,
   storeId: string,
+  storeSlug: string,
 ) => {
   const supabase = await createClient();
 
@@ -34,7 +35,7 @@ export const createProduct = async (
       slug: generateSlug(dataProducto.name),
       price: dataProducto.price,
       description: dataProducto.description,
-      brand: dataProducto.brand,
+      brand_id: dataProducto.brand_id ?? null,
       category_id: dataProducto.category_id,
       store_id: storeId,
     })
@@ -91,7 +92,7 @@ export const createProduct = async (
     }
   }
 
-  revalidateTag("products", {});
+  revalidateTag(`products-${storeSlug}`, "max");
   return data;
 };
 
@@ -106,6 +107,7 @@ export const updateProduct = async (
   id: string,
   dataProducto: ProductInputServiceUpdate,
   storeId: string,
+  storeSlug: string,
 ) => {
   const supabase = await createClient();
   const {
@@ -122,7 +124,7 @@ export const updateProduct = async (
       price: dataProducto.price,
       slug: generateSlug(dataProducto.name),
       description: dataProducto.description,
-      brand: dataProducto.brand,
+      brand_id: dataProducto.brand_id ?? null,
       category_id: dataProducto.category_id,
     })
     .eq("id", id)
@@ -211,7 +213,7 @@ export const updateProduct = async (
     }
   }
 
-  revalidateTag("products", {});
+  revalidateTag(`products-${storeSlug}`, "max");
   return data;
 };
 
@@ -219,8 +221,13 @@ export const updateProduct = async (
  * action for delete product
  * @param id
  * @param storeId
+ * @param storeSlug
  */
-export const deleteProductAction = async (id: string, storeId: string) => {
+export const deleteProductAction = async (
+  id: string,
+  storeId: string,
+  storeSlug: string,
+) => {
   const supabase = await createClient();
 
   const {
@@ -250,8 +257,7 @@ export const deleteProductAction = async (id: string, storeId: string) => {
     await supabase.storage.from("products").remove(paths);
   }
 
-  revalidateTag("products", {});
-  revalidatePath("/dashboard/panel");
+  revalidateTag(`products-${storeSlug}`, "max");
 };
 
 /**
@@ -268,7 +274,10 @@ export interface ToggleOfferParams {
   offer_end: string | null;
 }
 
-export const toggleOfferAction = async (params: ToggleOfferParams) => {
+export const toggleOfferAction = async (
+  params: ToggleOfferParams,
+  storeSlug: string,
+) => {
   const supabase = await createClient();
 
   const {
@@ -293,5 +302,6 @@ export const toggleOfferAction = async (params: ToggleOfferParams) => {
     console.error("toggleOfferAction DB ERROR:", error);
     return { error: "Error al actualizar la oferta del producto" };
   }
-  revalidateTag("products", {});
+
+  revalidateTag(`products-${storeSlug}`, "max");
 };

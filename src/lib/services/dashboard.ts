@@ -18,6 +18,7 @@ import type {
 } from "@/types/pagination.types";
 import type { ProductCatalog } from "@/types/product.types";
 import type { CategorySimple, Category } from "@/types/category.types";
+import type { BrandDashboard, BrandOfForm } from "@/types/brand.types";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 // ── Tipos ──
@@ -76,6 +77,7 @@ export const fetchProductCount = async (storeId: string): Promise<number> => {
   return count ?? 0;
 };
 
+//PRODUCTS
 // ── Products paginated ──
 export const fetchProductsPaginated = async (
   storeId: string,
@@ -97,6 +99,7 @@ export const fetchProductsPaginated = async (
       `
       *,
       category:categories(name),
+      brand:brands(name),
       images:product_images(image_url)
       `,
       { count: "exact" },
@@ -135,6 +138,7 @@ export const fetchProductsPaginated = async (
       id: p.id,
       store_id: p.store_id,
       category_id: p.category_id,
+      brand_id: p.brand_id ?? null,
       name_category: p.category?.name ?? "Sin categoría",
       name: p.name,
       sku: p.sku ?? null,
@@ -149,13 +153,12 @@ export const fetchProductsPaginated = async (
       offer_end: p.offer_end ?? null,
       offer_start: p.offer_start ?? null,
       slug: p.slug,
-      brand: p.brand ?? null,
+      brand: (p.brand as unknown as { name: string } | null)?.name ?? null,
       is_offer_active: isOfferActive,
       images:
         p.images?.map((img: { image_url: string }) => img.image_url) ?? [],
     };
   });
-
   return {
     data: mapped,
     total: count ?? 0,
@@ -166,7 +169,6 @@ export const fetchProductsPaginated = async (
 };
 
 // ── Product by ID ──
-
 export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
   const supabase = createClient();
 
@@ -176,6 +178,7 @@ export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
       `
     *,
     category:categories(name),
+    brand:brands(name),
     images:product_images(image_url)
     `,
     )
@@ -188,6 +191,7 @@ export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
     id: data.id,
     store_id: data.store_id,
     category_id: data.category_id,
+    brand_id: data.brand_id ?? null,
     name_category: data.category?.name ?? "Sin categoría",
     name: data.name,
     sku: data.sku ?? null,
@@ -200,14 +204,14 @@ export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
     is_offer: data.is_offer ?? false,
     offer_price: data.offer_price ?? null,
     slug: data.slug,
-    brand: data.brand ?? null,
+    brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images:
       data.images?.map((img: { image_url: string }) => img.image_url) ?? [],
   };
 };
 
+//CATEGORIES
 // ── Categories (sin paginación) ──
-
 export const fetchCategories = async (
   storeId: string,
 ): Promise<CategorySimple[]> => {
@@ -222,9 +226,7 @@ export const fetchCategories = async (
 
   return data ?? [];
 };
-
 // ── Categories paginated ──
-
 export const fetchCategoriesPaginated = async (
   params: PaginationParams,
   storeId: string,
@@ -240,13 +242,7 @@ export const fetchCategoriesPaginated = async (
   } = params;
   const offset = (page - 1) * pageSize;
 
-  let query = supabase.from("categories").select(
-    `
-        *,
-        product_count:products(count)
-      `,
-    { count: "exact" },
-  );
+  let query = supabase.from("categories").select("*", { count: "exact" });
 
   query = query.eq("store_id", storeId);
 
@@ -262,14 +258,9 @@ export const fetchCategoriesPaginated = async (
   const { data, error, count } = await query;
   if (error) throw new Error("No se pudieron cargar las categorías");
 
-  const normalized = (data || []).map((cat) => ({
-    ...cat,
-    product_count: (cat.product_count as { count: number }[])[0]?.count ?? 0,
-  }));
-
   const total = count || 0;
   return {
-    data: normalized,
+    data: data ?? [],
     total,
     page,
     pageSize,
@@ -278,7 +269,6 @@ export const fetchCategoriesPaginated = async (
 };
 
 // ── Banners ──
-
 export const fetchBanners = async (storeId: string): Promise<string[]> => {
   const supabase = createClient();
 
@@ -290,4 +280,69 @@ export const fetchBanners = async (storeId: string): Promise<string[]> => {
   if (error) throw new Error(error.message);
 
   return data.map((item) => item.image_url);
+};
+
+//BRANDS
+// ── Brands (sin paginación) ──
+export const fetchBrands = async (storeId: string): Promise<BrandOfForm[]> => {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("brands")
+    .select("id, name")
+    .eq("store_id", storeId);
+
+  if (error) throw new Error(error.message);
+
+  return data ?? [];
+};
+
+// ── Brands paginated ──
+export const fetchBrandsPaginated = async (
+  params: PaginationParams,
+  storeId: string,
+): Promise<PaginatedResponse<BrandDashboard>> => {
+  const supabase = createClient();
+
+  const {
+    page = 1,
+    pageSize = 10,
+    search = "",
+    sortBy = "created_at",
+    sortOrder = "desc",
+  } = params;
+
+  const offset = (page - 1) * pageSize;
+
+  let query = supabase
+    .from("brands")
+    .select("id, name, created_at, product_count", { count: "exact" });
+
+  query = query.eq("store_id", storeId);
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,slug.ilike.%${search}%`);
+  }
+
+  query = query.order(sortBy, { ascending: sortOrder === "asc" });
+  query = query.range(offset, offset + pageSize - 1);
+
+  const { data, error, count } = await query;
+  if (error) throw new Error("No se pudieron cargar las marcas");
+
+  const items: BrandDashboard[] = (data || []).map((b) => ({
+    id: b.id,
+    name: b.name,
+    created_at: b.created_at,
+    product_count: b.product_count,
+  }));
+
+  const total = count || 0;
+  return {
+    data: items,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
+  };
 };

@@ -60,9 +60,7 @@ export function CategoriesTable() {
     [openModal],
   );
 
-  if (isPending || !storeId) {
-    return <SkeletonTable />;
-  }
+  if (isPending || !storeId) return <SkeletonTable />;
 
   return (
     <>

@@ -3,6 +3,7 @@
 import Form from "@/components/products/form/Form";
 import SkeletonForm from "@/components/shared/SkeletonForm";
 import { Button } from "@/components/ui/button";
+import { useGetBrandsNoPage } from "@/hooks/brand/useGetBrandsNoPage";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import { useGetProductById } from "@/hooks/products/useGetProductById";
 import Link from "next/link";
@@ -14,11 +15,19 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { data: product, isLoading: isLoadingProduct } = useGetProductById(id);
   const { data: categories, isLoading: isLoadingCategories } =
     useGetCategoryNoPage();
+  const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
 
   // Solo se habilita el boton si cambian los datos
   const [isDirty, setIsDirty] = useState(false);
 
-  if (isLoadingProduct || isLoadingCategories || !product || !categories) {
+  if (
+    isLoadingProduct ||
+    isLoadingCategories ||
+    isLoadingBrands ||
+    !product ||
+    !categories ||
+    !brands
+  ) {
     return <SkeletonForm />;
   }
 
@@ -32,11 +41,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
             <Button variant="secondary" asChild>
               <Link href="/dashboard/products">Volver</Link>
             </Button>
-            <Button
-              variant="default"
-              type="submit"
-              form="product-form"
-            >
+            <Button variant="default" type="submit" form="product-form">
               Guardar cambios
             </Button>
           </div>
@@ -45,6 +50,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           mode="update"
           initialData={product}
           categories={categories ?? []}
+          brands={brands ?? []}
           onDirtyChange={setIsDirty}
         />
       </div>

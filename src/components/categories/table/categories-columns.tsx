@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Image from "next/image";
+//import Image from "next/image";
 
 import type { CategoryModalMode } from "@/hooks/category/useModalsCategory";
 

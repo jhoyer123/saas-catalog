@@ -4,13 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { OfferBadge } from "./offerBadge";
 
 const FALLBACK_IMAGE = "/images/placeholder.webp";
 
 interface ProductImageGalleryProps {
   images: string[];
   productName: string;
-  badge?: string;
+  discountPercent?: number | null;
 }
 
 // Hook por imagen individual
@@ -59,7 +60,7 @@ function GalleryImage({
 export function ProductImageGallery({
   images,
   productName,
-  badge,
+  discountPercent,
 }: ProductImageGalleryProps) {
   // Capa de seguridad: array vacío o undefined → fallback
   const safeImages = images && images.length > 0 ? images : [FALLBACK_IMAGE];
@@ -118,11 +119,7 @@ export function ProductImageGallery({
       onTouchStart={isMobile ? handleTouchStart : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
-      {badge && (
-        <span className="absolute left-4 top-4 z-10 rounded-full bg-black/80 backdrop-blur-sm px-3 py-1 text-[10px] font-bold tracking-[0.15em] uppercase text-white">
-          {badge}
-        </span>
-      )}
+      {discountPercent && <OfferBadge discountPercent={discountPercent} />}
 
       {!isMobile && (
         <button

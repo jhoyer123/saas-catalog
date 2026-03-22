@@ -11,7 +11,7 @@ export const useSessionData = () => {
   return useQuery<SessionData | null>({
     queryKey: ["session-data"],
     queryFn: fetchSessionData,
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
+    gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
 };

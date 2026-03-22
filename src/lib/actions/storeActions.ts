@@ -19,7 +19,11 @@ import { revalidateTag } from "next/cache";
  *  Porque necesitamos el ID de la tienda como parte de la ruta en Storage
  *  (stores/{storeId}/logo/main.ext). Ese ID lo genera Supabase al insertar.
  */
-export const createStore = async (dataInput: StoreForm, userId: string) => {
+export const createStore = async (
+  dataInput: StoreForm,
+  userId: string,
+  storeSlug: string,
+) => {
   const supabase = await createClient();
   const {
     data: { session },
@@ -37,9 +41,7 @@ export const createStore = async (dataInput: StoreForm, userId: string) => {
     .limit(1)
     .single();
 
-  if (!defaultPlan) {
-    throw new Error("No se encontró un plan por defecto");
-  }
+  if (!defaultPlan) return { error: "No se pudo obtener el plan por defecto" };
 
   // ── 2. Insertar la tienda SIN logo (para obtener el ID) ──
   const { data: newStore, error } = await supabase
@@ -58,7 +60,8 @@ export const createStore = async (dataInput: StoreForm, userId: string) => {
     .single();
 
   if (error || !newStore) {
-    throw new Error(error?.message ?? "Error al crear la tienda");
+    console.error("ERROR createStore: ", error);
+    return { error: "Error al crear la tienda" };
   }
 
   // ── 3. Si hay logo, subirlo y actualizar la tienda ──
@@ -77,19 +80,25 @@ export const createStore = async (dataInput: StoreForm, userId: string) => {
       .eq("id", newStore.id);
 
     if (updateError) {
-      throw new Error(updateError.message);
+      console.error("ERROR updating store with logo: ", updateError);
+      return { error: "Error al actualizar la tienda con el logo" };
     }
   }
 
+  revalidateTag(`store-${storeSlug}`, "max");
   return newStore;
 };
 
-export const updateStore = async (storeId: string, dataInput: StoreForm) => {
+export const updateStore = async (
+  storeId: string,
+  dataInput: StoreForm,
+  storeSlug: string,
+) => {
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
+  if (!session) return { error: "No autenticado" };
 
   // solo sube imagen nueva si mandaron un File
   const logo_url =
@@ -108,7 +117,11 @@ export const updateStore = async (storeId: string, dataInput: StoreForm) => {
     })
     .eq("id", storeId);
 
-  if (error) throw new Error(error.message);
-  revalidateTag("store", {});
+  if (error) {
+    console.error("ERROR updateStore: ", error);
+    return { error: "Error al actualizar la tienda" };
+  }
+
+  revalidateTag(`store-${storeSlug}`, "max");
   return data;
 };

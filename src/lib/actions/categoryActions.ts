@@ -10,7 +10,10 @@ import { revalidateTag } from "next/cache";
  * service for creating a new category in the database
  * @param dataInput
  */
-export const createCategory = async (dataInput: CreateCategoryInput) => {
+export const createCategory = async (
+  dataInput: CreateCategoryInput,
+  storeSlug: string,
+) => {
   const supabase = await createClient();
 
   const {
@@ -34,8 +37,7 @@ export const createCategory = async (dataInput: CreateCategoryInput) => {
     return { error: "Error al crear la categoría" };
   }
 
-  revalidateTag("categories", {});
-  revalidateTag("products", {});
+  revalidateTag(`categories-${storeSlug}`, "max");
   return data;
 };
 
@@ -44,7 +46,11 @@ export const createCategory = async (dataInput: CreateCategoryInput) => {
  * @param id
  * @param dataInput
  */
-export const updateCategory = async (id: string, dataInput: CategoryForm) => {
+export const updateCategory = async (
+  id: string,
+  dataInput: CategoryForm,
+  storeSlug: string,
+) => {
   const supabase = await createClient();
 
   const {
@@ -70,8 +76,7 @@ export const updateCategory = async (id: string, dataInput: CategoryForm) => {
     return { error: "Error al actualizar la categoría" };
   }
 
-  revalidateTag("categories", {});
-  revalidateTag("products", {});
+  revalidateTag(`categories-${storeSlug}`, "max");
   return data;
 };
 
@@ -79,7 +84,11 @@ export const updateCategory = async (id: string, dataInput: CategoryForm) => {
  * service for delete a category in the database
  * @param id
  */
-export const deleteCategory = async (categoryId: string, storeId: string) => {
+export const deleteCategory = async (
+  categoryId: string,
+  storeId: string,
+  storeSlug: string,
+) => {
   const supabase = await createClient();
 
   const {
@@ -94,8 +103,8 @@ export const deleteCategory = async (categoryId: string, storeId: string) => {
 
   if (error) {
     console.error("ERROR deleteCategory: ", error);
-    return { error: "Error al eliminar la categoría" };
+    return { error: error.message || "Error al eliminar la categoría" };
   }
-  revalidateTag("categories", {});
-  revalidateTag("products", {});
+
+  revalidateTag(`categories-${storeSlug}`, "max");
 };

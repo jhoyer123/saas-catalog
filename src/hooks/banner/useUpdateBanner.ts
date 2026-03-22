@@ -12,6 +12,7 @@ export const useUpdateBanner = () => {
   //get store id
   const { data } = useSessionData();
   const storeId = data?.store?.id;
+  const slugStore = data?.store?.slug;
 
   return useMutation({
     mutationFn: async ({
@@ -22,11 +23,18 @@ export const useUpdateBanner = () => {
       imagesToDelete: string[];
     }) => {
       if (!storeId) throw new Error("No se encontró el ID de la tienda");
-      return updateBannersAction({
-        storeId,
-        newFiles,
-        imagesToDelete,
-      });
+      const result = await updateBannersAction(
+        {
+          storeId,
+          newFiles,
+          imagesToDelete,
+        },
+        slugStore!,
+      );
+      if (result && typeof result === "object" && "error" in result) {
+        throw new Error(result.error);
+      }
+      return result;
     },
     onSuccess: () => {
       // Invalidar la consulta de banners para refetch automático

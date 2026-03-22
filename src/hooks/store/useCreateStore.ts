@@ -23,9 +23,16 @@ export const useCreateStore = (): UseMutationResult<
   const queryClient = useQueryClient();
   const { data } = useSessionData();
   const userId = data?.profile?.id;
+  const slugStore = data?.store?.slug;
 
   return useMutation({
-    mutationFn: (data: StoreForm) => createStore(data, userId!),
+    mutationFn: async (data: StoreForm) => {
+      const result = await createStore(data, userId!, slugStore!);
+      if (result && typeof result === "object" && "error" in result) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session-data"] });
     },

@@ -13,6 +13,7 @@ import { ProductPagination } from "@/components/catalog/products/ProductPaginati
 import { Banner } from "@/types/catalog/catalog.types";
 import { InputSearch } from "./header/InputSearch";
 import { useProductFilter } from "@/hooks/catalog/useProductFilter";
+import { BrandCatalog } from "@/types/brand.types";
 
 // Hook reutilizable para medir altura
 function useElementHeight(id: string) {
@@ -42,7 +43,7 @@ interface CatalogClientProps {
     total: number;
   };
   categories: { id: string; name: string }[];
-  brands: string[];
+  brands: BrandCatalog[];
   banners: Banner[];
   store: {
     name: string;
@@ -124,7 +125,7 @@ export default function CatalogClient({
     pageNum,
   ] as const;
 
-  const { data, isLoading, isFetching } = useQuery({
+  const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey: productQueryKey,
     queryFn: () =>
       fetchPublicProducts({
@@ -140,14 +141,19 @@ export default function CatalogClient({
           undefined,
         page: pageNum,
       }),
+    //initialData: initialProductData,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: keepPreviousData,
   });
 
-  const products = data?.products ?? initialProductData.products;
+  /* const products = data?.products ?? initialProductData.products;
   const totalPages = data?.totalPages ?? initialProductData.totalPages;
   const total = data?.total ?? initialProductData.total;
+  const hasBanners = banners.length > 0; */
+  const products = data?.products ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const total = data?.total ?? 0;
   const hasBanners = banners.length > 0;
 
   return (
@@ -211,7 +217,7 @@ export default function CatalogClient({
               </p>
             </div>
 
-            {/* ✅ Loader mejorado */}
+            {/* Loader mejorado */}
             {isFetching && !isLoading && (
               <div className="h-0.5 w-full overflow-hidden mb-2 bg-border rounded-full">
                 <div className="h-full w-2/5 bg-primary/50 rounded-full catalog-loading-bar" />

@@ -13,14 +13,17 @@ import FormSelect from "@/components/shared/SelectForm";
 import InputFile from "@/components/products/form/InputFile";
 import { ProductCatalog } from "@/types/product.types";
 import { CategorySimple } from "@/types/category.types";
-import { useEffect } from "react";
+//import { useEffect } from "react";
+import { BrandOfForm } from "@/types/brand.types";
 
 interface FormProductProps {
   mode: "create" | "update" | "view";
   initialData?: ProductCatalog;
   categories: CategorySimple[];
-  isLoadingProduct?: boolean;
-  isLoadingCategories?: boolean;
+  brands: BrandOfForm[];
+  //isLoadingProduct?: boolean;
+  //isLoadingCategories?: boolean;
+  //isLoadingBrands?: boolean;
   onDirtyChange?: (isDirty: boolean) => void;
 }
 
@@ -28,7 +31,8 @@ export default function FormProduct({
   mode,
   initialData,
   categories,
-  onDirtyChange,
+  brands,
+  //onDirtyChange,
 }: FormProductProps) {
   const {
     register,
@@ -38,10 +42,10 @@ export default function FormProduct({
     setValue,
     isViewMode,
     categoryOptions,
+    brandOptions,
     isPending,
-    isDirty,
-  } = useProductForm({ mode, initialData, categories });
-
+    //isDirty,
+  } = useProductForm({ mode, initialData, categories, brands });
   // Llamar a onFormChange cada vez que isDirty cambie
   /* useEffect(() => {
     onDirtyChange?.(isDirty);
@@ -82,7 +86,7 @@ export default function FormProduct({
             name="category_id"
             control={control}
             options={categoryOptions}
-            placeholder="Categoría"
+            placeholder="Zapatos, Electrónica..."
             errors={errors}
             disabled={isViewMode}
             required={true}
@@ -104,7 +108,7 @@ export default function FormProduct({
               }}
             />
 
-            <FormInput
+            {/* <FormInput
               label="Marca"
               name="brand"
               register={register}
@@ -114,6 +118,15 @@ export default function FormProduct({
                 disabled: isViewMode,
                 placeholder: "Samsung",
               }}
+            /> */}
+            <FormSelect
+              label="Marca"
+              name="brand_id"
+              control={control}
+              options={brandOptions}
+              placeholder="Nike, Samsung..."
+              errors={errors}
+              disabled={isViewMode}
             />
           </div>
 

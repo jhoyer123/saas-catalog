@@ -9,9 +9,9 @@ import { ProductImageGallery } from "@/components/catalog/products/ProductImageG
 import { ProductInfo } from "@/components/catalog/products/ProductInfo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-//import { getPublicProductBySlug } from "@/lib/actions/catalogActions";
-// Agregar
 import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
+import { useTiempoActual } from "@/hooks/catalog/useTiempoActual";
+import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 interface ProductDetailClientProps {
   product: ProductCatalog;
@@ -42,17 +42,30 @@ export default function ProductDetailClient({
 
   const { data: product } = useQuery({
     queryKey: ["public-product", initialProduct.slug],
-    //queryFn: () => getPublicProductBySlug(initialProduct.slug),
     queryFn: () => fetchPublicProductBySlug(initialProduct.slug),
     initialData: initialProduct,
-    staleTime: 5 * 60 * 1000,
-    refetchOnMount: "always",
+    staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
+    gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
 
-  const getBadge = () => {
-    if (product.is_offer_active) return "OFERTA";
-    return undefined;
-  };
+  const ahora = useTiempoActual(60_000);
+
+  const isOfferActive = checkIsOfferActive(
+    {
+      is_offer: product.is_offer,
+      offer_price: product.offer_price || null,
+      offer_start: product.offer_start || null,
+      offer_end: product.offer_end || null,
+    },
+    ahora,
+  );
+
+  const discountPercent =
+    isOfferActive && product.offer_price
+      ? Math.round(
+          ((product.price - product.offer_price) / product.price) * 100,
+        )
+      : null;
 
   return (
     <main className="min-h-screen bg-[#f7f8fa]">
@@ -75,13 +88,15 @@ export default function ProductDetailClient({
             <ProductImageGallery
               images={product.images}
               productName={product.name}
-              badge={getBadge()}
+              discountPercent={discountPercent}
             />
           </div>
           <div>
             <ProductInfo
               product={product}
               whatssapNumber={store.whatsapp_number}
+              isOfferActive={isOfferActive}
+              discountPercent={discountPercent}
             />
           </div>
         </div>

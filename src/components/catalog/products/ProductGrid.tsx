@@ -1,5 +1,7 @@
 import { ProductCatalogCard } from "@/types/product.types";
 import { ProductCard } from "./ProductCard";
+import { useTiempoActual } from "@/hooks/catalog/useTiempoActual";
+import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 interface ProductGridProps {
   products: ProductCatalogCard[];
@@ -14,6 +16,8 @@ export function ProductGrid({
   hasBanners,
   whatssapNumber,
 }: ProductGridProps) {
+  const ahora = useTiempoActual(60_000);
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -70,6 +74,15 @@ export function ProductGrid({
         <ProductCard
           key={product.id}
           product={product}
+          isOfferActive={checkIsOfferActive(
+            {
+              is_offer: product.is_offer,
+              offer_price: product.offer_price,
+              offer_start: product.offer_start,
+              offer_end: product.offer_end,
+            },
+            ahora,
+          )}
           whatssapNumber={whatssapNumber}
         />
       ))}

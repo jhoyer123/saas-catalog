@@ -5,7 +5,11 @@ import { uploadFile, deleteFile } from "@/lib/utils/storage";
 import { revalidateTag } from "next/cache";
 
 // ─── Subir nuevos banners
-export async function uploadBannersAction(storeId: string, files: File[]) {
+export async function uploadBannersAction(
+  storeId: string,
+  files: File[],
+  storeSlug: string,
+) {
   const supabase = await createClient();
 
   const {
@@ -21,7 +25,7 @@ export async function uploadBannersAction(storeId: string, files: File[]) {
     .eq("user_id", session.user.id)
     .single();
 
-  if (!store) throw new Error("No tienes permisos sobre esta tienda");
+  if (!store) return { error: "No tienes permisos sobre esta tienda" };
 
   const insertedIds: string[] = [];
 
@@ -35,7 +39,10 @@ export async function uploadBannersAction(storeId: string, files: File[]) {
         .select("id")
         .single();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("uploadBannersAction DB ERROR:", error);
+        return { error: "Error al guardar el banner en la base de datos" };
+      }
 
       insertedIds.push(data.id);
     }
@@ -47,7 +54,7 @@ export async function uploadBannersAction(storeId: string, files: File[]) {
     throw error;
   }
 
-  revalidateTag("banners", {});
+  revalidateTag(`banners-${storeSlug}`, "max");
   return { success: true, count: insertedIds.length };
 }
 
@@ -58,12 +65,15 @@ export interface UpdateBannersParams {
 }
 
 //update banners
-export async function updateBannersAction(dataFiles: UpdateBannersParams) {
+export async function updateBannersAction(
+  dataFiles: UpdateBannersParams,
+  storeSlug: string,
+) {
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("No autenticado");
+  if (!session) return { error: "No autenticado" };
 
   // Verificar que el usuario sea dueño de la tienda
   const { data: store } = await supabase
@@ -73,7 +83,12 @@ export async function updateBannersAction(dataFiles: UpdateBannersParams) {
     .eq("user_id", session.user.id)
     .single();
 
-  if (!store) throw new Error("No tienes permisos sobre esta tienda");
+  if (!store) {
+    console.error(
+      "updateBannersAction ERROR: Usuario no autorizado para esta tienda",
+    );
+    return { error: "No tienes permisos sobre esta tienda" };
+  }
 
   //Eliminar imágenes marcadas
   if (dataFiles.imagesToDelete?.length! > 0) {
@@ -83,7 +98,10 @@ export async function updateBannersAction(dataFiles: UpdateBannersParams) {
       .delete()
       .in("image_url", dataFiles.imagesToDelete!);
 
-    if (dbError) throw new Error(dbError.message);
+    if (dbError) {
+      console.error("updateBannersAction DB ERROR:", dbError);
+      return { error: "Error al eliminar el banner de la base de datos" };
+    }
 
     //Eliminar archivos del bucket
     const paths = dataFiles.imagesToDelete!.map((url: string) => {
@@ -95,7 +113,10 @@ export async function updateBannersAction(dataFiles: UpdateBannersParams) {
       .from("banners")
       .remove(paths);
 
-    if (storageError) throw new Error(storageError.message);
+    if (storageError) {
+      console.error("updateBannersAction Storage ERROR:", storageError);
+      return { error: `Error al eliminar el banner: ${storageError.message}` };
+    }
   }
 
   // ─── 2. Subir nuevos banners (misma lógica que upload)
@@ -116,7 +137,10 @@ export async function updateBannersAction(dataFiles: UpdateBannersParams) {
         .select("id")
         .single();
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("updateBannersAction DB ERROR:", error);
+        return { error: "Error al guardar el banner en la base de datos" };
+      }
 
       insertedIds.push(data.id);
     }
@@ -128,12 +152,12 @@ export async function updateBannersAction(dataFiles: UpdateBannersParams) {
     throw error;
   }
 
-  revalidateTag("banners", {});
+  revalidateTag(`banners-${storeSlug}`, "max");
   return { success: true };
 }
 
 //get Banners
-export async function getBannersAction(storeId: string) {
+/* export async function getBannersAction(storeId: string) {
   const supabase = await createClient();
 
   const {
@@ -141,7 +165,6 @@ export async function getBannersAction(storeId: string) {
   } = await supabase.auth.getSession();
   if (!session) throw new Error("No autenticado");
 
-  // Verificar que el usuario sea dueño de la tienda
   const { data: store } = await supabase
     .from("stores")
     .select("id")
@@ -159,4 +182,4 @@ export async function getBannersAction(storeId: string) {
   if (error) throw new Error(error.message);
 
   return data.map((item) => item.image_url);
-}
+} */

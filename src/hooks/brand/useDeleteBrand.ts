@@ -1,27 +1,27 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toggleOfferAction } from "@/lib/actions/productActions";
-import type { ToggleOfferParams } from "@/lib/actions/productActions";
+import { deleteBrand } from "@/lib/actions/brandActions";
 import { useSessionData } from "../auth/useSessionData";
 
-export const useToggleOffer = () => {
+/**
+ * HOOK PARA ELIMINAR MARCA
+ */
+export const useDeleteBrand = () => {
   const queryClient = useQueryClient();
-
-  //get data session
   const { data: sessionData } = useSessionData();
+  const storeId = sessionData?.store?.id;
   const slugStore = sessionData?.store?.slug;
 
   return useMutation({
-    mutationFn: async (params: ToggleOfferParams) => {
-      const result = await toggleOfferAction(params, slugStore!);
+    mutationFn: async (id: string) => {
+      const result = await deleteBrand(id, storeId!, slugStore!);
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }
       return result;
     },
-
     onSuccess: () => {
-      // Invalida la lista de productos para que se refresque
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["brands"] });
+      queryClient.invalidateQueries({ queryKey: ["brands-no-page"] });
     },
   });
 };

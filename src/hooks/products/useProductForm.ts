@@ -19,12 +19,14 @@ interface UseProductFormProps {
   mode: FormMode;
   initialData?: ProductCatalog;
   categories: { id: string; name: string }[];
+  brands: { id: string; name: string }[];
 }
 
 export function useProductForm({
   mode,
   initialData,
   categories,
+  brands,
 }: UseProductFormProps) {
   const isCreate = mode === "create";
   const isUpdate = mode === "update";
@@ -47,17 +49,18 @@ export function useProductForm({
     defaultValues: {
       name: initialData?.name ?? "",
       sku: initialData?.sku ?? "",
-      brand: initialData?.brand ?? "",
+      //brand: initialData?.brand ?? "",
       price: initialData?.price ?? 0,
       description: initialData?.description ?? "",
       category_id: initialData?.category_id ?? "",
+      brand_id: initialData?.brand_id ?? "",
       imageExisting: initialData?.images ?? [],
       imageToDelete: [],
     },
   });
 
   // Cuando initialData llega (o cambia), sincroniza el form
- /*  useEffect(() => {
+  /*  useEffect(() => {
     if (initialData && isUpdate) {
       reset({
         name: initialData.name ?? "",
@@ -80,6 +83,15 @@ export function useProductForm({
         label: cat.name,
       })),
     [categories],
+  );
+
+  const brandOptions = useMemo(
+    () =>
+      (brands ?? []).map((brand) => ({
+        value: String(brand.id),
+        label: brand.name,
+      })),
+    [brands],
   );
 
   useEffect(() => {
@@ -107,7 +119,7 @@ export function useProductForm({
       createProduct(transformed as ProductInputService, () => {
         reset({
           name: "",
-          brand: "",
+          brand_id: "",
           sku: "",
           category_id: "",
           description: "",
@@ -123,7 +135,7 @@ export function useProductForm({
         () => {
           reset({
             name: "",
-            brand: "",
+            brand_id: "",
             sku: "",
             category_id: "",
             description: "",
@@ -145,6 +157,7 @@ export function useProductForm({
     isViewMode: isView,
     initialData,
     categoryOptions,
+    brandOptions,
     isPending,
   };
 }
