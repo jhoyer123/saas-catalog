@@ -17,7 +17,7 @@ export interface ProductCatalog {
   offer_end?: string; // fecha de fin de la oferta (opcional)
   //isOfferActive?: boolean; // campo calculado para indicar si la oferta está activa
   is_offer_active?: boolean; // campo calculado para indicar si la oferta está activa,
-  slug: string;
+  slug?: string | null; // slug para URL amigable, puede ser null si no se usa
   sku?: string | null; // no todos los productos tienen SKU
   brand?: string | null; // no todos los productos tienen marca
   images: string[]; // array de URLs de imágenes

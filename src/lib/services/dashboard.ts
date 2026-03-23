@@ -42,10 +42,16 @@ export const fetchSessionData = async (): Promise<SessionData | null> => {
   const userId = session.user.id;
 
   const [{ data: profile }, { data: stores }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", userId).single(),
+    supabase
+      .from("profiles")
+      .select("id,full_name,email,is_active")
+      .eq("id", userId)
+      .single(),
     supabase
       .from("stores")
-      .select("*, plans(*)")
+      .select(
+        "id,slug,name,logo_url,description,whatsapp_number,is_active,plans(id,name,price)",
+      )
       .eq("user_id", userId)
       .maybeSingle(),
   ]);
@@ -55,7 +61,9 @@ export const fetchSessionData = async (): Promise<SessionData | null> => {
   return {
     profile,
     store: stores ?? null,
-    plan: stores?.plans ?? null,
+    plan: Array.isArray(stores?.plans)
+      ? (stores.plans[0] ?? null)
+      : (stores?.plans ?? null),
     hasStore: !!stores,
   };
 };
@@ -97,7 +105,7 @@ export const fetchProductsPaginated = async (
     .from("products")
     .select(
       `
-      *,
+      id,name,price,is_offer,offer_price,offer_start,offer_end,sku,
       category:categories(name),
       brand:brands(name),
       images:product_images(image_url)
@@ -136,23 +144,25 @@ export const fetchProductsPaginated = async (
 
     return {
       id: p.id,
-      store_id: p.store_id,
-      category_id: p.category_id,
-      brand_id: p.brand_id ?? null,
-      name_category: p.category?.name ?? "Sin categoría",
+      //store_id: p.store_id,
+      //category_id: p.category_id,
+      //brand_id: p.brand_id ?? null,
+      name_category: Array.isArray(p.category)
+        ? (p.category[0]?.name ?? "Sin categoría")
+        : "Sin categoría",
       name: p.name,
       sku: p.sku ?? null,
       price: p.price,
-      description: p.description,
-      is_available: p.is_available,
-      display_order: p.display_order ?? 0,
-      created_at: p.created_at,
-      updated_at: p.updated_at,
+      //description: p.description,
+      //is_available: p.is_available,
+      //display_order: p.display_order ?? 0,
+      //created_at: p.created_at,
+      //updated_at: p.updated_at,
       is_offer: p.is_offer ?? false,
       offer_price: p.offer_price ?? null,
       offer_end: p.offer_end ?? null,
       offer_start: p.offer_start ?? null,
-      slug: p.slug,
+      //slug: p.slug,
       brand: (p.brand as unknown as { name: string } | null)?.name ?? null,
       is_offer_active: isOfferActive,
       images:
@@ -176,10 +186,7 @@ export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
     .from("products")
     .select(
       `
-    *,
-    category:categories(name),
-    brand:brands(name),
-    images:product_images(image_url)
+    id,category_id,brand_id,name,price,description,sku,images:product_images(image_url)
     `,
     )
     .eq("id", id)
@@ -189,22 +196,23 @@ export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
 
   return {
     id: data.id,
-    store_id: data.store_id,
+    //store_id: data.store_id,
     category_id: data.category_id,
     brand_id: data.brand_id ?? null,
-    name_category: data.category?.name ?? "Sin categoría",
+    //name_category: data.category?.name ?? "Sin categoría",
     name: data.name,
     sku: data.sku ?? null,
     price: data.price,
     description: data.description,
-    is_available: data.is_available,
-    display_order: data.display_order ?? 0,
-    created_at: data.created_at,
-    updated_at: data.updated_at,
-    is_offer: data.is_offer ?? false,
-    offer_price: data.offer_price ?? null,
-    slug: data.slug,
-    brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
+    is_offer: false,
+    //is_available: data.is_available,
+    //display_order: data.display_order ?? 0,
+    //created_at: data.created_at,
+    //updated_at: data.updated_at,
+    //is_offer: data.is_offer ?? false,
+    //offer_price: data.offer_price ?? null,
+    //slug: data.slug,
+    //brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images:
       data.images?.map((img: { image_url: string }) => img.image_url) ?? [],
   };
@@ -242,7 +250,11 @@ export const fetchCategoriesPaginated = async (
   } = params;
   const offset = (page - 1) * pageSize;
 
-  let query = supabase.from("categories").select("*", { count: "exact" });
+  let query = supabase
+    .from("categories")
+    .select("id, name, description, created_at, product_count", {
+      count: "exact",
+    });
 
   query = query.eq("store_id", storeId);
 

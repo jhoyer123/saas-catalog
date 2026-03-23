@@ -44,7 +44,7 @@ export default function ProductDetailClient({
 
   const { data: product } = useQuery({
     queryKey: ["public-product", initialProduct.slug],
-    queryFn: () => fetchPublicProductBySlug(initialProduct.slug),
+    queryFn: () => fetchPublicProductBySlug(initialProduct.slug!),
     initialData: initialProduct,
     staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen

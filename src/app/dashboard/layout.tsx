@@ -3,8 +3,6 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import BfcacheGuard from "@/components/auth/BfcacheGuard";
 import { DashboardGuard } from "@/components/dashboard/DashboardGuard";
 
-//export const dynamic = "force-dynamic";
-
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>

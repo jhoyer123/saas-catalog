@@ -4,8 +4,8 @@
 export interface Plan {
   id: string;
   name: string;
-  max_products: number;
+  //max_products: number;
   price: number;
-  created_at: string;
-  updated_at: string;
+  //created_at: string;
+  //updated_at: string;
 }

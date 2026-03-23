@@ -57,12 +57,10 @@ export const getCategoriesColumns = ({
     header: "Nombre",
     cell: ({ row }) => {
       const name = row.getValue("name") as string;
-      const slug = row.original.slug;
 
       return (
         <div className="flex flex-col">
           <span className="font-medium">{name}</span>
-          <span className="text-xs text-muted-foreground">/{slug}</span>
         </div>
       );
     },
