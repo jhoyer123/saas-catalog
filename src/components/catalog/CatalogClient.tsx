@@ -14,6 +14,7 @@ import { Banner } from "@/types/catalog/catalog.types";
 import { InputSearch } from "./header/InputSearch";
 import { useProductFilter } from "@/hooks/catalog/useProductFilter";
 import { BrandCatalog } from "@/types/brand.types";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 // Hook reutilizable para medir altura
 function useElementHeight(id: string) {
@@ -50,6 +51,7 @@ interface CatalogClientProps {
     slug: string;
     logo_url: string | null;
     whatsapp_number: string | null;
+    updated_at: string; // Agregado para el cache busting
   };
 }
 
@@ -185,7 +187,13 @@ export default function CatalogClient({
             </aside>
 
             <div className="flex-1">
-              <HeroSection banners={banners} />
+              {/* <HeroSection banners={banners} /> */}
+              <HeroSection
+                banners={banners.map((b) => ({
+                  ...b,
+                  image_url: getCatalogImageUrl(b.image_url),
+                }))}
+              />
             </div>
           </div>
         </div>

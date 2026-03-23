@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { CartButton } from "@/components/cart/CartButton";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 interface HeaderProps {
   store: {
@@ -11,6 +12,7 @@ interface HeaderProps {
     slug: string;
     logo_url: string | null;
     whatsapp_number?: string | null;
+    updated_at: string;
   };
 }
 
@@ -23,7 +25,12 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
       <div className="container mx-auto px-4 py-2 md:py-1 flex items-center justify-between">
         <Link href={`/public/${store.slug}`}>
           <Image
-            src={store.logo_url || "/images/store-placeholder.png"}
+            //src={store.logo_url || "/images/store-placeholder.png"}
+            src={
+              store.logo_url
+                ? `${getCatalogImageUrl(store.logo_url)}?v=${new Date(store.updated_at).getTime()}`
+                : "/images/store-placeholder.png"
+            }
             alt="Logo de la Tienda"
             width={200}
             height={200}

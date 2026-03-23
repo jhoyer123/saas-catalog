@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
 import { OfferBadge } from "./offerBadge";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 interface ProductCardProps {
   product: ProductCatalogCard;
@@ -46,7 +47,8 @@ export function ProductCard({
     addItem({
       id: product.id,
       name: product.name,
-      image: product.images[0]?.image_url || "/images/placeholder.png",
+      //image: product.images[0]?.image_url || "/images/placeholder.png",
+      image: getCatalogImageUrl(product.images[0]?.image_url),
       price: displayPrice!,
     });
     toast.success("Producto agregado al carrito", { position: "bottom-right" });
@@ -91,7 +93,8 @@ export function ProductCard({
         className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
       >
         <Image
-          src={product.images[0]?.image_url || "/images/placeholder.webp"}
+          //src={product.images[0]?.image_url || "/images/placeholder.webp"}
+          src={getCatalogImageUrl(product.images[0]?.image_url)}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"

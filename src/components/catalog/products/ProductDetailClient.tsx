@@ -12,6 +12,7 @@ import { ArrowLeft } from "lucide-react";
 import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
 import { useTiempoActual } from "@/hooks/catalog/useTiempoActual";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 interface ProductDetailClientProps {
   product: ProductCatalog;
@@ -21,6 +22,7 @@ interface ProductDetailClientProps {
     slug: string;
     logo_url: string | null;
     whatsapp_number?: string | null;
+    updated_at: string; // Agregado para el cache busting
   };
 }
 
@@ -86,7 +88,8 @@ export default function ProductDetailClient({
             style={{ top: headerHeight + 16 }}
           >
             <ProductImageGallery
-              images={product.images}
+              //images={product.images}
+              images={product.images.map((img) => getCatalogImageUrl(img))}
               productName={product.name}
               discountPercent={discountPercent}
             />
