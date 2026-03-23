@@ -135,7 +135,7 @@ export const createProductsColumns = ({
     cell: ({ row }) => {
       const isOffer = checkIsOfferActive({
         is_offer: row.original.is_offer,
-        offer_price: row.original.offer_price,
+        offer_price: row.original.offer_price || null,
         offer_start: row.original.offer_start || null,
         offer_end: row.original.offer_end || null,
       });
@@ -169,7 +169,7 @@ export const createProductsColumns = ({
     cell: ({ row }) => {
       const isOffer = checkIsOfferActive({
         is_offer: row.original.is_offer,
-        offer_price: row.original.offer_price,
+        offer_price: row.original.offer_price || null,
         offer_start: row.original.offer_start || null,
         offer_end: row.original.offer_end || null,
       });
