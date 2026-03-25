@@ -7,7 +7,6 @@
 
 "use client";
 
-import React from "react";
 import { MessageCircle } from "lucide-react";
 
 interface CartSummaryProps {
@@ -60,6 +59,8 @@ export function CartSummary({
                      shadow-lg shadow-green-600/25 transition-all duration-200 
                      hover:bg-green-700 hover:shadow-xl hover:shadow-green-600/30 
                      active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          data-umami-event="Enviar pedido WhatsApp"
+          data-umami-event-total={totalPrice}
         >
           <MessageCircle className="h-5 w-5" />
           Enviar pedido por WhatsApp

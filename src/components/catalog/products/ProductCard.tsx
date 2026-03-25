@@ -110,6 +110,8 @@ export function ProductCard({
             onClick={handleWhatsApp}
             aria-label="Consultar por WhatsApp"
             className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-green-500 hover:text-white text-gray-600 transition-colors duration-200"
+            data-umami-event="Contactar WhatsApp"
+            data-umami-event-product={product.name}
           >
             <WhatsAppIcon />
           </button>
@@ -148,6 +150,8 @@ export function ProductCard({
             onClick={handleWhatsApp}
             aria-label="Consultar por WhatsApp"
             className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-green-500 text-green-600 text-xs font-medium hover:bg-green-50 transition-colors"
+            data-umami-event="Contactar WhatsApp"
+            data-umami-event-product={product.name}
           >
             <WhatsAppIcon />
           </button>

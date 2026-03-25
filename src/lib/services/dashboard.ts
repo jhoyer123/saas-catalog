@@ -234,6 +234,7 @@ export const fetchCategories = async (
 
   return data ?? [];
 };
+
 // ── Categories paginated ──
 export const fetchCategoriesPaginated = async (
   params: PaginationParams,

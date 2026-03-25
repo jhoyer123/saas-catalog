@@ -9,7 +9,6 @@
 
 "use client";
 
-import React from "react";
 import { Trash2, X } from "lucide-react";
 import {
   Sheet,
