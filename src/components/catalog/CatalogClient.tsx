@@ -143,7 +143,6 @@ export default function CatalogClient({
           undefined,
         page: pageNum,
       }),
-    //initialData: initialProductData,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: keepPreviousData,

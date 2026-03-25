@@ -27,7 +27,7 @@ export async function getPublicStore(storeSlug: string) {
   return unstable_cache(
     async () => getPublicStoreRaw(storeSlug),
     ["public-store", storeSlug],
-    { tags: [`store-${storeSlug}`] },
+    { tags: [`store-${storeSlug}`], revalidate: false },
   )();
 }
 
@@ -46,7 +46,7 @@ const getStoreIdBySlug = (storeSlug: string) =>
   unstable_cache(
     async () => getStoreIdBySlugRaw(storeSlug),
     ["store-id-by-slug", storeSlug],
-    { tags: [`store-${storeSlug}`] },
+    { tags: [`store-${storeSlug}`], revalidate: false },
   )();
 
 /**
@@ -67,7 +67,7 @@ export async function getPublicCategories(storeSlug: string) {
   return unstable_cache(
     async () => getPublicCategoriesRaw(storeSlug),
     ["public-categories", storeSlug],
-    { tags: [`categories-${storeSlug}`] },
+    { tags: [`categories-${storeSlug}`], revalidate: false },
   )();
 }
 
@@ -87,11 +87,10 @@ async function getPublicBrandsRaw(storeSlug: string) {
 }
 
 export async function getPublicBrands(storeSlug: string) {
-  console.log("Cacheando tag:", `brands-${storeSlug}`);
   return unstable_cache(
     async () => getPublicBrandsRaw(storeSlug),
     ["public-brands", storeSlug],
-    { tags: [`brands-${storeSlug}`] },
+    { tags: [`brands-${storeSlug}`], revalidate: false },
   )();
 }
 
@@ -116,7 +115,7 @@ export async function getPublicBanners(storeSlug: string) {
   return unstable_cache(
     async () => getPublicBannersRaw(storeSlug),
     ["public-banners", storeSlug],
-    { tags: [`banners-${storeSlug}`] },
+    { tags: [`banners-${storeSlug}`], revalidate: false },
   )();
 }
 
@@ -168,6 +167,7 @@ export async function getPublicProductsInitial(storeSlug: string) {
     ["public-products-initial", storeSlug],
     {
       tags: [`products-${storeSlug}`],
+      revalidate: false,
     },
   )();
 }
