@@ -14,12 +14,14 @@ interface ProductCardProps {
   product: ProductCatalogCard;
   whatssapNumber?: string | null;
   isOfferActive: boolean; // Nuevo prop para indicar si la oferta está activa
+  priority?: boolean;
 }
 
 export function ProductCard({
   product,
   whatssapNumber,
   isOfferActive,
+  priority = false,
 }: ProductCardProps) {
   // Dentro del componente para el prefetch
   const queryClient = useQueryClient();
@@ -93,13 +95,12 @@ export function ProductCard({
         className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
       >
         <Image
-          //src={product.images[0]?.image_url || "/images/placeholder.webp"}
           src={getCatalogImageUrl(product.images[0]?.image_url)}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          loading="lazy"
+          priority={priority}
         />
 
         {discountPercent && <OfferBadge discountPercent={discountPercent} />}

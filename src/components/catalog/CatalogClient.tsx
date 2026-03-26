@@ -148,10 +148,6 @@ export default function CatalogClient({
     placeholderData: keepPreviousData,
   });
 
-  /* const products = data?.products ?? initialProductData.products;
-  const totalPages = data?.totalPages ?? initialProductData.totalPages;
-  const total = data?.total ?? initialProductData.total;
-  const hasBanners = banners.length > 0; */
   const products = data?.products ?? [];
   const totalPages = data?.totalPages ?? 0;
   const total = data?.total ?? 0;
@@ -186,7 +182,6 @@ export default function CatalogClient({
             </aside>
 
             <div className="flex-1">
-              {/* <HeroSection banners={banners} /> */}
               <HeroSection
                 banners={banners.map((b) => ({
                   ...b,

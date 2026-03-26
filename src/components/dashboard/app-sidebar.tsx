@@ -11,6 +11,7 @@ import HeaderSidebar from "../sidebar/HeaderSidebar";
 import { NavProjects } from "../sidebar/nav-projects";
 import {
   BadgeCheck,
+  BadgeDollarSign,
   Frame,
   Layers,
   LucideIcon,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import SkeletonSidebar from "./SkeletonSidebar";
+import { NavSecondary } from "../sidebar/nav-secondary";
 
 /**
  * Definición de items del menú lateral.
@@ -58,6 +60,10 @@ const navItems: NavItem[] = [
   { name: "Mi Tienda", url: "/dashboard/store", icon: Store },
 ];
 
+const navSecondaryItems: NavItem[] = [
+  { name: "Planes", url: "/dashboard/plans", icon: BadgeDollarSign },
+];
+
 export function AppSidebar() {
   const { data: session, isPending } = useSessionData();
 
@@ -76,6 +82,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarContent>
           <NavProjects projects={navItems} hasStore={hasStore} />
+          <NavSecondary items={navSecondaryItems} className="mt-auto" />
         </SidebarContent>
       </SidebarContent>
       <SidebarFooter>

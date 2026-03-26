@@ -12,6 +12,24 @@ export default function StorePage() {
     return <SketetonStoreConfig />;
   }
 
+  if (!isPending && (!data || !data.plan)) {
+    return (
+      <section className="w-full p-4">
+        <div className="mx-auto max-w-6xl w-full flex flex-col items-center justify-center min-h-100 gap-3">
+          <p className="text-sm text-muted-foreground">
+            No se pudo cargar la información de tu tienda.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs underline text-muted-foreground hover:text-foreground"
+          >
+            Reintentar
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full p-4">
       <div className="mx-auto max-w-6xl w-full flex flex-col gap-10">
@@ -49,7 +67,7 @@ export default function StorePage() {
             </p>
           </div>
 
-          <BannerUploadForm />
+          <BannerUploadForm plan={data?.plan || undefined} />
         </div>
       </div>
     </section>

@@ -11,7 +11,7 @@ interface DebouncedInputProps {
 // Input que espera X tiempo antes de notificar el cambio
 export function DebouncedInput({
   onChange,
-  debounce = 300,
+  debounce = 800,
   valueDefault,
   placeholder = "Buscar...",
 }: DebouncedInputProps) {

@@ -15,15 +15,14 @@ import { ProductCatalog } from "@/types/product.types";
 import { CategorySimple } from "@/types/category.types";
 //import { useEffect } from "react";
 import { BrandOfForm } from "@/types/brand.types";
+import { Plan } from "@/types/plan.types";
 
 interface FormProductProps {
   mode: "create" | "update" | "view";
   initialData?: ProductCatalog;
   categories: CategorySimple[];
   brands: BrandOfForm[];
-  //isLoadingProduct?: boolean;
-  //isLoadingCategories?: boolean;
-  //isLoadingBrands?: boolean;
+  plan?: Plan;
   onDirtyChange?: (isDirty: boolean) => void;
 }
 
@@ -32,6 +31,7 @@ export default function FormProduct({
   initialData,
   categories,
   brands,
+  plan,
   //onDirtyChange,
 }: FormProductProps) {
   const {
@@ -108,17 +108,6 @@ export default function FormProduct({
               }}
             />
 
-            {/* <FormInput
-              label="Marca"
-              name="brand"
-              register={register}
-              errors={errors}
-              inputProps={{
-                type: "text",
-                disabled: isViewMode,
-                placeholder: "Samsung",
-              }}
-            /> */}
             <FormSelect
               label="Marca"
               name="brand_id"
@@ -183,7 +172,7 @@ export default function FormProduct({
                 onChange={onChange}
                 onBlur={onBlur}
                 error={errors.images?.message as string}
-                maxFiles={3}
+                maxFiles={plan?.max_images_per_product ?? 3}
                 maxSizeMB={25}
                 imgExisting={initialData?.images ?? []}
                 setValue={setValue}

@@ -25,7 +25,6 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
       <div className="container mx-auto px-4 py-2 md:py-1 flex items-center justify-between">
         <Link href={`/public/${store.slug}`}>
           <Image
-            //src={store.logo_url || "/images/store-placeholder.png"}
             src={
               store.logo_url
                 ? `${getCatalogImageUrl(store.logo_url)}?v=${new Date(store.updated_at).getTime()}`
@@ -35,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             width={200}
             height={200}
             className="w-12 h-12 lg:w-15 lg:h-15 object-contain"
-            loading="eager"
+            priority
           />
         </Link>
         <h1 className="text-2xl font-semibold text-gray-800 text-center">

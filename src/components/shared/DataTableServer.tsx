@@ -249,7 +249,6 @@ export function DataTableServer<TData>({
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
-              // ✅ Datos disponibles
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (

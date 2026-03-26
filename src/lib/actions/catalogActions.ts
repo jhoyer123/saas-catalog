@@ -10,11 +10,12 @@ import { unstable_cache } from "next/cache";
 async function getPublicStoreRaw(storeSlug: string) {
   const { data, error } = await supabasePublic
     .from("stores")
-    .select("name, slug, logo_url, whatsapp_number, updated_at")
+    .select("id,name, slug, logo_url, whatsapp_number, updated_at")
     .eq("slug", storeSlug)
     .single();
   if (error || !data) throw new Error("Tienda no encontrada");
   return data as {
+    id: string;
     name: string;
     slug: string;
     logo_url: string | null;
@@ -32,7 +33,7 @@ export async function getPublicStore(storeSlug: string) {
 }
 
 //store_id cacheado 1 hora — nunca hay razón para buscarlo dos veces
-async function getStoreIdBySlugRaw(storeSlug: string): Promise<string> {
+/* async function getStoreIdBySlugRaw(storeSlug: string): Promise<string> {
   const { data, error } = await supabasePublic
     .from("stores")
     .select("id")
@@ -47,13 +48,13 @@ const getStoreIdBySlug = (storeSlug: string) =>
     async () => getStoreIdBySlugRaw(storeSlug),
     ["store-id-by-slug", storeSlug],
     { tags: [`store-${storeSlug}`], revalidate: false },
-  )();
+  )(); */
 
 /**
  * get categories for public catalog
  */
-async function getPublicCategoriesRaw(storeSlug: string) {
-  const storeId = await getStoreIdBySlug(storeSlug);
+async function getPublicCategoriesRaw(storeId: string) {
+  //const storeId = await getStoreIdBySlug(storeSlug);
   const { data, error } = await supabasePublic
     .from("categories")
     .select("id, name, slug")
@@ -63,9 +64,9 @@ async function getPublicCategoriesRaw(storeSlug: string) {
   return data ?? [];
 }
 
-export async function getPublicCategories(storeSlug: string) {
+export async function getPublicCategories(storeSlug: string, storeId: string) {
   return unstable_cache(
-    async () => getPublicCategoriesRaw(storeSlug),
+    async () => getPublicCategoriesRaw(storeId),
     ["public-categories", storeSlug],
     { tags: [`categories-${storeSlug}`], revalidate: false },
   )();
@@ -74,8 +75,8 @@ export async function getPublicCategories(storeSlug: string) {
 /**
  * get brands for public catalog
  */
-async function getPublicBrandsRaw(storeSlug: string) {
-  const storeId = await getStoreIdBySlug(storeSlug);
+async function getPublicBrandsRaw(storeId: string) {
+  //const storeId = await getStoreIdBySlug(storeSlug);
   const { data, error } = await supabasePublic
     .from("brands")
     .select("id, name, slug")
@@ -86,9 +87,9 @@ async function getPublicBrandsRaw(storeSlug: string) {
   return data ?? [];
 }
 
-export async function getPublicBrands(storeSlug: string) {
+export async function getPublicBrands(storeSlug: string, storeId: string) {
   return unstable_cache(
-    async () => getPublicBrandsRaw(storeSlug),
+    async () => getPublicBrandsRaw(storeId),
     ["public-brands", storeSlug],
     { tags: [`brands-${storeSlug}`], revalidate: false },
   )();
@@ -99,8 +100,8 @@ export async function getPublicBrands(storeSlug: string) {
  * @param storeSlug
  * @returns
  */
-async function getPublicBannersRaw(storeSlug: string) {
-  const storeId = await getStoreIdBySlug(storeSlug);
+async function getPublicBannersRaw(storeId: string) {
+  //const storeId = await getStoreIdBySlug(storeSlug);
   const { data, error } = await supabasePublic
     .from("store_banners")
     .select("id, image_url")
@@ -111,9 +112,9 @@ async function getPublicBannersRaw(storeSlug: string) {
   return data ?? [];
 }
 
-export async function getPublicBanners(storeSlug: string) {
+export async function getPublicBanners(storeSlug: string, storeId: string) {
   return unstable_cache(
-    async () => getPublicBannersRaw(storeSlug),
+    async () => getPublicBannersRaw(storeId),
     ["public-banners", storeSlug],
     { tags: [`banners-${storeSlug}`], revalidate: false },
   )();
@@ -124,8 +125,8 @@ export async function getPublicBanners(storeSlug: string) {
  * Se cachea a nivel de servidor porque es la consulta más común y no cambia con el tiempo (no depende de ofertas activas)
  * Se revalida solo cuando el dueño cambia algo en los productos (revalidateTag "products")
  */
-async function getPublicProductsInitialRaw(storeSlug: string) {
-  const storeId = await getStoreIdBySlug(storeSlug);
+async function getPublicProductsInitialRaw(storeId: string) {
+  //const storeId = await getStoreIdBySlug(storeSlug);
 
   const { data, error, count } = await supabasePublic
     .from("products")
@@ -161,9 +162,12 @@ async function getPublicProductsInitialRaw(storeSlug: string) {
   };
 }
 
-export async function getPublicProductsInitial(storeSlug: string) {
+export async function getPublicProductsInitial(
+  storeSlug: string,
+  storeId: string,
+) {
   return unstable_cache(
-    async () => getPublicProductsInitialRaw(storeSlug),
+    async () => getPublicProductsInitialRaw(storeId),
     ["public-products-initial", storeSlug],
     {
       tags: [`products-${storeSlug}`],

@@ -3,6 +3,7 @@
 import Form from "@/components/products/form/Form";
 import SkeletonForm from "@/components/shared/SkeletonForm";
 import { Button } from "@/components/ui/button";
+import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useGetBrandsNoPage } from "@/hooks/brand/useGetBrandsNoPage";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import { useGetProductById } from "@/hooks/products/useGetProductById";
@@ -17,6 +18,9 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     useGetCategoryNoPage();
   const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
 
+  //data plan for form
+  const { data: DataPlan, isLoading: isLoadingPlan } = useSessionData();
+
   // Solo se habilita el boton si cambian los datos
   const [isDirty, setIsDirty] = useState(false);
 
@@ -24,9 +28,11 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     isLoadingProduct ||
     isLoadingCategories ||
     isLoadingBrands ||
+    isLoadingPlan ||
     !product ||
     !categories ||
-    !brands
+    !brands ||
+    !DataPlan?.plan
   ) {
     return <SkeletonForm />;
   }
@@ -51,6 +57,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           initialData={product}
           categories={categories ?? []}
           brands={brands ?? []}
+          plan={DataPlan.plan}
           onDirtyChange={setIsDirty}
         />
       </div>

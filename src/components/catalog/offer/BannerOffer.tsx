@@ -7,7 +7,7 @@ import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
 import { Banner } from "@/types/catalog/catalog.types";
 import { useState, useEffect } from "react";
 
-const FALLBACK_BANNER = "/images/placeholder.webp"; // ← tu imagen de fallback
+const FALLBACK_BANNER = "/images/placeholder.webp"; //fallback genérico para banners
 
 interface BannerOfferProps {
   banners: Banner[];
@@ -109,7 +109,7 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
             className="relative w-full shrink-0 aspect-video"
             aria-hidden={index !== currentIndex}
           >
-            <BannerImage // ← reemplaza el <Image> directo
+            <BannerImage
               src={banner.image_url}
               alt={`Banner ${index + 1}`}
               priority={index === 0}

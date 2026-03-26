@@ -11,6 +11,7 @@ import {
   HydrationBoundary,
   dehydrate,
 } from "@tanstack/react-query";
+import { Suspense } from "react";
 
 type Props = {
   params: Promise<{ store_slug: string }>;
@@ -20,7 +21,18 @@ export const revalidate = false;
 
 export default async function Page({ params }: Props) {
   const { store_slug } = await params;
+  // PASO 1: Buscamos la tienda PRIMERO para obtener el ID real
+  const store = await getPublicStore(store_slug);
+  const [initialProductData, categories, brands, banners] = await Promise.all([
+    getPublicProductsInitial(store_slug, store.id),
+    getPublicCategories(store_slug, store.id),
+    getPublicBrands(store_slug, store.id),
+    getPublicBanners(store_slug, store.id),
+    //getPublicStore(store_slug, store.id),
+  ]);
+
   const queryClient = new QueryClient();
+
   const productKey = [
     "public-products",
     store_slug,
@@ -34,27 +46,26 @@ export default async function Page({ params }: Props) {
     1,
   ];
 
-  const [initialProductData, categories, brands, banners, store] =
-    await Promise.all([
-      getPublicProductsInitial(store_slug),
-      getPublicCategories(store_slug),
-      getPublicBrands(store_slug),
-      getPublicBanners(store_slug),
-      getPublicStore(store_slug),
-    ]);
-
   // Inyecta en TanStack para que back-navigation sea instantáneo
   queryClient.setQueryData(productKey, initialProductData);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <CatalogClient
-        initialProductData={initialProductData}
-        categories={categories}
-        brands={brands}
-        banners={banners}
-        store={store}
-      />
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            Cargando catálogo...
+          </div>
+        }
+      >
+        <CatalogClient
+          initialProductData={initialProductData}
+          categories={categories}
+          brands={brands}
+          banners={banners}
+          store={store}
+        />
+      </Suspense>
     </HydrationBoundary>
   );
 }

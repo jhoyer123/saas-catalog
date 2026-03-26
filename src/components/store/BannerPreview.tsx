@@ -4,12 +4,19 @@ import { useState } from "react";
 import Image from "next/image";
 import { Pencil } from "lucide-react";
 import BannerForm from "../banner/BannerForm";
+import { Plan } from "@/types/plan.types";
 
 // ============================================
 // COMPONENTE
 // ============================================
 
-export const BannerPreview = ({ banners }: { banners: string[] }) => {
+export const BannerPreview = ({
+  banners,
+  plan,
+}: {
+  banners: string[];
+  plan?: Plan;
+}) => {
   const [isEditing, setIsEditing] = useState(false);
 
   // ============================================
@@ -29,7 +36,7 @@ export const BannerPreview = ({ banners }: { banners: string[] }) => {
             Cancelar
           </button>
         </div>
-        <BannerForm existingBanners={banners} setIsEditing={setIsEditing} />
+        <BannerForm existingBanners={banners} setIsEditing={setIsEditing} plan={plan} />
       </div>
     );
   }

@@ -40,10 +40,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           mode="view"
           initialData={product}
           categories={categories ?? []}
-          //isLoadingCategories={isLoadingCategories}
           brands={brands ?? []}
-          //isLoadingBrands={isLoadingBrands}
-          //isLoadingProduct={isLoadingProduct}
         />
       </div>
     </div>

@@ -11,7 +11,7 @@
 import { createClient } from "@/lib/supabase/supabaseClient";
 import type { User } from "@/types/auth.types";
 import type { Store } from "@/types/store.types";
-import type { Plan } from "@/types/plan.types";
+import type { Plan, PlanDetails } from "@/types/plan.types";
 import type {
   PaginationParams,
   PaginatedResponse,
@@ -50,7 +50,7 @@ export const fetchSessionData = async (): Promise<SessionData | null> => {
     supabase
       .from("stores")
       .select(
-        "id,slug,name,logo_url,description,whatsapp_number,is_active,plans(id,name,price)",
+        "id,slug,name,logo_url,description,whatsapp_number,is_active,plans(id,name,price,max_products,max_images_per_product,max_banners)",
       )
       .eq("user_id", userId)
       .maybeSingle(),
@@ -115,10 +115,30 @@ export const fetchProductsPaginated = async (
     .limit(1, { foreignTable: "product_images" })
     .eq("store_id", storeId);
 
-  if (search) {
+  /* if (search) {
     query = query.or(
       `name.ilike.%${search}%,sku.ilike.%${search}%,brand.ilike.%${search}%`,
     );
+  } */
+
+  if (search) {
+    // Primero buscar brand_ids que coincidan con el search
+    const { data: matchedBrands } = await supabase
+      .from("brands")
+      .select("id")
+      .eq("store_id", storeId)
+      .ilike("name", `%${search}%`);
+
+    const brandIds = (matchedBrands ?? []).map((b) => b.id);
+
+    // Luego filtrar productos por nombre, sku o brand_id
+    if (brandIds.length > 0) {
+      query = query.or(
+        `name.ilike.%${search}%,sku.ilike.%${search}%,brand_id.in.(${brandIds.join(",")})`,
+      );
+    } else {
+      query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%`);
+    }
   }
 
   query = query
@@ -358,4 +378,19 @@ export const fetchBrandsPaginated = async (
     pageSize,
     totalPages: Math.ceil(total / pageSize),
   };
+};
+
+// ── Planes ──
+export const fetchPlans = async (): Promise<PlanDetails[]> => {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("plans")
+    .select(
+      "id, name, price, max_products, max_images_per_product, max_banners, description",
+    );
+
+  if (error) throw new Error(error.message);
+
+  return data ?? [];
 };

@@ -9,6 +9,7 @@ import { useUploadBanner } from "@/hooks/banner/useUploadBanner";
 import { useToastPromise } from "@/hooks/shared/useToastPromise";
 import { useUpdateBanner } from "@/hooks/banner/useUpdateBanner";
 import React from "react";
+import { Plan } from "@/types/plan.types";
 
 // ============================================
 // PROPS
@@ -17,6 +18,7 @@ import React from "react";
 interface BannerFormProps {
   existingBanners?: string[];
   setIsEditing?: React.Dispatch<React.SetStateAction<boolean>>;
+  plan?: Plan;
 }
 
 // ============================================
@@ -26,6 +28,7 @@ interface BannerFormProps {
 export default function BannerForm({
   existingBanners = [],
   setIsEditing,
+  plan,
 }: BannerFormProps) {
   const {
     setValue,
@@ -114,7 +117,7 @@ export default function BannerForm({
             value={images}
             onChange={(files) => setValue("images", files)}
             error={errors.images?.message as string | undefined}
-            maxFiles={3}
+            maxFiles={plan?.max_banners || 3}
             maxSizeMB={25}
             imgExisting={existingBanners}
             setValue={setValue}

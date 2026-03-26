@@ -4,8 +4,12 @@
 export interface Plan {
   id: string;
   name: string;
-  //max_products: number;
   price: number;
-  //created_at: string;
-  //updated_at: string;
+  max_products: number;
+  max_images_per_product: number;
+  max_banners: number;
+}
+
+export interface PlanDetails extends Plan {
+  description: string;
 }
