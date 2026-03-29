@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductDetailSkeleton() {
   return (
-    <div className="min-h-screen bg-white px-4 py-6">
+    <div className="min-h-screen bg-catalog-primary px-4 py-6">
       {/* Volver */}
       <div className="flex items-center gap-2 mb-6">
         <Skeleton className="w-4 h-4 rounded" />

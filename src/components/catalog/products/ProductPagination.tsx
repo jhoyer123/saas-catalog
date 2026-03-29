@@ -90,7 +90,10 @@ export function ProductPagination({
                 {page}
               </Button>
             ) : (
-              <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
+              <span
+                key={`ellipsis-${index}`}
+                className="px-2 text-catalog-secondary"
+              >
                 {page}
               </span>
             ),
@@ -98,7 +101,7 @@ export function ProductPagination({
         </div>
 
         {/* Página actual en móvil */}
-        <div className="sm:hidden text-sm text-gray-600">
+        <div className="sm:hidden text-sm text-catalog-secondary">
           Pág. {currentPage} de {totalPages}
         </div>
 

@@ -9,6 +9,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
 import { OfferBadge } from "./offerBadge";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
+import { AvailableBadge } from "./AvailableBadge";
+import React from "react";
 
 interface ProductCardProps {
   product: ProductCatalogCard;
@@ -16,8 +18,7 @@ interface ProductCardProps {
   isOfferActive: boolean; // Nuevo prop para indicar si la oferta está activa
   priority?: boolean;
 }
-
-export function ProductCard({
+export const ProductCard = React.memo(function ProductCard({
   product,
   whatssapNumber,
   isOfferActive,
@@ -86,7 +87,7 @@ export function ProductCard({
   );
 
   return (
-    <div className="flex flex-col justify-between group relative w-full bg-card hover:shadow-md transition-all duration-300 border border-border shadow-sm">
+    <div className="bg-card flex flex-col justify-between group relative w-full hover:shadow-md transition-all duration-300 border border-border shadow-sm">
       {/* ───────── IMAGEN ───────── */}
       <Link
         href={`/public/${store_slug}/${product.slug}`}
@@ -104,6 +105,7 @@ export function ProductCard({
         />
 
         {discountPercent && <OfferBadge discountPercent={discountPercent} />}
+        {!product.is_available && <AvailableBadge />}
 
         {/* Botones hover — solo lg+ */}
         <div className="hidden lg:flex absolute bottom-2 right-2 z-10 flex-col gap-1.5 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
@@ -167,4 +169,4 @@ export function ProductCard({
       </div>
     </div>
   );
-}
+});

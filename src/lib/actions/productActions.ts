@@ -305,3 +305,31 @@ export const toggleOfferAction = async (
 
   revalidateTag(`products-${storeSlug}`, "max");
 };
+
+/**
+ * Activa o desactiva la disponibilidad de un producto
+ * @param id - id del producto
+ * @param is_available - true para activar, false para desactivar
+ */
+export const toggleAvailableAction = async (
+  id: string,
+  is_available: boolean,
+  storeId: string,
+  storeSlug: string,
+) => {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .update({ is_available })
+    .eq("id", id)
+    .eq("store_id", storeId);
+
+  if (error) {
+    console.error("toggleAvailableAction DB ERROR:", error);
+    return { error: "Error al actualizar la disponibilidad del producto" };
+  }
+
+  revalidateTag(`products-${storeSlug}`, "max");
+  return { data };
+};

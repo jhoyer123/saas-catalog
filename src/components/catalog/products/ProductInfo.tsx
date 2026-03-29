@@ -1,6 +1,6 @@
 "use client";
 
-import { ProductCatalog } from "@/types/product.types";
+import { ProductDetailCatalog } from "@/types/product.types";
 import { ShoppingCart, MessageCircle, Star, Sparkles } from "lucide-react";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ProductInfoProps {
-  product: ProductCatalog;
+  product: ProductDetailCatalog;
   whatssapNumber?: string | null;
   isOfferActive: boolean;
   discountPercent?: number | null;

@@ -1,26 +1,53 @@
+/**
+ * Tipos relacionados con productos para el dashboard
+ */
 export interface ProductCatalog {
   id: string;
-  store_id?: string;
-  category_id?: string;
-  brand_id?: string | null;
-  name_category?: string; // nombre de la categoría para mostrar
   name: string;
   price: number;
-  description?: string;
-  is_available?: boolean;
-  display_order?: number;
-  created_at?: string;
-  updated_at?: string;
   is_offer: boolean;
+  category_id: string;
+  brand_id?: string | null;
   offer_price?: number | null; // si hay oferta tiene precio, si no null
-  offer_start?: string; // fecha de inicio de la oferta (opcional)
-  offer_end?: string; // fecha de fin de la oferta (opcional)
-  //isOfferActive?: boolean; // campo calculado para indicar si la oferta está activa
-  is_offer_active?: boolean; // campo calculado para indicar si la oferta está activa,
-  slug?: string | null; // slug para URL amigable, puede ser null si no se usa
+  offer_start?: string | null; // fecha de inicio de la oferta (opcional)
+  offer_end?: string | null; // fecha de fin de la oferta (opcional)
   sku?: string | null; // no todos los productos tienen SKU
+  is_available: boolean;
+  name_category: string; // nombre de la categoría para mostrar
   brand?: string | null; // no todos los productos tienen marca
   images: string[]; // array de URLs de imágenes
+}
+
+/**
+ * Tipo para detalle de producto en el dashboard (editable)
+ */
+export interface ProductDetail {
+  id: string;
+  category_id: string;
+  brand_id?: string | null;
+  name: string;
+  price: number;
+  description: string;
+  sku?: string | null; // no todos los productos tienen SKU
+  images: string[]; // array de URLs de imágenes
+}
+
+/**
+ * Tipo para detalle de producto en el catálogo público
+ */
+export interface ProductDetailCatalog {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  is_offer: boolean;
+  offer_price?: number | null;
+  offer_start?: string | null;
+  offer_end?: string | null;
+  brand?: string | null;
+  slug: string;
+  is_available: boolean;
+  images: string[];
 }
 
 //super type para el formulario
@@ -57,6 +84,7 @@ export interface ProductCatalogCard {
   name: string;
   description?: string | null;
   price: number;
+  is_available: boolean;
   is_offer_active: boolean;
   is_offer: boolean;
   offer_price: number | null;
@@ -64,6 +92,5 @@ export interface ProductCatalogCard {
   offer_end: string | null;
   brand?: string | null;
   slug: string;
-  //categories: { name: string } | null;
   images: { image_url: string }[];
 }

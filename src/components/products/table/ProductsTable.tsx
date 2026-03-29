@@ -12,6 +12,8 @@ import ModalProduct from "@/components/products/modal/ModalProduct";
 import { useProductActions } from "@/hooks/products/useHandleAction";
 import { DebouncedInput } from "@/components/shared/DebouncedInput";
 import SkeletonTable from "@/components/shared/SkeletonTable";
+import { useRouter } from "next/navigation";
+import { OverlayProcess } from "@/components/shared/OverlayProcess";
 
 export function ProductsTable() {
   //storeid for get products
@@ -21,11 +23,23 @@ export function ProductsTable() {
   const { modalState, openModal, closeModal } = useModalsProduct();
 
   //hooks de acciones
-  const { deleteProduct, toggleOffer } = useProductActions();
+  const {
+    deleteProduct,
+    toggleOffer,
+    toggleAvailable,
+    isPending: isProductPending,
+  } = useProductActions();
+  //hook router
+  const router = useRouter();
 
   //columns for products table
   const columns = useMemo(
-    () => createProductsColumns({ onOpenModal: openModal }),
+    () =>
+      createProductsColumns({
+        onOpenModal: openModal,
+        onToggleAvailable: (id, value) => toggleAvailable(id, value),
+        onNavigate: (path) => router.push(path),
+      }),
     [openModal],
   );
 
@@ -35,6 +49,7 @@ export function ProductsTable() {
 
   return (
     <>
+      {isProductPending && <OverlayProcess />}
       <DataTableServer<ProductCatalog>
         columns={columns}
         fetchData={(params) => fetchProductsPaginated(storeId, params)}

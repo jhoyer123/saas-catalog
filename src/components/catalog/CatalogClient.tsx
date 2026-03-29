@@ -127,7 +127,7 @@ export default function CatalogClient({
     pageNum,
   ] as const;
 
-  const { data, isLoading, isFetching, isError, error } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: productQueryKey,
     queryFn: () =>
       fetchPublicProducts({
@@ -154,12 +154,12 @@ export default function CatalogClient({
   const hasBanners = banners.length > 0;
 
   return (
-    <main className="min-h-screen bg-[#f7f8fa]">
+    <main className="min-h-screen  bg-catalog-primary">
       <Header store={store} />
 
       <div
         id="catalog-input-bar"
-        className="bg-card py-2 sticky z-20 top-0 h-full w-full flex items-center justify-center lg:hidden"
+        className="bg-catalog-primary py-2 sticky z-20 top-0 h-full w-full flex items-center justify-center lg:hidden"
         style={{ top: headerHeight }}
       >
         <InputSearch onOpenFilters={() => setMobileFiltersOpen(true)} />
@@ -210,11 +210,11 @@ export default function CatalogClient({
           )}
 
           <div className="flex-1">
-            <div className="mb-6 flex flex-col items-start md:flex-row md:items-center md:justify-between w-full px-4">
-              <h1 className="text-xl font-bold font-poppins text-gray-900 md:text-2xl">
+            <div className="pb-6 flex flex-col items-start md:pt-3 md:flex-row md:items-center md:justify-between w-full px-4">
+              <h1 className="text-xl font-bold font-poppins text-catalog-secondary/95 md:text-2xl">
                 Catálogo de Productos
               </h1>
-              <p className="text-sm font-inter text-gray-600">
+              <p className="text-sm font-inter text-catalog-secondary/80">
                 {total} productos encontrados
               </p>
             </div>

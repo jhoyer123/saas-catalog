@@ -20,9 +20,9 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
   return (
     <header
       id="catalog-header"
-      className="bg-white border-b w-full fixed top-0 left-0 right-0 z-20"
+      className="bg-catalog-primary/80 border-b w-full fixed top-0 left-0 right-0 z-20"
     >
-      <div className="container mx-auto px-4 py-2 md:py-1 flex items-center justify-between">
+      <div className="container mx-auto px-1.5 py-1 flex items-center justify-between">
         <Link href={`/public/${store.slug}`}>
           <Image
             src={
@@ -33,11 +33,11 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             alt="Logo de la Tienda"
             width={200}
             height={200}
-            className="w-12 h-12 lg:w-15 lg:h-15 object-contain"
+            className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
             priority
           />
         </Link>
-        <h1 className="text-2xl font-semibold text-gray-800 text-center">
+        <h1 className="text-lg font-semibold text-catalog-secondary text-center md:text-2xl">
           {store.name}
         </h1>
         <CartButton whatsappNumber={store.whatsapp_number} />

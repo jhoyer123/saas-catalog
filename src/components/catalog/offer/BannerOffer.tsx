@@ -81,7 +81,7 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
 
   return (
     <div
-      className="relative w-full overflow-hidden shadow-lg bg-gray-100 select-none md:rounded-lg"
+      className="relative w-full overflow-hidden bg-gray-100 select-none md:rounded-lg"
       aria-label="Carrusel de ofertas"
       onMouseEnter={clearTimer}
       onMouseLeave={() => !isDragging.current && startTimer()}

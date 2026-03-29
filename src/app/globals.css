@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-catalog-primary: var(--catalog-primary);
+  --color-catalog-secondary: var(--catalog-secondary);
+
   --font-inter: var(--font-inter);
   --font-poppins: var(--font-poppins);
 
@@ -129,9 +132,15 @@
 }
 
 @keyframes catalog-slide {
-  0%   { transform: translateX(-100%); }
-  60%  { transform: translateX(100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  60% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .catalog-loading-bar {
@@ -154,4 +163,9 @@
   h3 {
     @apply text-lg font-bold;
   }
+}
+
+.catalog-theme {
+  --catalog-primary: #000000;
+  --catalog-secondary: #ffffff;
 }

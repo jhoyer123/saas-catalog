@@ -16,7 +16,7 @@ import type {
   PaginationParams,
   PaginatedResponse,
 } from "@/types/pagination.types";
-import type { ProductCatalog } from "@/types/product.types";
+import type { ProductCatalog, ProductDetail } from "@/types/product.types";
 import type { CategorySimple, Category } from "@/types/category.types";
 import type { BrandDashboard, BrandOfForm } from "@/types/brand.types";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
@@ -105,7 +105,7 @@ export const fetchProductsPaginated = async (
     .from("products")
     .select(
       `
-      id,name,price,is_offer,offer_price,offer_start,offer_end,sku,
+      id,name,price,is_offer,offer_price,offer_start,offer_end,sku,is_available,category_id,brand_id,
       category:categories(name),
       brand:brands(name),
       images:product_images(image_url)
@@ -114,12 +114,6 @@ export const fetchProductsPaginated = async (
     )
     .limit(1, { foreignTable: "product_images" })
     .eq("store_id", storeId);
-
-  /* if (search) {
-    query = query.or(
-      `name.ilike.%${search}%,sku.ilike.%${search}%,brand.ilike.%${search}%`,
-    );
-  } */
 
   if (search) {
     // Primero buscar brand_ids que coincidan con el search
@@ -164,25 +158,19 @@ export const fetchProductsPaginated = async (
 
     return {
       id: p.id,
-      //store_id: p.store_id,
-      //category_id: p.category_id,
-      //brand_id: p.brand_id ?? null,
       name_category: Array.isArray(p.category)
         ? (p.category[0]?.name ?? "Sin categoría")
         : "Sin categoría",
       name: p.name,
+      category_id: p.category_id,
+      brand_id: p.brand_id ?? null,
       sku: p.sku ?? null,
       price: p.price,
-      //description: p.description,
-      //is_available: p.is_available,
-      //display_order: p.display_order ?? 0,
-      //created_at: p.created_at,
-      //updated_at: p.updated_at,
+      is_available: p.is_available,
       is_offer: p.is_offer ?? false,
       offer_price: p.offer_price ?? null,
       offer_end: p.offer_end ?? null,
       offer_start: p.offer_start ?? null,
-      //slug: p.slug,
       brand: (p.brand as unknown as { name: string } | null)?.name ?? null,
       is_offer_active: isOfferActive,
       images:
@@ -199,7 +187,7 @@ export const fetchProductsPaginated = async (
 };
 
 // ── Product by ID ──
-export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
+export const fetchProductById = async (id: string): Promise<ProductDetail> => {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -216,23 +204,12 @@ export const fetchProductById = async (id: string): Promise<ProductCatalog> => {
 
   return {
     id: data.id,
-    //store_id: data.store_id,
     category_id: data.category_id,
     brand_id: data.brand_id ?? null,
-    //name_category: data.category?.name ?? "Sin categoría",
     name: data.name,
     sku: data.sku ?? null,
     price: data.price,
     description: data.description,
-    is_offer: false,
-    //is_available: data.is_available,
-    //display_order: data.display_order ?? 0,
-    //created_at: data.created_at,
-    //updated_at: data.updated_at,
-    //is_offer: data.is_offer ?? false,
-    //offer_price: data.offer_price ?? null,
-    //slug: data.slug,
-    //brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images:
       data.images?.map((img: { image_url: string }) => img.image_url) ?? [],
   };

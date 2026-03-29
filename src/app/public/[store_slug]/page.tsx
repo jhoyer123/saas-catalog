@@ -21,14 +21,13 @@ export const revalidate = false;
 
 export default async function Page({ params }: Props) {
   const { store_slug } = await params;
-  // PASO 1: Buscamos la tienda PRIMERO para obtener el ID real
   const store = await getPublicStore(store_slug);
+
   const [initialProductData, categories, brands, banners] = await Promise.all([
     getPublicProductsInitial(store_slug, store.id),
     getPublicCategories(store_slug, store.id),
     getPublicBrands(store_slug, store.id),
     getPublicBanners(store_slug, store.id),
-    //getPublicStore(store_slug, store.id),
   ]);
 
   const queryClient = new QueryClient();

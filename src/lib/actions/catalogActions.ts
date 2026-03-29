@@ -3,6 +3,7 @@
 import { supabasePublic } from "@/lib/supabase/server-public";
 import { ProductCatalogCard } from "@/types/product.types";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
 /**
  * get public store info (name, slug, logo_url) for the catalog header
@@ -10,7 +11,9 @@ import { unstable_cache } from "next/cache";
 async function getPublicStoreRaw(storeSlug: string) {
   const { data, error } = await supabasePublic
     .from("stores")
-    .select("id,name, slug, logo_url, whatsapp_number, updated_at")
+    .select(
+      "id,name, slug, logo_url, whatsapp_number,primary_color,secondary_color, updated_at",
+    )
     .eq("slug", storeSlug)
     .single();
   if (error || !data) throw new Error("Tienda no encontrada");
@@ -20,35 +23,28 @@ async function getPublicStoreRaw(storeSlug: string) {
     slug: string;
     logo_url: string | null;
     whatsapp_number: string | null;
+    primary_color: string | null;
+    secondary_color: string | null;
     updated_at: string;
   };
 }
-
+/* 
 export async function getPublicStore(storeSlug: string) {
   return unstable_cache(
     async () => getPublicStoreRaw(storeSlug),
     ["public-store", storeSlug],
     { tags: [`store-${storeSlug}`], revalidate: false },
   )();
-}
+} */
 
-//store_id cacheado 1 hora — nunca hay razón para buscarlo dos veces
-/* async function getStoreIdBySlugRaw(storeSlug: string): Promise<string> {
-  const { data, error } = await supabasePublic
-    .from("stores")
-    .select("id")
-    .eq("slug", storeSlug)
-    .single();
-  if (error || !data) throw new Error("Tienda no encontrada");
-  return data.id;
-}
-
-const getStoreIdBySlug = (storeSlug: string) =>
-  unstable_cache(
-    async () => getStoreIdBySlugRaw(storeSlug),
-    ["store-id-by-slug", storeSlug],
+// ← único cambio: cache() wrapeando lo que ya tenías
+export const getPublicStore = cache((storeSlug: string) => {
+  return unstable_cache(
+    async () => getPublicStoreRaw(storeSlug),
+    ["public-store", storeSlug],
     { tags: [`store-${storeSlug}`], revalidate: false },
-  )(); */
+  )();
+});
 
 /**
  * get categories for public catalog
@@ -131,24 +127,21 @@ async function getPublicProductsInitialRaw(storeId: string) {
   const { data, error, count } = await supabasePublic
     .from("products")
     .select(
-      `id, name, price, is_offer, offer_price, offer_start, offer_end, slug, images:product_images(image_url)`,
+      `id, name, price, is_offer, offer_price, offer_start, offer_end, slug,is_available, images:product_images(image_url)`,
       { count: "exact" },
     )
     .limit(1, { foreignTable: "product_images" })
     .eq("store_id", storeId)
-    .eq("is_available", true)
-    .order("display_order", { ascending: true })
     .range(0, 11);
 
   if (error) throw new Error(error.message);
-
   return {
     products: (data ?? []).map((product) => ({
       id: product.id,
       name: product.name,
-      //description: product.description ?? null,
       price: product.price,
       is_offer: product.is_offer ?? false,
+      is_available: product.is_available,
       offer_price: product.offer_price ?? null,
       offer_start: product.offer_start ?? null,
       offer_end: product.offer_end ?? null,

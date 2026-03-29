@@ -16,7 +16,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "JhoLabs - Catalogo",
+  title: "JPlataform - Catalog",
   description:
     "Tu catálogo, redefinido. Crea catálogos digitales y recibe pedidos en WhatsApp.",
 };

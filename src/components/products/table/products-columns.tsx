@@ -17,11 +17,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { ModalType } from "@/hooks/products/useModalsProduct";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
+import { Switch } from "@/components/ui/switch";
 
-// ============================================
 // HELPERS
-// ============================================
-
 /**
  * Formatea un número como precio con 2 decimales.
  */
@@ -32,20 +30,21 @@ const formatPrice = (price: number) =>
     minimumFractionDigits: 2,
   }).format(price);
 
-// ============================================
 // PROPS
-// ============================================
-
+/* interface ColumnsProps {
+  onOpenModal: (type: ModalType, product: ProductCatalog) => void;
+} */
 interface ColumnsProps {
   onOpenModal: (type: ModalType, product: ProductCatalog) => void;
+  onToggleAvailable: (id: string, value: boolean) => void;
+  onNavigate: (path: string) => void;
 }
 
-// ============================================
 // COLUMNAS
-// ============================================
-
 export const createProductsColumns = ({
   onOpenModal,
+  onToggleAvailable,
+  onNavigate,
 }: ColumnsProps): ColumnDef<ProductCatalog>[] => [
   // ── Imagen ──────────────────────────────────
   {
@@ -186,14 +185,42 @@ export const createProductsColumns = ({
     },
   },
 
+  //disponibilidad
+  {
+    accessorKey: "is_available",
+    enableSorting: false,
+    header: "Estado",
+    cell: ({ row }) => {
+      const product = row.original;
+      return (
+        <div className="flex flex-col items-start justify-center gap-2">
+          <Switch
+            className="cursor-pointer"
+            checked={product.is_available}
+            onCheckedChange={(checked) =>
+              onToggleAvailable(product.id, checked)
+            }
+            aria-label={
+              product.is_available ? "Desactivar producto" : "Activar producto"
+            }
+          />
+          <span
+            className={`text-xs ${product.is_available ? "text-green-600" : "text-muted-foreground"}`}
+          >
+            {product.is_available ? "Disponible" : "Agotado"}
+          </span>
+        </div>
+      );
+    },
+  },
+
   // ── Acciones ────────────────────────────────
   {
     id: "actions",
     header: "Acciones",
     cell: ({ row }) => {
       const product = row.original;
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const router = useRouter();
+      //const router = useRouter();
 
       return (
         <DropdownMenu>
@@ -212,7 +239,8 @@ export const createProductsColumns = ({
             {/* Ver detalles */}
             <DropdownMenuItem
               onClick={() =>
-                router.push(`/dashboard/products/${product.id}/view`)
+                //router.push(`/dashboard/products/${product.id}/view`)
+                onNavigate(`/dashboard/products/${product.id}/view`)
               }
             >
               <Eye className="mr-2 h-4 w-4" />
@@ -222,7 +250,8 @@ export const createProductsColumns = ({
             {/* Editar */}
             <DropdownMenuItem
               onClick={() =>
-                router.push(`/dashboard/products/${product.id}/edit`)
+                //router.push(`/dashboard/products/${product.id}/edit`)
+                onNavigate(`/dashboard/products/${product.id}/edit`)
               }
             >
               <Pencil className="mr-2 h-4 w-4" />

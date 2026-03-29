@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { LayoutDashboard, Link2, ShoppingBag } from "lucide-react";
+import { TermsModal } from "@/components/dashboard/TermModal";
 
 export default function Home() {
   return (
@@ -21,7 +22,6 @@ export default function Home() {
           {/* Overlay oscuro suave */}
           <div className="absolute inset-0 bg-linear-to-r from-white/95 via-white/80 to-white/40" />
         </div>
-
         {/* Mobile */}
         <div className="md:hidden absolute inset-0">
           <Image
@@ -32,21 +32,20 @@ export default function Home() {
             sizes="100vw"
             className="object-cover opacity-60 grayscale-20"
           />
-
           <div className="absolute inset-0 bg-linear-to-t from-white/95 via-white/70 to-white/30" />
         </div>
       </div>
 
       {/* NAVBAR */}
       <nav className="relative z-30 flex justify-between items-center px-4 py-6 md:px-12">
-        <div className="flex flex-col items-center justify-center w-16 h-16 md:w-20 md:h-20">
+        <div className="flex flex-col items-center justify-center">
           <Image
             src="/images/logoCat.webp"
             alt="Logo"
-            width={70}
-            height={70}
+            width={600}
+            height={500}
             priority
-            className="object-contain w-auto h-auto"
+            className="object-contain w-20 lg:w-35 h-auto"
           />
         </div>
 
@@ -146,15 +145,9 @@ export default function Home() {
       </main>
 
       {/* FOOTER */}
-      <footer className="relative z-20 px-6 lg:px-12 py-8 flex justify-between text-xs text-gray-400">
-        <p>© {new Date().getFullYear()} JVG Platform</p>
-
-        <div className="flex gap-6">
-          <span className="hover:text-[#6D001A] cursor-pointer">
-            Privacidad
-          </span>
-          <span className="hover:text-[#6D001A] cursor-pointer">Soporte</span>
-        </div>
+      <footer className="relative z-20 px-6 lg:px-12 py-8 flex flex-col gap-6 items-center justify-center text-xs text-gray-400 md:flex-row md:justify-between">
+        <p>© {new Date().getFullYear()} JPlatform - Catalog</p>
+        <TermsModal />
       </footer>
     </div>
   );

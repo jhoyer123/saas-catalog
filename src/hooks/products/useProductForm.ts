@@ -11,13 +11,13 @@ import {
   type ProductInputServiceUpdate,
 } from "@/lib/schemas/product";
 import { useProductActions } from "./useHandleAction";
-import { ProductCatalog } from "@/types/product.types";
+import { ProductDetail } from "@/types/product.types";
 
 type FormMode = "create" | "update" | "view";
 
 interface UseProductFormProps {
   mode: FormMode;
-  initialData?: ProductCatalog;
+  initialData?: ProductDetail;
   categories: { id: string; name: string }[];
   brands: { id: string; name: string }[];
 }

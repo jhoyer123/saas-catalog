@@ -11,15 +11,16 @@ import RichTextEditor from "@/components/products/form/RichTextEditor";
 import FormInput from "@/components/shared/InputForm";
 import FormSelect from "@/components/shared/SelectForm";
 import InputFile from "@/components/products/form/InputFile";
-import { ProductCatalog } from "@/types/product.types";
+import { ProductDetail } from "@/types/product.types";
 import { CategorySimple } from "@/types/category.types";
 //import { useEffect } from "react";
 import { BrandOfForm } from "@/types/brand.types";
 import { Plan } from "@/types/plan.types";
+import { OverlayProcess } from "@/components/shared/OverlayProcess";
 
 interface FormProductProps {
   mode: "create" | "update" | "view";
-  initialData?: ProductCatalog;
+  initialData?: ProductDetail;
   categories: CategorySimple[];
   brands: BrandOfForm[];
   plan?: Plan;
@@ -53,13 +54,7 @@ export default function FormProduct({
   return (
     <>
       {/* Overlay de bloqueo */}
-      {isPending && (
-        <div className="fixed inset-0 z-9999 bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3 shadow-xl">
-            <span className="text-sm text-gray-600">Procesando...</span>
-          </div>
-        </div>
-      )}
+      {isPending && <OverlayProcess />}
 
       <form
         onSubmit={handleSubmit}

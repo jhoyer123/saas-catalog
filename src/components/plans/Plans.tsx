@@ -154,14 +154,6 @@ export default function Plans() {
           </div>
         ))}
       </div>
-
-      {/* Footer */}
-      {/* <p className="text-center text-sm text-gray-300 pb-12">
-        Tipo de cambio referencial:{" "}
-        <span className="text-gray-400 font-medium">
-          1 USD = {USD_TO_BS} Bs
-        </span>
-      </p> */}
     </div>
   );
 }

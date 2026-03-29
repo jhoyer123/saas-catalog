@@ -29,14 +29,6 @@ export function useUpdateProduct() {
       }
       return result;
     },
-    /* onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["products"] }),
-        queryClient.invalidateQueries({ queryKey: ["product", variables.id] }),
-        queryClient.invalidateQueries({ queryKey: ["categories-paginated"] }),
-        queryClient.invalidateQueries({ queryKey: ["brands-paginated"] }),
-      ]);
-    }, */
     onSuccess: async (_data, variables) => {
       const prev = queryClient.getQueryData<ProductCatalog>([
         "product",

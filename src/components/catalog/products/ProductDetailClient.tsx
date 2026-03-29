@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { ProductCatalog } from "@/types/product.types";
+import { useEffect, useMemo, useState } from "react";
+import { ProductDetailCatalog } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
 import { ProductImageGallery } from "@/components/catalog/products/ProductImageGallery";
 import { ProductInfo } from "@/components/catalog/products/ProductInfo";
@@ -15,7 +15,7 @@ import { checkIsOfferActive } from "@/lib/helpers/validations";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 interface ProductDetailClientProps {
-  product: ProductCatalog;
+  product: ProductDetailCatalog;
   storeSlug: string;
   store: {
     name: string;
@@ -50,31 +50,36 @@ export default function ProductDetailClient({
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
 
-  const ahora = useTiempoActual(60_000);
+  //hook para mostrar la oferta
+  const ahora = useTiempoActual();
 
-  const isOfferActive = checkIsOfferActive(
-    {
-      is_offer: product.is_offer,
-      offer_price: product.offer_price || null,
-      offer_start: product.offer_start || null,
-      offer_end: product.offer_end || null,
-    },
-    ahora,
-  );
+  const { isOfferActive, discountPercent } = useMemo(() => {
+    const isOfferActive = checkIsOfferActive(
+      {
+        is_offer: product.is_offer,
+        offer_price: product.offer_price || null,
+        offer_start: product.offer_start || null,
+        offer_end: product.offer_end || null,
+      },
+      ahora,
+    );
 
-  const discountPercent =
-    isOfferActive && product.offer_price
-      ? Math.round(
-          ((product.price - product.offer_price) / product.price) * 100,
-        )
-      : null;
+    const discountPercent =
+      isOfferActive && product.offer_price
+        ? Math.round(
+            ((product.price - product.offer_price) / product.price) * 100,
+          )
+        : null;
+
+    return { isOfferActive, discountPercent };
+  }, [product, ahora]);
 
   return (
-    <main className="min-h-screen bg-[#f7f8fa]">
+    <main className="min-h-screen bg-catalog-primary">
       <Header store={store} />
       <div style={{ height: headerHeight }} />
 
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-3 text-catalog-secondary">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
           Volver
@@ -88,10 +93,10 @@ export default function ProductDetailClient({
             style={{ top: headerHeight + 16 }}
           >
             <ProductImageGallery
-              //images={product.images}
               images={product.images.map((img) => getCatalogImageUrl(img))}
               productName={product.name}
               discountPercent={discountPercent}
+              is_available={product.is_available}
             />
           </div>
           <div>

@@ -36,26 +36,20 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white font-sans dark:bg-black">
       <main className="w-full max-w-md p-6 relative z-10">
         {/* header */}
-        <header className="mb-8 text-center flex flex-col gap-2 px-4">
+        <header className="mb-8 text-center flex flex-col gap-5 px-4">
           {/* logo */}
-          <div className="relative mx-auto mb-8 flex items-center justify-center">
-            {/* Glow exterior */}
-            <div className="absolute w-44 h-44 rounded-full bg-[#FCC4CA]/20 blur-3xl" />
-
-            {/* Contenedor del logo */}
-            <div className="relative w-32 h-32 rounded-2xl bg-background/80 backdrop-blur border shadow-xl flex items-center justify-center">
-              <Image
-                src="/images/logoCat.webp"
-                alt="JhoyLabs Logo"
-                width={80}
-                height={80}
-                priority
-                className="object-contain"
-              />
-            </div>
+          <div className="flex flex-col items-center justify-center">
+            <Image
+              src="/images/logoCat.webp"
+              alt="Logo"
+              width={500}
+              height={500}
+              priority
+              className="object-contain w-20 lg:w-30 h-auto"
+            />
           </div>
           <h1 className="text-3xl font-bold">Registrarse</h1>
           <p className="text-gray-600 dark:text-gray-400">

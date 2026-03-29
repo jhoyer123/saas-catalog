@@ -11,6 +11,7 @@ import { useToggleOffer } from "./useHandleOffer";
 import { useState } from "react";
 
 import { useRouter } from "next/navigation";
+import { useToggleAvailableProduct } from "./useToogleAvailableProduct";
 
 export function useProductActions() {
   const [isPending, setIsPending] = useState(false);
@@ -21,6 +22,8 @@ export function useProductActions() {
   const { mutateAsync: update } = useUpdateProduct();
   const { mutateAsync: remove } = useDeleteProduct();
   const { mutateAsync: offerProduct } = useToggleOffer();
+  const { mutateAsync: toggleAvailableProduct } = useToggleAvailableProduct();
+
   const { showPromise } = useToastPromise();
 
   const withPending = async (fn: () => Promise<void>) => {
@@ -110,9 +113,15 @@ export function useProductActions() {
 
   const toggleOffer = (params: ToggleOfferParams, onSuccess?: () => void) => {
     showPromise({
-      promise: async () => {
+      /* promise: async () => {
         await offerProduct(params);
         onSuccess?.();
+      }, */
+      promise: async () => {
+        await withPending(async () => {
+          await offerProduct(params);
+          onSuccess?.();
+        });
       },
       messages: {
         loading: params.is_offer
@@ -127,11 +136,39 @@ export function useProductActions() {
     });
   };
 
+  const toggleAvailable = (
+    id: string,
+    is_available: boolean,
+    onSuccess?: () => void,
+  ) => {
+    showPromise({
+      /*  promise: async () => {
+        await toggleAvailableProduct({ id, is_available });
+        onSuccess?.();
+      }, */
+      promise: async () => {
+        await withPending(async () => {
+          await toggleAvailableProduct({ id, is_available });
+          onSuccess?.();
+        });
+      },
+      messages: {
+        loading: "Actualizando disponibilidad...",
+        success: "Disponibilidad actualizada",
+        error: (err) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
+  };
+
   return {
     createProduct,
     updateProduct,
     deleteProduct,
     toggleOffer,
+    toggleAvailable,
     isPending,
   };
 }

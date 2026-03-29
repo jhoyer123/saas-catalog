@@ -16,7 +16,9 @@ export function ProductGrid({
   hasBanners,
   whatssapNumber,
 }: ProductGridProps) {
-  const ahora = useTiempoActual(60_000);
+  //hook para obtener el tiempo actual y refrescarlo cada minuto, para validar ofertas activas
+  //const ahora = useTiempoActual(60_000);
+  const ahora = useTiempoActual();
 
   if (isLoading) {
     return (
@@ -84,7 +86,7 @@ export function ProductGrid({
             ahora,
           )}
           whatssapNumber={whatssapNumber}
-          priority={index < 4}
+          priority={index < 2}
         />
       ))}
     </div>
