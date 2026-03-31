@@ -50,7 +50,6 @@ export const ProductCard = React.memo(function ProductCard({
     addItem({
       id: product.id,
       name: product.name,
-      //image: product.images[0]?.image_url || "/images/placeholder.png",
       image: getCatalogImageUrl(product.images[0]?.image_url),
       price: displayPrice!,
     });

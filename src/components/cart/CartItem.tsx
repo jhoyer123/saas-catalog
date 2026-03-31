@@ -7,7 +7,6 @@
 
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { QuantityInput } from "@/components/cart/QuantityInput";

@@ -39,3 +39,35 @@ export function checkIsOfferActive(
 
   return true;
 }
+
+/**
+ * Verifica si una tienda tiene un plan vigente.
+ * Toda comparación se hace en UTC para evitar desfases con Bolivia (UTC-4).
+ *
+ * Casos:
+ * - is_active false → no vigente
+ * - plan_expires_at null → no vigente (nunca se configuró)
+ * - plan_expires_at en el pasado → expirado
+ * - plan_expires_at en el futuro → vigente
+ *
+ * @param store - Tienda con campos de plan
+ * @param now - Fecha de referencia (default: Date.now()). Útil para tests.
+ */
+export function checkIsPlanActive(
+  store: {
+    is_active: boolean | null;
+    plan_expires_at: string | null;
+  },
+  now: Date = new Date(),
+): boolean {
+  if (!store.is_active) return false;
+  if (!store.plan_expires_at) return false;
+
+  // Comparar timestamps UTC directamente (getTime() siempre es UTC)
+  const nowMs = now.getTime();
+  const expiresMs = new Date(store.plan_expires_at).getTime();
+
+  if (nowMs > expiresMs) return false;
+
+  return true;
+}

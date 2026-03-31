@@ -147,7 +147,7 @@ export function DataTableServer<TData>({
     staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
-
+  console.log(response);
   // Extraer datos de la respuesta (con fallbacks)
   const data = response?.data || [];
   const totalRows = response?.total || 0;

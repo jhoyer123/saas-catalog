@@ -3,6 +3,7 @@
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import StoreInactive from "./StoreInactive";
 import UserInactive from "./UserInactive";
+import { checkIsPlanActive } from "@/lib/helpers/validations";
 
 /**
  * Guard client-side que mantiene las validaciones de seguridad
@@ -25,8 +26,14 @@ export function DashboardGuard({ children }: { children: React.ReactNode }) {
     return <UserInactive />;
   }
 
-  // Tienda suspendida
-  if (session.store && !session.store.is_active) {
+  // Usuario suspendido por falta de
+  if (
+    session.store &&
+    !checkIsPlanActive({
+      is_active: session.store.is_active,
+      plan_expires_at: session.store.plan_expires_at,
+    })
+  ) {
     return <StoreInactive />;
   }
 

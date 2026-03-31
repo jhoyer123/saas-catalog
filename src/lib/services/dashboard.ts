@@ -50,7 +50,7 @@ export const fetchSessionData = async (): Promise<SessionData | null> => {
     supabase
       .from("stores")
       .select(
-        "id,slug,name,logo_url,description,whatsapp_number,is_active,plans(id,name,price,max_products,max_images_per_product,max_banners)",
+        "id,slug,name,logo_url,description,whatsapp_number,is_active,plan_expires_at,plans(id,name,price,max_products,max_images_per_product,max_banners)",
       )
       .eq("user_id", userId)
       .maybeSingle(),
@@ -155,12 +155,10 @@ export const fetchProductsPaginated = async (
       },
       now,
     );
-
     return {
       id: p.id,
-      name_category: Array.isArray(p.category)
-        ? (p.category[0]?.name ?? "Sin categoría")
-        : "Sin categoría",
+      name_category:
+        (p.category as unknown as { name: string })?.name ?? "Sin categoría",
       name: p.name,
       category_id: p.category_id,
       brand_id: p.brand_id ?? null,

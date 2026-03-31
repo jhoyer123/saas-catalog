@@ -1,69 +1,56 @@
-import { UserX, CreditCard, Mail } from "lucide-react";
+import { User, Lock, RefreshCw } from "lucide-react";
 
-export default function UserInactive() {
+export default function UserPendingApproval() {
+  const reload = () => window.location.reload();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full text-center space-y-6">
-        {/* Icono de Estado */}
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center">
-            <UserX className="w-8 h-8 text-amber-600" />
-          </div>
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-gray-100/80 backdrop-blur-md p-4">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-8 text-center space-y-6">
+        {/* Icono Principal */}
+        <div className="mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center">
+          <Lock className="w-8 h-8 text-amber-600" strokeWidth={2.5} />
         </div>
 
-        {/* Título y Mensaje Principal */}
+        {/* Textos */}
         <div className="space-y-2">
-          <h1 className="text-xl font-bold text-gray-900">
-            Acceso restringido
-          </h1>
-          <p className="text-sm text-gray-500">
-            Tu cuenta de usuario se encuentra actualmente inactiva. Esto suele
-            suceder por procesos de verificación inicial o por falta de pago en
-            la mensualidad.
+          <h1 className="text-xl font-bold text-gray-900">Acceso pendiente</h1>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            Tu cuenta ha sido creada, pero un administrador debe activarla antes
+            de que puedas entrar al sistema.
           </p>
         </div>
 
-        {/* Caja de Pasos a seguir */}
-        <div className="bg-white border border-gray-200 rounded-lg px-5 py-4 text-sm text-gray-600 text-left space-y-3">
-          <p className="font-medium text-gray-700">
-            Pasos para reactivar tu cuenta:
-          </p>
-
-          <div className="space-y-3">
-            <div className="flex gap-3">
-              <CreditCard className="w-5 h-5 text-gray-400 shrink-0" />
-              <p className="text-gray-500">
-                <span className="font-medium text-gray-700 block">
-                  Revisa tu suscripción
-                </span>
-                Asegúrate de que tu último pago se haya procesado correctamente.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <Mail className="w-5 h-5 text-gray-400 shrink-0" />
-              <p className="text-gray-500">
-                <span className="font-medium text-gray-700 block">
-                  Verifica tu correo
-                </span>
-                Si acabas de registrarte, revisa tu bandeja de entrada para
-                confirmar tu cuenta.
-              </p>
-            </div>
+        {/* Info Box */}
+        <div className="bg-gray-50 rounded-xl p-4 flex items-start gap-4 text-left">
+          <div className="p-2 bg-white rounded-lg shadow-sm">
+            <User className="w-5 h-5 text-gray-400" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-800">
+              Revisión manual
+            </p>
+            <p className="text-xs text-gray-500">
+              Normalmente las solicitudes se aprueban en menos de 24 horas.
+            </p>
           </div>
         </div>
 
-        {/* Acción Final */}
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500">
-            ¿Necesitas ayuda? Contacta con el administrador del sistema.
-          </p>
+        {/* Acciones */}
+        <div className="space-y-3">
           <button
-            className="w-full sm:w-auto px-6 py-2 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
-            onClick={() => window.location.reload()}
+            onClick={reload}
+            className="cursor-pointer w-full py-3 bg-gray-900 hover:bg-black text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2"
           >
-            Reintentar acceso
+            <RefreshCw className="w-4 h-4" />
+            Verificar estado
           </button>
+
+          <p className="text-xs text-gray-400">
+            ¿Necesitas ayuda?{" "}
+            <span className="underline cursor-pointer hover:text-gray-600">
+              Contacta con soporte
+            </span>
+          </p>
         </div>
       </div>
     </div>
