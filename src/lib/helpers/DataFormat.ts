@@ -15,7 +15,7 @@ export const dateConvert = (date: Date | null | undefined): string => {
  */
 export const getTrialExpirationDate = (): Date => {
   const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + 7);
+  expiryDate.setDate(expiryDate.getDate() + 10);
 
   return expiryDate;
 };

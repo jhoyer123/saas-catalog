@@ -195,7 +195,7 @@ export function ProductFilterControls({
             <SelectItem value="price_asc">Precio (menor a mayor)</SelectItem>
             <SelectItem value="price_desc">Precio (mayor a menor)</SelectItem>
             <SelectItem value="newest">Más recientes</SelectItem>
-            <SelectItem value="display_order">Orden de tienda</SelectItem>
+            {/* <SelectItem value="display_order">Orden de tienda</SelectItem> */}
           </SelectContent>
         </Select>
       </div>

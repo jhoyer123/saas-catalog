@@ -102,8 +102,8 @@ export async function fetchPublicProducts({
     case "newest":
       query = query.order("created_at", { ascending: false });
       break;
-    default:
-      query = query.order("display_order", { ascending: true });
+    // default:
+    //query = query.order("display_order", { ascending: true });
   }
 
   const from = (page - 1) * pageSize;
