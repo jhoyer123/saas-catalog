@@ -363,7 +363,8 @@ export const fetchPlans = async (): Promise<PlanDetails[]> => {
     .from("plans")
     .select(
       "id, name, price, max_products, max_images_per_product, max_banners, description",
-    );
+    )
+    .order("sort_order", { ascending: true });
 
   if (error) throw new Error(error.message);
 

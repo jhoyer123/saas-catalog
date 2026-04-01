@@ -6,6 +6,7 @@ import { uploadFile } from "@/lib/utils/storage";
 import { generateSlug } from "@/lib/utils/slug";
 import type { StoreForm } from "@/lib/schemas/store";
 import { revalidateTag } from "next/cache";
+import { getTrialExpirationDate } from "../helpers/DataFormat";
 
 /**
  * Crea una tienda nueva.
@@ -38,7 +39,7 @@ export const createStore = async (
   const { data: defaultPlan } = await supabase
     .from("plans")
     .select("id")
-    .limit(1)
+    .eq("name", "Básico")
     .single();
 
   if (!defaultPlan) return { error: "No se pudo obtener el plan por defecto" };
@@ -48,13 +49,14 @@ export const createStore = async (
     .from("stores")
     .insert({
       user_id: userId,
-      plane_id: defaultPlan.id,
+      plan_id: defaultPlan.id,
       name: dataInput.name,
       slug: generateSlug(dataInput.name),
       logo_url: null,
       description: dataInput.description,
       whatsapp_number: dataInput.whatsapp_number,
       is_active: true,
+      plan_expires_at: getTrialExpirationDate(), // fecha de expiración de la prueba gratuita
     })
     .select("id") // ← pedimos el ID de vuelta
     .single();

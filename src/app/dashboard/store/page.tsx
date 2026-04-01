@@ -8,11 +8,11 @@ import SketetonStoreConfig from "@/components/store/SketetonStoreConfig";
 export default function StorePage() {
   const { data, isPending } = useSessionData();
 
-  if (isPending) {
+  if (isPending && !data) {
     return <SketetonStoreConfig />;
   }
 
-  if (!isPending && (!data || !data.plan)) {
+  if (!isPending && !data) {
     return (
       <section className="w-full p-4">
         <div className="mx-auto max-w-6xl w-full flex flex-col items-center justify-center min-h-100 gap-3">
