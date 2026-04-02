@@ -8,6 +8,7 @@ import type {
   ProductInputServiceUpdate,
 } from "@/lib/schemas/product";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { purgeProductDetailCache } from "../cloudflare/purgeCache";
 
 /**
  * action for create product
@@ -105,6 +106,7 @@ export const createProduct = async (
  */
 export const updateProduct = async (
   id: string,
+  slugProd: string,
   dataProducto: ProductInputServiceUpdate,
   storeId: string,
   storeSlug: string,
@@ -213,7 +215,9 @@ export const updateProduct = async (
     }
   }
 
+  revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
   revalidateTag(`products-${storeSlug}`, "max");
+  await purgeProductDetailCache(storeSlug, slugProd);
   return data;
 };
 
@@ -225,6 +229,7 @@ export const updateProduct = async (
  */
 export const deleteProductAction = async (
   id: string,
+  slugProd: string,
   storeId: string,
   storeSlug: string,
 ) => {
@@ -258,6 +263,8 @@ export const deleteProductAction = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
+  revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+  await purgeProductDetailCache(storeSlug, slugProd);
 };
 
 /**
@@ -275,6 +282,7 @@ export interface ToggleOfferParams {
 }
 
 export const toggleOfferAction = async (
+  slugProd: string,
   params: ToggleOfferParams,
   storeSlug: string,
 ) => {
@@ -304,6 +312,8 @@ export const toggleOfferAction = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
+  revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+  await purgeProductDetailCache(storeSlug, slugProd);
 };
 
 /**
@@ -313,6 +323,7 @@ export const toggleOfferAction = async (
  */
 export const toggleAvailableAction = async (
   id: string,
+  slugProd: string,
   is_available: boolean,
   storeId: string,
   storeSlug: string,
@@ -331,5 +342,11 @@ export const toggleAvailableAction = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
+
+  if (slugProd) {
+    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    await purgeProductDetailCache(storeSlug, slugProd);
+  }
+
   return { data };
 };

@@ -36,7 +36,11 @@ const formatPrice = (price: number) =>
 } */
 interface ColumnsProps {
   onOpenModal: (type: ModalType, product: ProductCatalog) => void;
-  onToggleAvailable: (id: string, value: boolean) => void;
+  onToggleAvailable: (args: {
+    id: string;
+    slugProd: string;
+    value: boolean;
+  }) => void;
   onNavigate: (path: string) => void;
 }
 
@@ -198,7 +202,11 @@ export const createProductsColumns = ({
             className="cursor-pointer"
             checked={product.is_available}
             onCheckedChange={(checked) =>
-              onToggleAvailable(product.id, checked)
+              onToggleAvailable({
+                id: product.id,
+                slugProd: product.slug,
+                value: checked,
+              })
             }
             aria-label={
               product.is_available ? "Desactivar producto" : "Activar producto"

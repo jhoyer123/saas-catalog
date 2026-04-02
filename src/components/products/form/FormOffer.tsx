@@ -64,6 +64,7 @@ export function FormOffer({ product, onClose }: FormOfferProps) {
 
   const onSubmit = (data: OfferFormValues) => {
     toggleOffer(
+      product.slug,
       {
         id: product.id,
         is_offer: data.is_offer,

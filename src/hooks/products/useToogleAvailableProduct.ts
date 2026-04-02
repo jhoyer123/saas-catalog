@@ -13,9 +13,11 @@ export function useToggleAvailableProduct() {
   return useMutation({
     mutationFn: async ({
       id,
+      slugProd,
       is_available,
     }: {
       id: string;
+      slugProd: string;
       is_available: boolean;
     }) => {
       if (!storeId || !slugStore) {
@@ -23,6 +25,7 @@ export function useToggleAvailableProduct() {
       }
       const result = await toggleAvailableAction(
         id,
+        slugProd,
         is_available,
         storeId!,
         slugStore!,

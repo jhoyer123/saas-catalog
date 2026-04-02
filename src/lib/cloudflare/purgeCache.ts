@@ -1,0 +1,44 @@
+// lib/cloudflare/purgeCache.ts
+
+const ZONE_ID = process.env.CLOUDFLARE_ZONE_ID!;
+const TOKEN = process.env.CLOUDFLARE_CACHE_TOKEN!;
+const APP_URL = (
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://app.jhoyerdev.me"
+).replace(/\/+$/, "");
+
+async function purgeCloudflareCache(urls: string[]) {
+  if (!ZONE_ID || !TOKEN || !urls.length) return;
+
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ files: urls }),
+    },
+  );
+
+  const body = await res.json().catch(() => null);
+  if (!res.ok || !body?.success) {
+    console.error("Cloudflare purge failed", { status: res.status, body });
+    throw new Error("Cloudflare purge failed");
+  }
+}
+
+export async function purgeProductsCache(storeSlug: string) {
+  await purgeCloudflareCache([`${APP_URL}/api/catalog/${storeSlug}/products`]);
+}
+
+export async function purgeMetaCache(storeSlug: string) {
+  await purgeCloudflareCache([`${APP_URL}/api/catalog/${storeSlug}/meta`]);
+}
+
+export async function purgeProductDetailCache(
+  storeSlug: string,
+  productSlug: string,
+) {
+  await purgeCloudflareCache([`${APP_URL}/public/${storeSlug}/${productSlug}`]);
+}

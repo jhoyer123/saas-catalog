@@ -13,13 +13,16 @@ export function useUpdateProduct() {
   return useMutation({
     mutationFn: async ({
       id,
+      slugProd,
       dataProducto,
     }: {
       id: string;
+      slugProd: string;
       dataProducto: ProductInputServiceUpdate;
     }) => {
       const result = await updateProduct(
         id,
+        slugProd,
         dataProducto,
         storeId!,
         slugStore!,

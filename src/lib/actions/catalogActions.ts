@@ -1,7 +1,7 @@
 "use server";
 
 import { supabasePublic } from "@/lib/supabase/server-public";
-import { ProductCatalogCard } from "@/types/product.types";
+import { ProductCatalogCard, ProductDetailCatalog } from "@/types/product.types";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
@@ -166,5 +166,53 @@ export async function getPublicProductsInitial(
       tags: [`products-${storeSlug}`],
       revalidate: false,
     },
+  )();
+}
+
+/**
+ * Get public product detail by slug
+ * Usa la misma query/mapeo que fetchPublicProductBySlug
+ */
+async function getPublicProductBySlugRaw(
+  slug: string,
+): Promise<ProductDetailCatalog> {
+  const { data, error } = await supabasePublic
+    .from("products")
+    .select(
+      `
+      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available,
+      brand:brands(name),
+      category:categories(name),
+      images:product_images(image_url)
+      `,
+    )
+    .eq("slug", slug)
+    .single();
+
+  if (error || !data) throw new Error("Producto no encontrado");
+
+  return {
+    id: data.id,
+    name: data.name,
+    price: data.price,
+    description: data.description,
+    is_offer: data.is_offer ?? false,
+    offer_price: data.offer_price ?? null,
+    offer_start: data.offer_start ?? null,
+    offer_end: data.offer_end ?? null,
+    slug: data.slug,
+    brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
+    images: (data.images ?? []).map(
+      (img: { image_url: string }) => img.image_url,
+    ),
+    is_available: data.is_available,
+  };
+}
+
+export async function getPublicProductBySlug(storeSlug: string, slug: string) {
+  return unstable_cache(
+    async () => getPublicProductBySlugRaw(slug),
+    ["public-product", storeSlug, slug],
+    { tags: [`product-${storeSlug}-${slug}`], revalidate: false },
   )();
 }

@@ -1,4 +1,7 @@
-import { getPublicStore } from "@/lib/actions/catalogActions";
+import {
+  getPublicProductBySlug,
+  getPublicStore,
+} from "@/lib/actions/catalogActions";
 import ProductDetailClient from "@/components/catalog/products/ProductDetailClient";
 import { notFound } from "next/navigation";
 import {
@@ -6,17 +9,18 @@ import {
   HydrationBoundary,
   dehydrate,
 } from "@tanstack/react-query";
-import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
 
 type Props = {
   params: Promise<{ store_slug: string; slug: string }>;
 };
 
+export const revalidate = 31536000; // 1 año en segundos
+
 export default async function Page({ params }: Props) {
   const { store_slug, slug } = await params;
 
   const [product, store] = await Promise.all([
-    fetchPublicProductBySlug(slug).catch(() => null),
+    getPublicProductBySlug(store_slug, slug).catch(() => null),
     getPublicStore(store_slug),
   ]);
 
@@ -24,7 +28,8 @@ export default async function Page({ params }: Props) {
 
   // Inyecta en TanStack para que back-navigation sea instantáneo
   const queryClient = new QueryClient();
-  queryClient.setQueryData(["public-product", slug], product);
+  //queryClient.setQueryData(["public-product", slug], product);
+  queryClient.setQueryData(["public-product", store_slug, slug], product);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

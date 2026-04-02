@@ -37,7 +37,8 @@ export function ProductsTable() {
     () =>
       createProductsColumns({
         onOpenModal: openModal,
-        onToggleAvailable: (id, value) => toggleAvailable(id, value),
+        onToggleAvailable: ({ id, slugProd, value }) =>
+          toggleAvailable(id, slugProd, value),
         onNavigate: (path) => router.push(path),
       }),
     [openModal],
@@ -69,7 +70,7 @@ export function ProductsTable() {
       <ModalProduct
         modalState={modalState}
         onClose={closeModal}
-        onConfirmDelete={(product) => deleteProduct(product.id)}
+        onConfirmDelete={(product) => deleteProduct(product.id, product.slug)}
         onConfirmOffer={() => toggleOffer}
       />
     </>

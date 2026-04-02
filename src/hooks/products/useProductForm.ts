@@ -131,6 +131,7 @@ export function useProductForm({
     if (isUpdate) {
       updateProduct(
         initialData?.id!,
+        initialData?.slug!,
         transformed as ProductInputServiceUpdate,
         () => {
           reset({

@@ -3,6 +3,7 @@
  */
 export interface ProductCatalog {
   id: string;
+  slug: string;
   name: string;
   price: number;
   is_offer: boolean;
@@ -24,6 +25,7 @@ export interface ProductCatalog {
 export interface ProductDetail {
   id: string;
   category_id: string;
+  slug?: string | null;
   brand_id?: string | null;
   name: string;
   price: number;

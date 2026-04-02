@@ -29,6 +29,7 @@ interface ProductDetailClientProps {
 export default function ProductDetailClient({
   product: initialProduct,
   store,
+  storeSlug,
 }: ProductDetailClientProps) {
   const router = useRouter();
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -43,7 +44,8 @@ export default function ProductDetailClient({
   }, []);
 
   const { data: product } = useQuery({
-    queryKey: ["public-product", initialProduct.slug],
+    //queryKey: ["public-product", initialProduct.slug],
+    queryKey: ["public-product", storeSlug, initialProduct.slug],
     queryFn: () => fetchPublicProductBySlug(initialProduct.slug!),
     initialData: initialProduct,
     staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos

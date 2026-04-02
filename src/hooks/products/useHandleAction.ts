@@ -71,13 +71,14 @@ export function useProductActions() {
    */
   const updateProduct = (
     id: string,
+    slugProd: string,
     data: ProductInputServiceUpdate,
     onSuccess?: () => void,
   ) => {
     showPromise({
       promise: async () => {
         await withPending(async () => {
-          await update({ id, dataProducto: data });
+          await update({ id, slugProd, dataProducto: data });
           router.push("/dashboard/products");
           onSuccess?.();
         });
@@ -96,10 +97,11 @@ export function useProductActions() {
   /**
    * Action Delete Product Executed with Toast Notifications
    * @param id
+   * @param slugProd
    */
-  const deleteProduct = (id: string) => {
+  const deleteProduct = (id: string, slugProd: string) => {
     showPromise({
-      promise: () => remove(id),
+      promise: () => remove({ id, slugProd }),
       messages: {
         loading: "Eliminando producto...",
         success: "Producto eliminado",
@@ -111,15 +113,15 @@ export function useProductActions() {
     });
   };
 
-  const toggleOffer = (params: ToggleOfferParams, onSuccess?: () => void) => {
+  const toggleOffer = (
+    slugProd: string,
+    params: ToggleOfferParams,
+    onSuccess?: () => void,
+  ) => {
     showPromise({
-      /* promise: async () => {
-        await offerProduct(params);
-        onSuccess?.();
-      }, */
       promise: async () => {
         await withPending(async () => {
-          await offerProduct(params);
+          await offerProduct({ slugProd, params });
           onSuccess?.();
         });
       },
@@ -138,17 +140,14 @@ export function useProductActions() {
 
   const toggleAvailable = (
     id: string,
+    slugProd: string,
     is_available: boolean,
     onSuccess?: () => void,
   ) => {
     showPromise({
-      /*  promise: async () => {
-        await toggleAvailableProduct({ id, is_available });
-        onSuccess?.();
-      }, */
       promise: async () => {
         await withPending(async () => {
-          await toggleAvailableProduct({ id, is_available });
+          await toggleAvailableProduct({ id, slugProd, is_available });
           onSuccess?.();
         });
       },

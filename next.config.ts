@@ -1,18 +1,30 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  async headers() {
+    return [
+      {
+        source: "/public/:store_slug/:slug",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=31536000, stale-while-revalidate=31536000",
+          },
+        ],
+      },
+    ];
+  },
   images: {
     unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "i.pinimg.com", // Pinterest
+        hostname: "i.pinimg.com",
       },
       {
         protocol: "https",
-        hostname: "xxxx.supabase.co", // cuando conectes Supabase
+        hostname: "xxxx.supabase.co",
       },
       {
         protocol: "https",

@@ -105,7 +105,7 @@ export const fetchProductsPaginated = async (
     .from("products")
     .select(
       `
-      id,name,price,is_offer,offer_price,offer_start,offer_end,sku,is_available,category_id,brand_id,
+      id,slug,name,price,is_offer,offer_price,offer_start,offer_end,sku,is_available,category_id,brand_id,
       category:categories(name),
       brand:brands(name),
       images:product_images(image_url)
@@ -157,6 +157,7 @@ export const fetchProductsPaginated = async (
     );
     return {
       id: p.id,
+      slug: p.slug,
       name_category:
         (p.category as unknown as { name: string })?.name ?? "Sin categoría",
       name: p.name,
@@ -192,7 +193,7 @@ export const fetchProductById = async (id: string): Promise<ProductDetail> => {
     .from("products")
     .select(
       `
-    id,category_id,brand_id,name,price,description,sku,images:product_images(image_url)
+    id,slug,category_id,brand_id,name,price,description,sku,images:product_images(image_url)
     `,
     )
     .eq("id", id)
@@ -202,6 +203,7 @@ export const fetchProductById = async (id: string): Promise<ProductDetail> => {
 
   return {
     id: data.id,
+    slug: data.slug,
     category_id: data.category_id,
     brand_id: data.brand_id ?? null,
     name: data.name,
