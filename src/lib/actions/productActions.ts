@@ -7,7 +7,7 @@ import type {
   ProductInputService,
   ProductInputServiceUpdate,
 } from "@/lib/schemas/product";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import {
   purgeCatalogCache,
   purgeProductDetailCache,
@@ -97,6 +97,11 @@ export const createProduct = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
+
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
+
   return data;
 };
 

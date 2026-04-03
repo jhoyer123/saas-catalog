@@ -35,6 +35,7 @@ export async function purgeProductsCache(storeSlug: string) {
 export async function purgeMetaCache(storeSlug: string) {
   await purgeCloudflareCache([`${APP_URL}/api/catalog/${storeSlug}/meta`]);
 }
+
 //vista pública principal del catálogo
 export async function purgeCatalogCache(storeSlug: string) {
   await purgeCloudflareCache([`${APP_URL}/public/${storeSlug}`]);
