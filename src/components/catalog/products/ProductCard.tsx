@@ -90,6 +90,7 @@ export const ProductCard = React.memo(function ProductCard({
       {/* ───────── IMAGEN ───────── */}
       <Link
         href={`/public/${store_slug}/${product.slug}`}
+        prefetch={false}
         //onMouseEnter={handlePrefetch}  // ← agregar prefetch en hover
         onTouchStart={handlePrefetch}
         className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
@@ -129,7 +130,7 @@ export const ProductCard = React.memo(function ProductCard({
 
       {/* ───────── INFO ───────── */}
       <div className="p-2">
-        <Link href={`/public/${store_slug}/${product.slug}`}>
+        <Link href={`/public/${store_slug}/${product.slug}`} prefetch={false}>
           <h3 className="text-sm sm:text-base font-medium font-inter text-gray-700 leading-snug line-clamp-2 hover:text-gray-900 transition-colors">
             {product.name}
           </h3>

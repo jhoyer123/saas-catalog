@@ -52,13 +52,13 @@ export default async function Page({ params }: Props) {
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center">
+          <div className="min-h-screen flex items-center justify-center bg-catalog-primary text-catalog-secondary text-md font-medium">
             Cargando catálogo...
           </div>
         }
       >
         <CatalogClient
-          initialProductData={initialProductData}
+          //initialProductData={initialProductData}
           categories={categories}
           brands={brands}
           banners={banners}

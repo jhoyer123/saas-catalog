@@ -28,14 +28,6 @@ async function getPublicStoreRaw(storeSlug: string) {
     updated_at: string;
   };
 }
-/* 
-export async function getPublicStore(storeSlug: string) {
-  return unstable_cache(
-    async () => getPublicStoreRaw(storeSlug),
-    ["public-store", storeSlug],
-    { tags: [`store-${storeSlug}`], revalidate: false },
-  )();
-} */
 
 // ← único cambio: cache() wrapeando lo que ya tenías
 export const getPublicStore = cache((storeSlug: string) => {

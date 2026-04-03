@@ -38,11 +38,11 @@ function useElementHeight(id: string) {
 }
 
 interface CatalogClientProps {
-  initialProductData: {
+  /*  initialProductData: {
     products: ProductCatalogCard[];
     totalPages: number;
     total: number;
-  };
+  }; */
   categories: { id: string; name: string }[];
   brands: BrandCatalog[];
   banners: Banner[];

@@ -52,6 +52,7 @@ export default function Home() {
         <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
           <Link
             href="/auth/login"
+            prefetch={false}
             className="px-5 py-2.5 rounded-full
                        border border-black/10 bg-white
                        text-[11px] font-bold uppercase tracking-widest
@@ -60,7 +61,7 @@ export default function Home() {
             Iniciar sesión
           </Link>
 
-          <Link href="/auth/register">
+          <Link href="/auth/register" prefetch={false}>
             <Button
               className="rounded-full bg-black text-white
                          px-6 py-3 text-[11px] font-bold uppercase tracking-widest
@@ -91,7 +92,7 @@ export default function Home() {
             </p>
 
             <div className="flex justify-center md:justify-start">
-              <Link href="/auth/register">
+              <Link href="/auth/register" prefetch={false}>
                 <Button
                   size="lg"
                   className="bg-[#6D001A] hover:bg-black text-white
