@@ -89,7 +89,7 @@ export default function ProductDetailClient({
       </div>
 
       <section className="container mx-auto px-2 pb-6">
-        <div className="w-full max-w-5xl mx-auto grid gap-8 lg:grid-cols-2 lg:gap-7 justify-center items-start">
+        <div className="w-full max-w-5xl mx-auto grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-7 justify-center items-start">
           <div
             className="lg:sticky lg:self-start"
             style={{ top: headerHeight + 16 }}
