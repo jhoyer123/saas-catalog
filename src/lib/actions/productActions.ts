@@ -8,7 +8,10 @@ import type {
   ProductInputServiceUpdate,
 } from "@/lib/schemas/product";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { purgeProductDetailCache } from "../cloudflare/purgeCache";
+import {
+  purgeCatalogCache,
+  purgeProductDetailCache,
+} from "../cloudflare/purgeCache";
 
 /**
  * action for create product
@@ -217,7 +220,10 @@ export const updateProduct = async (
 
   revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
   revalidateTag(`products-${storeSlug}`, "max");
-  await purgeProductDetailCache(storeSlug, slugProd);
+  if (slugProd) {
+    await purgeProductDetailCache(storeSlug, slugProd);
+    await purgeCatalogCache(storeSlug);
+  }
   return data;
 };
 
@@ -264,7 +270,10 @@ export const deleteProductAction = async (
 
   revalidateTag(`products-${storeSlug}`, "max");
   revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-  await purgeProductDetailCache(storeSlug, slugProd);
+  if (slugProd) {
+    await purgeProductDetailCache(storeSlug, slugProd);
+    await purgeCatalogCache(storeSlug);
+  }
 };
 
 /**
@@ -313,7 +322,10 @@ export const toggleOfferAction = async (
 
   revalidateTag(`products-${storeSlug}`, "max");
   revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-  await purgeProductDetailCache(storeSlug, slugProd);
+  if (slugProd) {
+    await purgeProductDetailCache(storeSlug, slugProd);
+    await purgeCatalogCache(storeSlug);
+  }
 };
 
 /**
@@ -346,6 +358,7 @@ export const toggleAvailableAction = async (
   if (slugProd) {
     revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
     await purgeProductDetailCache(storeSlug, slugProd);
+    await purgeCatalogCache(storeSlug);
   }
 
   return { data };

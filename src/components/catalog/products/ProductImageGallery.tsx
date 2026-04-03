@@ -51,9 +51,12 @@ function GalleryImage({
       src={imgSrc}
       alt={alt}
       fill
+      quality={75}
       sizes={sizes}
       priority={priority}
-      className={className}
+      loading={priority ? "eager" : "lazy"}
+      draggable={false}
+      className={`pointer-events-none ${className ?? ""}`}
       onError={onError}
     />
   );
@@ -116,8 +119,10 @@ export function ProductImageGallery({
 
   const ImageStack = ({ isMobile }: { isMobile: boolean }) => (
     <div
-      className={`relative w-full overflow-hidden bg-gray-50 aspect-square ${
-        isMobile ? "" : "max-w-150 mx-auto rounded-2xl group"
+      className={`relative w-full overflow-hidden bg-gray-100 aspect-square ${
+        isMobile
+          ? "touch-pan-y select-none"
+          : "max-w-150 mx-auto rounded-2xl group select-none"
       }`}
       onTouchStart={isMobile ? handleTouchStart : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
@@ -137,8 +142,13 @@ export function ProductImageGallery({
       {safeImages.map((src, index) => (
         <div
           key={src}
-          className="absolute inset-0 transition-opacity duration-300"
-          style={{ opacity: index === currentIndex ? 1 : 0 }}
+          className={`absolute inset-0 ${
+            isMobile ? "transition-none" : "transition-opacity duration-300"
+          }`}
+          style={{
+            opacity: index === currentIndex ? 1 : 0,
+            pointerEvents: index === currentIndex ? "auto" : "none",
+          }}
           aria-hidden={index !== currentIndex}
         >
           <GalleryImage
@@ -159,9 +169,9 @@ export function ProductImageGallery({
         <>
           <button
             onClick={goToPrevious}
-            className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white/70 backdrop-blur-sm text-gray-700 shadow-sm ${
+            className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white shadow-sm ${
               !isMobile
-                ? "opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white"
+                ? "opacity-0 group-hover:opacity-100 transition-colors duration-200 hover:bg-black/60"
                 : ""
             }`}
           >
@@ -169,9 +179,9 @@ export function ProductImageGallery({
           </button>
           <button
             onClick={goToNext}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 z-10 grid h-8 w-8 place-items-center rounded-full bg-white/70 backdrop-blur-sm text-gray-700 shadow-sm ${
+            className={`absolute right-3 top-1/2 -translate-y-1/2 z-10 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white shadow-sm ${
               !isMobile
-                ? "opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white"
+                ? "opacity-0 group-hover:opacity-100 transition-colors duration-200 hover:bg-black/60"
                 : ""
             }`}
           >
@@ -182,7 +192,13 @@ export function ProductImageGallery({
     </div>
   );
 
-  const Thumbnails = ({ size }: { size: number }) => (
+  const Thumbnails = ({
+    size,
+    isMobile,
+  }: {
+    size: number;
+    isMobile: boolean;
+  }) => (
     <div className="flex gap-2 items-center justify-center overflow-x-auto pb-1">
       {safeImages.map((image, index) => (
         <button
@@ -191,7 +207,9 @@ export function ProductImageGallery({
           className="flex flex-col items-center gap-1.5 shrink-0 focus:outline-none"
         >
           <div
-            className={`relative overflow-hidden rounded-xl transition-opacity duration-300 ${
+            className={`relative overflow-hidden rounded-xl ${
+              isMobile ? "transition-none" : "transition-opacity duration-300"
+            } ${
               index === currentIndex
                 ? "opacity-100"
                 : "opacity-40 hover:opacity-70"
@@ -205,11 +223,6 @@ export function ProductImageGallery({
               className="object-cover"
             />
           </div>
-          <span
-            className={`block h-0.5 rounded-full transition-all duration-300 ${
-              index === currentIndex ? "w-6 bg-gray-900" : "w-0 bg-transparent"
-            }`}
-          />
         </button>
       ))}
     </div>
@@ -220,13 +233,13 @@ export function ProductImageGallery({
       {/* DESKTOP */}
       <div className="hidden lg:flex lg:flex-col lg:gap-3">
         <ImageStack isMobile={false} />
-        {safeImages.length > 1 && <Thumbnails size={72} />}
+        {safeImages.length > 1 && <Thumbnails size={72} isMobile={false} />}
       </div>
 
       {/* MOBILE */}
       <div className="flex flex-col gap-3 lg:hidden">
         <ImageStack isMobile={true} />
-        {safeImages.length > 1 && <Thumbnails size={64} />}
+        {safeImages.length > 1 && <Thumbnails size={64} isMobile={true} />}
       </div>
 
       {lightbox}
