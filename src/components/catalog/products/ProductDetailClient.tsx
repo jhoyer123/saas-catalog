@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { ProductDetailCatalog } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
 import { ProductImageGallery } from "@/components/catalog/products/ProductImageGallery";
 import { ProductInfo } from "@/components/catalog/products/ProductInfo";
@@ -13,49 +12,70 @@ import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
 import { useTiempoActual } from "@/hooks/catalog/useTiempoActual";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
+import { SkeletonDetailProduct } from "@/components/detailProduct/SkeletonDetailProduct";
+import { getPublicStore } from "@/lib/actions/catalogActions";
 
 interface ProductDetailClientProps {
-  product: ProductDetailCatalog;
+  slugProd: string;
   storeSlug: string;
-  store: {
-    name: string;
-    slug: string;
-    logo_url: string | null;
-    whatsapp_number?: string | null;
-    updated_at: string; // Agregado para el cache busting
-  };
 }
 
 export default function ProductDetailClient({
-  product: initialProduct,
-  store,
+  slugProd,
   storeSlug,
 }: ProductDetailClientProps) {
   const router = useRouter();
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  useEffect(() => {
+  /* useEffect(() => {
     const header = document.getElementById("catalog-header");
     if (!header) return;
     const ro = new ResizeObserver(() => setHeaderHeight(header.offsetHeight));
     ro.observe(header);
     setHeaderHeight(header.offsetHeight);
     return () => ro.disconnect();
-  }, []);
+  }, []); */
+
+  // 1. Recuperamos el store directo de la memoria compartida
+  const { data: store } = useQuery({
+    queryKey: ["public-store", storeSlug],
+    queryFn: async () => {
+      const data = await getPublicStore(storeSlug);
+      return data;
+    },
+    staleTime: Infinity, // El store no cambia, así que nunca consideramos los datos como obsoletos
+    gcTime: Infinity, // Mantener en caché indefinidamente
+  });
 
   const { data: product } = useQuery({
-    //queryKey: ["public-product", initialProduct.slug],
-    queryKey: ["public-product", storeSlug, initialProduct.slug],
-    queryFn: () => fetchPublicProductBySlug(initialProduct.slug!),
-    initialData: initialProduct,
+    queryKey: ["public-product", storeSlug, slugProd],
+    queryFn: () => fetchPublicProductBySlug(slugProd),
     staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
+
+  useEffect(() => {
+    // Si todavía no hay datos, no medimos nada porque está el Skeleton
+    if (!store || !product) return;
+
+    const header = document.getElementById("catalog-header");
+    if (!header) return;
+
+    const ro = new ResizeObserver(() => setHeaderHeight(header.offsetHeight));
+    ro.observe(header);
+
+    // Medición inicial
+    setHeaderHeight(header.offsetHeight);
+
+    return () => ro.disconnect();
+    // Agregamos [store, product] para que vuelva a correr cuando carguen los datos
+  }, [store, product]);
 
   //hook para mostrar la oferta
   const ahora = useTiempoActual();
 
   const { isOfferActive, discountPercent } = useMemo(() => {
+    if (!product) return { isOfferActive: false, discountPercent: null };
     const isOfferActive = checkIsOfferActive(
       {
         is_offer: product.is_offer,
@@ -76,13 +96,27 @@ export default function ProductDetailClient({
     return { isOfferActive, discountPercent };
   }, [product, ahora]);
 
+  const handleVolver = () => {
+    // Si el historial tiene páginas registradas, va atrás.
+    // Si no (porque recargó o entró directo), lo mandamos al catálogo de la tienda.
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(`/public/${storeSlug}`);
+    }
+  };
+
+  // Si TanStack Query todavía está armando los datos (casi imposible con hidratación, pero TypeScript lo exige)
+  if (!product || !store) return <SkeletonDetailProduct />;
+
   return (
     <main className="min-h-screen bg-catalog-primary">
       <Header store={store} />
       <div style={{ height: headerHeight }} />
 
       <div className="container mx-auto px-4 py-3 text-catalog-secondary">
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+        {/* Cambiamos el onClick para usar la función controlada */}
+        <Button variant="ghost" onClick={handleVolver} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
           Volver
         </Button>

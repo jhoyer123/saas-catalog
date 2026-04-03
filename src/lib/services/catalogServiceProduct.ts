@@ -4,6 +4,7 @@ import type {
   ProductCatalogCard,
   ProductDetailCatalog,
 } from "@/types/product.types";
+import { StoreCatalog } from "@/types/catalog/catalog.types";
 
 export type SortOption =
   | "price_asc"
@@ -50,6 +51,30 @@ async function getStoreId(storeSlug: string): Promise<string> {
   if (error || !data) throw new Error("Tienda no encontrada");
   storeIdCache.set(storeSlug, data.id);
   return data.id;
+}
+
+/**
+ *
+ * @param param0
+ * @returns
+ */
+export async function fetchPublicStore(
+  storeSlug: string,
+): Promise<StoreCatalog> {
+  const storeId = await getStoreId(storeSlug);
+
+  const { data, error } = await supabase
+    .from("stores")
+    .select(
+      `
+      name, slug, logo_url, whatsapp_number, updated_at
+      `,
+    )
+    .eq("id", storeId)
+    .single();
+
+  if (error || !data) throw new Error("Tienda no encontrada");
+  return data;
 }
 
 /**

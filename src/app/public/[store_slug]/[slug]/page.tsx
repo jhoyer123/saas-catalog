@@ -19,24 +19,27 @@ export const revalidate = 31536000; // 1 año en segundos
 export default async function Page({ params }: Props) {
   const { store_slug, slug } = await params;
 
-  const [product, store] = await Promise.all([
+  /*  const [product, store] = await Promise.all([
     getPublicProductBySlug(store_slug, slug).catch(() => null),
     getPublicStore(store_slug),
-  ]);
+  ]); */
+
+  const product = await getPublicProductBySlug(store_slug, slug).catch(
+    () => null,
+  );
 
   if (!product) notFound();
 
   // Inyecta en TanStack para que back-navigation sea instantáneo
   const queryClient = new QueryClient();
-  //queryClient.setQueryData(["public-product", slug], product);
   queryClient.setQueryData(["public-product", store_slug, slug], product);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <ProductDetailClient
-        product={product}
+        slugProd={product.slug}
         storeSlug={store_slug}
-        store={store}
+        //store={store}
       />
     </HydrationBoundary>
   );

@@ -4,6 +4,14 @@ export interface Banner {
   image_url: string;
 }
 
+export interface StoreCatalog {
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  whatsapp_number?: string | null;
+  updated_at: string; // Agregado para el cache busting
+}
+
 // Cuánto tiempo muestra cada banner antes de pasar al siguiente
 export const AUTOPLAY_INTERVAL = 5000;
 
