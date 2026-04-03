@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  async headers() {
+  /*  async headers() {
     return [
       {
         source: "/public/:store_slug/:slug",
@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
+  }, */
   images: {
     unoptimized: true,
     remotePatterns: [
