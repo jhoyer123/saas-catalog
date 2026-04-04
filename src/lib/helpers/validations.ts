@@ -63,7 +63,7 @@ export function checkIsPlanActive(
   if (!store.is_active) return false;
   if (!store.plan_expires_at) return false;
 
-  // Comparar timestamps UTC directamente (getTime() siempre es UTC)
+  //Comparar timestamps UTC directamente (getTime() siempre es UTC)
   const nowMs = now.getTime();
   const expiresMs = new Date(store.plan_expires_at).getTime();
 

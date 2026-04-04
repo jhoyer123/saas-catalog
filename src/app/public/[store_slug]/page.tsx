@@ -12,17 +12,29 @@ import {
   dehydrate,
 } from "@tanstack/react-query";
 import { Suspense } from "react";
+import { checkIsPlanActive } from "@/lib/helpers/validations";
+import CatalogNotAvailable from "@/components/catalog/CatalogNotAvailable";
 
 type Props = {
   params: Promise<{ store_slug: string }>;
 };
 
-export const revalidate = false; // 1 año en segundos
+export const revalidate = false;
 export const dynamic = "force-static";
 
 export default async function Page({ params }: Props) {
   const { store_slug } = await params;
   const store = await getPublicStore(store_slug);
+
+  // Si el store no existe o no es activo, mostramos mensaje de catálogo no disponible
+  if (
+    !checkIsPlanActive({
+      is_active: store.is_active,
+      plan_expires_at: store.plan_expires_at,
+    })
+  ) {
+    return <CatalogNotAvailable handle={store.slug} />;
+  }
 
   const [initialProductData, categories, brands, banners] = await Promise.all([
     getPublicProductsInitial(store_slug, store.id),

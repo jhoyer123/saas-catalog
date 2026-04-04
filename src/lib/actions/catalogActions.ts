@@ -15,7 +15,7 @@ async function getPublicStoreRaw(storeSlug: string) {
   const { data, error } = await supabasePublic
     .from("stores")
     .select(
-      "id,name, slug, logo_url, whatsapp_number,primary_color,secondary_color, updated_at",
+      "id,name, slug, logo_url, whatsapp_number,primary_color,secondary_color, updated_at,plan_expires_at,is_active",
     )
     .eq("slug", storeSlug)
     .single();
@@ -29,6 +29,8 @@ async function getPublicStoreRaw(storeSlug: string) {
     primary_color: string | null;
     secondary_color: string | null;
     updated_at: string;
+    plan_expires_at: string | null;
+    is_active: boolean;
   };
 }
 
