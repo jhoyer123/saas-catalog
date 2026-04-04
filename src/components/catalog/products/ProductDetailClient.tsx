@@ -61,7 +61,7 @@ export default function ProductDetailClient({
     queryKey: ["public-brands", storeSlug],
     queryFn: () => fetchPublicBrands(storeSlug),
     staleTime: Infinity, // El brand no cambia, así que nunca consideramos los datos como obsoletos
-    gcTime: Infinity, // Mantener en caché indefinidamente
+    gcTime: Infinity, // Mantener en caché indefinidamentes
   });
 
   useEffect(() => {

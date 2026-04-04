@@ -54,9 +54,7 @@ export default function PanelPage({
   // Copiar URL del catálogo
   const [copied, setCopied] = useState(false);
 
-  const catalogUrl = store?.slug
-    ? `saas-catalog.vercel.app/public/${store.slug}`
-    : "";
+  const catalogUrl = store?.slug ? `app.jhoyerdev.me/public/${store.slug}` : "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(catalogUrl);
