@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
-  "https://funny-concha-3914f2.netlify.app/", // tu dominio de producción del panel
+  "https://funny-concha-3914f2.netlify.app",
 ];
 
 export async function OPTIONS(req: NextRequest) {
