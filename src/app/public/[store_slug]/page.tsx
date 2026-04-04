@@ -17,7 +17,8 @@ type Props = {
   params: Promise<{ store_slug: string }>;
 };
 
-export const revalidate = false;
+export const revalidate = false; // 1 año en segundos
+export const dynamic = "force-static";
 
 export default async function Page({ params }: Props) {
   const { store_slug } = await params;
