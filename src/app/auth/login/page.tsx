@@ -116,6 +116,7 @@ export default function Login() {
           <div className="text-center mt-4">
             <Link
               href="/auth/forgot-password"
+              prefetch={false}
               className="text-sm text-center text-blue-600"
             >
               ¿Olvidaste tu contraseña?
@@ -124,7 +125,11 @@ export default function Login() {
 
           <footer className="text-center mt-6 text-sm text-gray-600 font-inter">
             ¿No tienes cuenta?{" "}
-            <Link href="/auth/register" className="text-blue-600">
+            <Link
+              href="/auth/register"
+              prefetch={false}
+              className="text-blue-600"
+            >
               Regístrate
             </Link>
           </footer>
