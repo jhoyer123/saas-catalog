@@ -7,7 +7,7 @@ import type {
   ProductInputService,
   ProductInputServiceUpdate,
 } from "@/lib/schemas/product";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import {
   purgeCatalogCache,
   purgeProductDetailCache,
@@ -97,10 +97,8 @@ export const createProduct = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
-
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  }
+  revalidatePath(`/public/${storeSlug}`);
+  await purgeCatalogCache(storeSlug);
 
   return data;
 };
@@ -223,11 +221,13 @@ export const updateProduct = async (
     }
   }
 
-  revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
   revalidateTag(`products-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
+  await purgeCatalogCache(storeSlug);
   if (slugProd) {
+    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
-    await purgeCatalogCache(storeSlug);
   }
   return data;
 };
@@ -274,10 +274,12 @@ export const deleteProductAction = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
-  revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
+  await purgeCatalogCache(storeSlug);
   if (slugProd) {
+    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
-    await purgeCatalogCache(storeSlug);
   }
 };
 
@@ -326,10 +328,12 @@ export const toggleOfferAction = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
-  revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
+  await purgeCatalogCache(storeSlug);
   if (slugProd) {
+    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
-    await purgeCatalogCache(storeSlug);
   }
 };
 
@@ -359,11 +363,13 @@ export const toggleAvailableAction = async (
   }
 
   revalidateTag(`products-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
+  await purgeCatalogCache(storeSlug);
 
   if (slugProd) {
     revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
-    await purgeCatalogCache(storeSlug);
   }
 
   return { data };

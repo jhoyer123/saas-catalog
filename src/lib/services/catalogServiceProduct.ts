@@ -183,7 +183,7 @@ export async function fetchPublicProducts({
       now,
     ),
   }));
-  console.log("initil inital");
+  console.warn("initil inital");
   return {
     products,
     total: count ?? 0,

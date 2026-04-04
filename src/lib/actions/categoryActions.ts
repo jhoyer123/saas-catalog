@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/supabaseServer";
 import type { CategoryForm } from "@/lib/schemas/category";
 import { generateSlug } from "@/lib/utils/slug";
 import { CreateCategoryInput } from "@/types/category.types";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
 
 /**
@@ -39,6 +39,7 @@ export const createCategory = async (
   }
 
   revalidateTag(`categories-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }
@@ -81,6 +82,7 @@ export const updateCategory = async (
   }
 
   revalidateTag(`categories-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }
@@ -114,6 +116,7 @@ export const deleteCategory = async (
   }
 
   revalidateTag(`categories-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/supabaseServer";
 import { uploadFile } from "@/lib/utils/storage";
 import { generateSlug } from "@/lib/utils/slug";
 import type { StoreForm } from "@/lib/schemas/store";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getTrialExpirationDate } from "../helpers/DataFormat";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
 
@@ -89,6 +89,7 @@ export const createStore = async (
   }
 
   revalidateTag(`store-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }
@@ -129,6 +130,7 @@ export const updateStore = async (
   }
 
   revalidateTag(`store-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }

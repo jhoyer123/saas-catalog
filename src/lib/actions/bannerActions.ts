@@ -1,8 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/supabaseServer";
-import { uploadFile, deleteFile } from "@/lib/utils/storage";
-import { revalidateTag } from "next/cache";
+import { uploadFile } from "@/lib/utils/storage";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
 
 // ─── Subir nuevos banners
@@ -56,6 +56,7 @@ export async function uploadBannersAction(
   }
 
   revalidateTag(`banners-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }
@@ -157,6 +158,7 @@ export async function updateBannersAction(
   }
 
   revalidateTag(`banners-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }
