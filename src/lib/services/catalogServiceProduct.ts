@@ -4,7 +4,7 @@ import type {
   ProductCatalogCard,
   ProductDetailCatalog,
 } from "@/types/product.types";
-import { StoreCatalog } from "@/types/catalog/catalog.types";
+import { BrandsCatalog, StoreCatalog } from "@/types/catalog/catalog.types";
 
 export type SortOption =
   | "price_asc"
@@ -55,7 +55,7 @@ async function getStoreId(storeSlug: string): Promise<string> {
 
 /**
  *
- * @param param0
+ * @param storeSlug
  * @returns
  */
 export async function fetchPublicStore(
@@ -75,6 +75,27 @@ export async function fetchPublicStore(
 
   if (error || !data) throw new Error("Tienda no encontrada");
   return data;
+}
+
+/**
+ *
+ * @param storeSlug
+ * @returns
+ */
+export async function fetchPublicBrands(
+  storeSlug: string,
+): Promise<BrandsCatalog[]> {
+  const storeId = await getStoreId(storeSlug);
+
+  const { data, error } = await supabase
+    .from("brands")
+    .select("id, name, slug")
+    .eq("store_id", storeId)
+    .order("name", { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  return data ?? [];
 }
 
 /**
@@ -183,9 +204,7 @@ export async function fetchPublicProductBySlug(
     .from("products")
     .select(
       `
-      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available,
-      brand:brands(name),
-      category:categories(name),
+      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id,
       images:product_images(image_url)
       `,
     )
@@ -194,19 +213,20 @@ export async function fetchPublicProductBySlug(
 
   if (error || !data) throw new Error("Producto no encontrado");
 
-  const now = new Date();
+  //const now = new Date();
 
   return {
     id: data.id,
     name: data.name,
     price: data.price,
     description: data.description,
+    brand_id: data.brand_id ?? null,
     is_offer: data.is_offer ?? false,
     offer_price: data.offer_price ?? null,
     offer_start: data.offer_start ?? null,
     offer_end: data.offer_end ?? null,
     slug: data.slug,
-    brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
+    //brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images: (data.images ?? []).map(
       (img: { image_url: string }) => img.image_url,
     ),

@@ -29,7 +29,7 @@ export const ProductCard = React.memo(function ProductCard({
 
   const handlePrefetch = () => {
     queryClient.prefetchQuery({
-      queryKey: ["public-product", product.slug],
+      queryKey: ["public-product", store_slug, product.slug],
       queryFn: () => fetchPublicProductBySlug(product.slug),
       staleTime: 1000 * 60 * 5,
     });

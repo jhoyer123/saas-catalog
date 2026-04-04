@@ -5,6 +5,7 @@ import type { CategoryForm } from "@/lib/schemas/category";
 import { generateSlug } from "@/lib/utils/slug";
 import { CreateCategoryInput } from "@/types/category.types";
 import { revalidateTag } from "next/cache";
+import { purgeCatalogCache } from "../cloudflare/purgeCache";
 
 /**
  * service for creating a new category in the database
@@ -38,6 +39,9 @@ export const createCategory = async (
   }
 
   revalidateTag(`categories-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
   return data;
 };
 
@@ -77,6 +81,9 @@ export const updateCategory = async (
   }
 
   revalidateTag(`categories-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
   return data;
 };
 
@@ -107,4 +114,7 @@ export const deleteCategory = async (
   }
 
   revalidateTag(`categories-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
 };

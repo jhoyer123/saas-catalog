@@ -8,7 +8,10 @@ import { ProductImageGallery } from "@/components/catalog/products/ProductImageG
 import { ProductInfo } from "@/components/catalog/products/ProductInfo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { fetchPublicProductBySlug } from "@/lib/services/catalogServiceProduct";
+import {
+  fetchPublicBrands,
+  fetchPublicProductBySlug,
+} from "@/lib/services/catalogServiceProduct";
 import { useTiempoActual } from "@/hooks/catalog/useTiempoActual";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
@@ -54,6 +57,13 @@ export default function ProductDetailClient({
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
 
+  const { data: brands = [] } = useQuery({
+    queryKey: ["public-brands", storeSlug],
+    queryFn: () => fetchPublicBrands(storeSlug),
+    staleTime: Infinity, // El brand no cambia, así que nunca consideramos los datos como obsoletos
+    gcTime: Infinity, // Mantener en caché indefinidamente
+  });
+
   useEffect(() => {
     // Si todavía no hay datos, no medimos nada porque está el Skeleton
     if (!store || !product) return;
@@ -96,6 +106,18 @@ export default function ProductDetailClient({
     return { isOfferActive, discountPercent };
   }, [product, ahora]);
 
+  const productWithResolvedBrand = useMemo(() => {
+    if (!product) return null;
+
+    const resolvedBrandName =
+      brands.find((brand) => brand.id === product.brand_id)?.name ?? null;
+
+    return {
+      ...product,
+      brand: resolvedBrandName,
+    };
+  }, [product, brands]);
+
   const handleVolver = () => {
     // Si el historial tiene páginas registradas, va atrás.
     // Si no (porque recargó o entró directo), lo mandamos al catálogo de la tienda.
@@ -107,7 +129,7 @@ export default function ProductDetailClient({
   };
 
   // Si TanStack Query todavía está armando los datos (casi imposible con hidratación, pero TypeScript lo exige)
-  if (!product || !store) return <SkeletonDetailProduct />;
+  if (!productWithResolvedBrand || !store) return <SkeletonDetailProduct />;
 
   return (
     <main className="min-h-screen bg-catalog-primary">
@@ -129,15 +151,17 @@ export default function ProductDetailClient({
             style={{ top: headerHeight + 16 }}
           >
             <ProductImageGallery
-              images={product.images.map((img) => getCatalogImageUrl(img))}
-              productName={product.name}
+              images={productWithResolvedBrand.images.map((img) =>
+                getCatalogImageUrl(img),
+              )}
+              productName={productWithResolvedBrand.name}
               discountPercent={discountPercent}
-              is_available={product.is_available}
+              is_available={productWithResolvedBrand.is_available}
             />
           </div>
           <div>
             <ProductInfo
-              product={product}
+              product={productWithResolvedBrand}
               whatssapNumber={store.whatsapp_number}
               isOfferActive={isOfferActive}
               discountPercent={discountPercent}

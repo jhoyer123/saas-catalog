@@ -42,6 +42,7 @@ export interface ProductDetailCatalog {
   name: string;
   description: string;
   price: number;
+  brand_id?: string | null;
   is_offer: boolean;
   offer_price?: number | null;
   offer_start?: string | null;

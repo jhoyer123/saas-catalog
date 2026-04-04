@@ -7,6 +7,7 @@ import { generateSlug } from "@/lib/utils/slug";
 import type { StoreForm } from "@/lib/schemas/store";
 import { revalidateTag } from "next/cache";
 import { getTrialExpirationDate } from "../helpers/DataFormat";
+import { purgeCatalogCache } from "../cloudflare/purgeCache";
 
 /**
  * Crea una tienda nueva.
@@ -88,6 +89,9 @@ export const createStore = async (
   }
 
   revalidateTag(`store-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
   return newStore;
 };
 
@@ -125,5 +129,8 @@ export const updateStore = async (
   }
 
   revalidateTag(`store-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
   return data;
 };

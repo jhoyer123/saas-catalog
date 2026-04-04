@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/supabaseServer";
 import { generateSlug } from "@/lib/utils/slug";
 import { revalidateTag } from "next/cache";
+import { purgeCatalogCache } from "../cloudflare/purgeCache";
 
 /**
  * service for creating a new brand in the database
@@ -36,6 +37,9 @@ export const createBrand = async (
     return { error: "Error al crear la marca" };
   }
   revalidateTag(`brands-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
   return data;
 };
 
@@ -79,6 +83,9 @@ export const updateBrand = async (
     return { error: "Error al actualizar la marca" };
   }
   revalidateTag(`brands-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
   return data;
 };
 
@@ -112,4 +119,7 @@ export const deleteBrand = async (
     return { error: "Error al eliminar la marca" }; // error técnico
   }
   revalidateTag(`brands-${storeSlug}`, "max");
+  if (storeSlug) {
+    await purgeCatalogCache(storeSlug);
+  }
 };

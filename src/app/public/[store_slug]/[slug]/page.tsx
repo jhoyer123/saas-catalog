@@ -20,11 +20,6 @@ export const dynamic = "force-static";
 export default async function Page({ params }: Props) {
   const { store_slug, slug } = await params;
 
-  /*  const [product, store] = await Promise.all([
-    getPublicProductBySlug(store_slug, slug).catch(() => null),
-    getPublicStore(store_slug),
-  ]); */
-
   const product = await getPublicProductBySlug(store_slug, slug).catch(
     () => null,
   );
@@ -37,11 +32,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ProductDetailClient
-        slugProd={product.slug}
-        storeSlug={store_slug}
-        //store={store}
-      />
+      <ProductDetailClient slugProd={product.slug} storeSlug={store_slug} />
     </HydrationBoundary>
   );
 }

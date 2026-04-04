@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchPublicProducts } from "@/lib/services/catalogServiceProduct";
-import type { ProductCatalogCard } from "@/types/product.types";
 import Header from "@/components/catalog/header/Header";
 import HeroSection from "@/components/catalog/offer/HeroSection";
 import { ProductGrid } from "@/components/catalog/products/ProductGrid";

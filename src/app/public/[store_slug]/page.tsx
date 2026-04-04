@@ -46,10 +46,12 @@ export default async function Page({ params }: Props) {
     1,
   ];
   const storeKey = ["public-store", store_slug]; // <-- Clave para el store
+  const brandsKey = ["public-brands", store_slug]; // <-- Clave para las marcas
 
   // Inyecta en TanStack para que back-navigation sea instantáneo
   queryClient.setQueryData(productKey, initialProductData);
   queryClient.setQueryData(storeKey, store);
+  queryClient.setQueryData(brandsKey, brands);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

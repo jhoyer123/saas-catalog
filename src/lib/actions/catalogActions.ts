@@ -1,7 +1,10 @@
 "use server";
 
 import { supabasePublic } from "@/lib/supabase/server-public";
-import { ProductCatalogCard, ProductDetailCatalog } from "@/types/product.types";
+import {
+  ProductCatalogCard,
+  ProductDetailCatalog,
+} from "@/types/product.types";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
@@ -172,9 +175,7 @@ async function getPublicProductBySlugRaw(
     .from("products")
     .select(
       `
-      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available,
-      brand:brands(name),
-      category:categories(name),
+      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id,
       images:product_images(image_url)
       `,
     )
@@ -188,12 +189,13 @@ async function getPublicProductBySlugRaw(
     name: data.name,
     price: data.price,
     description: data.description,
+    brand_id: data.brand_id ?? null,
     is_offer: data.is_offer ?? false,
     offer_price: data.offer_price ?? null,
     offer_start: data.offer_start ?? null,
     offer_end: data.offer_end ?? null,
     slug: data.slug,
-    brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
+    //brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images: (data.images ?? []).map(
       (img: { image_url: string }) => img.image_url,
     ),

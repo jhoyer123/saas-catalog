@@ -12,6 +12,12 @@ export interface StoreCatalog {
   updated_at: string; // Agregado para el cache busting
 }
 
+export interface BrandsCatalog {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 // Cuánto tiempo muestra cada banner antes de pasar al siguiente
 export const AUTOPLAY_INTERVAL = 5000;
 
