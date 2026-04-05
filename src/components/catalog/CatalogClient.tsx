@@ -14,6 +14,8 @@ import { InputSearch } from "./header/InputSearch";
 import { useProductFilter } from "@/hooks/catalog/useProductFilter";
 import { BrandCatalog } from "@/types/brand.types";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
+import CatalogNotAvailable from "./CatalogNotAvailable";
+import { checkIsPlanActive } from "@/lib/helpers/validations";
 
 // Hook reutilizable para medir altura
 function useElementHeight(id: string) {
@@ -46,6 +48,8 @@ interface CatalogClientProps {
     logo_url: string | null;
     whatsapp_number: string | null;
     updated_at: string; // Agregado para el cache busting
+    plan_expires_at: string | null; // Agregado para validación de plan
+    is_active: boolean; // Agregado para validar si la tienda está activa
   };
 }
 
@@ -145,6 +149,18 @@ export default function CatalogClient({
   const totalPages = data?.totalPages ?? 0;
   const total = data?.total ?? 0;
   const hasBanners = banners.length > 0;
+  //validar si el plan está activo
+  const [isBlocked, setIsBlocked] = useState(() => !checkIsPlanActive(store));
+
+  useEffect(() => {
+    if (!checkIsPlanActive(store)) {
+      setIsBlocked(true);
+    }
+  }, [store]);
+
+  if (isBlocked) {
+    return <CatalogNotAvailable handle={store.slug} />;
+  }
 
   return (
     <main className="min-h-screen  bg-catalog-primary">

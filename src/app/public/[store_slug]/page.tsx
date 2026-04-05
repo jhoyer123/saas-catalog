@@ -11,9 +11,7 @@ import {
   HydrationBoundary,
   dehydrate,
 } from "@tanstack/react-query";
-import { Suspense, useEffect, useState } from "react";
-import { checkIsPlanActive } from "@/lib/helpers/validations";
-import CatalogNotAvailable from "@/components/catalog/CatalogNotAvailable";
+import { Suspense } from "react";
 
 type Props = {
   params: Promise<{ store_slug: string }>;
@@ -25,34 +23,6 @@ export const dynamic = "force-static";
 export default async function Page({ params }: Props) {
   const { store_slug } = await params;
   const store = await getPublicStore(store_slug);
-
-  /* console.warn("STORE EN PAGE: ", store);
-  console.warn(
-    "STORE ACTIVO    : ",
-    !checkIsPlanActive({
-      is_active: store.is_active,
-      plan_expires_at: store.plan_expires_at,
-    }),
-  );
-  if (
-    !checkIsPlanActive({
-      is_active: store.is_active,
-      plan_expires_at: store.plan_expires_at,
-    })
-  ) {
-    return <CatalogNotAvailable handle={store.slug} />;
-  } */
-  const [isBlocked, setIsBlocked] = useState(false);
-
-  useEffect(() => {
-    if (!checkIsPlanActive(store)) {
-      setIsBlocked(true);
-    }
-  }, [store]);
-
-  if (isBlocked) {
-    return <CatalogNotAvailable handle={store.slug} />;
-  }
 
   const [initialProductData, categories, brands, banners] = await Promise.all([
     getPublicProductsInitial(store_slug, store.id),
