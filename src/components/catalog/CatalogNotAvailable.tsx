@@ -1,4 +1,17 @@
+"use client";
+import { useState } from "react";
+import { checkIsPlanActive } from "@/lib/helpers/validations";
+
 export default function CatalogNotAvailable({ handle }: { handle?: string }) {
+  const [attempts, setAttempts] = useState(0);
+
+  const handleReload = () => {
+    if (attempts < 2) {
+      setAttempts((prev) => prev + 1);
+      window.location.reload();
+    }
+  };
+
   return (
     <div
       className="relative min-h-screen bg-[#111110] flex flex-col items-center justify-center overflow-hidden px-8 py-12"
@@ -33,7 +46,6 @@ export default function CatalogNotAvailable({ handle }: { handle?: string }) {
         Temporalmente cerrado
       </p>
 
-      {/* Título */}
       <div className="flex flex-col items-center gap-2 mb-8 text-wrap justify-center lg:flex-row">
         <span
           className="text-4xl md:text-[80px] font-light text-white/10 leading-none"
@@ -61,6 +73,15 @@ export default function CatalogNotAvailable({ handle }: { handle?: string }) {
       <div className="border border-white/20 text-white/50 text-[11px] tracking-[0.2em] uppercase font-light px-8 py-3">
         Mantente atento
       </div>
+
+      {attempts < 2 && (
+        <button
+          onClick={handleReload}
+          className="mt-6 text-[11px] tracking-[0.15em] text-white/25 uppercase font-light underline underline-offset-4 hover:text-white/40 transition-colors"
+        >
+          Verificar disponibilidad
+        </button>
+      )}
     </div>
   );
 }
