@@ -11,7 +11,7 @@ import {
   HydrationBoundary,
   dehydrate,
 } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { checkIsPlanActive } from "@/lib/helpers/validations";
 import CatalogNotAvailable from "@/components/catalog/CatalogNotAvailable";
 
@@ -25,7 +25,8 @@ export const dynamic = "force-static";
 export default async function Page({ params }: Props) {
   const { store_slug } = await params;
   const store = await getPublicStore(store_slug);
-  console.warn("STORE EN PAGE: ", store);
+
+  /* console.warn("STORE EN PAGE: ", store);
   console.warn(
     "STORE ACTIVO    : ",
     !checkIsPlanActive({
@@ -33,13 +34,23 @@ export default async function Page({ params }: Props) {
       plan_expires_at: store.plan_expires_at,
     }),
   );
-  // Si el store no existe o no es activo, mostramos mensaje de catálogo no disponible
   if (
     !checkIsPlanActive({
       is_active: store.is_active,
       plan_expires_at: store.plan_expires_at,
     })
   ) {
+    return <CatalogNotAvailable handle={store.slug} />;
+  } */
+  const [isBlocked, setIsBlocked] = useState(false);
+
+  useEffect(() => {
+    if (!checkIsPlanActive(store)) {
+      setIsBlocked(true);
+    }
+  }, [store]);
+
+  if (isBlocked) {
     return <CatalogNotAvailable handle={store.slug} />;
   }
 
