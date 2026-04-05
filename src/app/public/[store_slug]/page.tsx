@@ -25,7 +25,14 @@ export const dynamic = "force-static";
 export default async function Page({ params }: Props) {
   const { store_slug } = await params;
   const store = await getPublicStore(store_slug);
-
+  console.warn("STORE EN PAGE: ", store);
+  console.warn(
+    "STORE ACTIVO    : ",
+    !checkIsPlanActive({
+      is_active: store.is_active,
+      plan_expires_at: store.plan_expires_at,
+    }),
+  );
   // Si el store no existe o no es activo, mostramos mensaje de catálogo no disponible
   if (
     !checkIsPlanActive({
