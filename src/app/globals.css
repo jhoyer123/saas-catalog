@@ -7,6 +7,7 @@
 @theme inline {
   --color-catalog-primary: var(--catalog-primary);
   --color-catalog-secondary: var(--catalog-secondary);
+  --color-catalog-tertiary: var(--catalog-tertiary);
 
   --font-inter: var(--font-inter);
   --font-poppins: var(--font-poppins);
@@ -168,4 +169,5 @@
 .catalog-theme {
   --catalog-primary: #000000;
   --catalog-secondary: #ffffff;
+  --catalog-tertiary: #f0f0f0;
 }
