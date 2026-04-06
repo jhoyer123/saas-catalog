@@ -49,9 +49,10 @@ export function ProductFilterControls({
   }, [filters.isOffer]);
 
   return (
-    <div className="bg-card rounded-lg lg:border lg:border-border p-3 space-y-3 lg:p-6">
-      <div className="items-center justify-between flex">
-        <h2 className="font-poppins text-base lg:text-xl hidden lg:flex">
+    <div className="bg-card rounded-2xl lg:border lg:border-border/50 p-4 lg:p-7 space-y-5 lg:shadow-sm">
+      {/* Header */}
+      <div className="items-center justify-between flex pb-1 border-b border-border/40">
+        <h2 className="font-poppins text-sm lg:text-base hidden lg:flex tracking-widest uppercase text-muted-foreground/70 font-medium">
           Filtros
         </h2>
         {hasActiveFilters && (
@@ -59,41 +60,51 @@ export function ProductFilterControls({
             variant="ghost"
             size="sm"
             onClick={resetFilters}
-            className="text-sm bg-gray-50"
+            className="text-xs h-7 px-3 rounded-full border border-border/60 hover:bg-muted/60 transition-all duration-200 font-medium"
           >
-            Limpiar filtros
+            Limpiar
           </Button>
         )}
       </div>
 
       {/* Búsqueda */}
       <div className="space-y-2 hidden md:block">
-        <Label className="text-sm font-medium text-gray-700">Buscar</Label>
+        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+          Buscar
+        </Label>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-3.5 w-3.5" />
           <Input
             type="text"
             placeholder="Buscar productos..."
-            className="pl-10"
+            className="pl-9 h-9 text-sm bg-muted/30 border-border/40 rounded-xl placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-offset-0 transition-all"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
       </div>
 
+      {/* Separador decorativo */}
+      <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border/60 to-transparent" />
+
       {/* Categoría */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">Categoría</Label>
+        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+          Categoría
+        </Label>
         <Select
           value={filters.category || "all"}
           onValueChange={(value) =>
             updateFilter("category", value === "all" ? null : value)
           }
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl focus:ring-1 focus:ring-offset-0 transition-all">
             <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
-          <SelectContent position="popper">
+          <SelectContent
+            position="popper"
+            className="max-h-60 overflow-y-auto rounded-xl border-border/50 shadow-lg"
+          >
             <SelectItem value="all">Todas las categorías</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
@@ -107,17 +118,22 @@ export function ProductFilterControls({
       {/* Marca */}
       {brands.length > 0 && (
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">Marca</Label>
+          <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+            Marca
+          </Label>
           <Select
             value={filters.brand || "all"}
             onValueChange={(value) =>
               updateFilter("brand", value === "all" ? null : value)
             }
           >
-            <SelectTrigger>
+            <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl focus:ring-1 focus:ring-offset-0 transition-all">
               <SelectValue placeholder="Todas las marcas" />
             </SelectTrigger>
-            <SelectContent position="popper">
+            <SelectContent
+              position="popper"
+              className="max-h-60 overflow-y-auto rounded-xl border-border/50 shadow-lg"
+            >
               <SelectItem value="all">Todas las marcas</SelectItem>
               {brands.map((brand) => (
                 <SelectItem key={brand.id} value={brand.id}>
@@ -129,10 +145,12 @@ export function ProductFilterControls({
         </div>
       )}
 
+      <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border/60 to-transparent" />
+
       {/* Rango de precio */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">
-          Rango de precio
+      {/* <div className="space-y-2">
+        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+          Precio
         </Label>
         <div className="grid grid-cols-2 gap-2">
           <Input
@@ -142,6 +160,7 @@ export function ProductFilterControls({
             onChange={(e) => setPriceMinInput(e.target.value)}
             min="0"
             step="10"
+            className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-offset-0 transition-all"
           />
           <Input
             type="number"
@@ -150,12 +169,19 @@ export function ProductFilterControls({
             onChange={(e) => setPriceMaxInput(e.target.value)}
             min="0"
             step="10"
+            className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-offset-0 transition-all"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Solo ofertas */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-muted/30 border border-border/30 hover:border-border/60 transition-all cursor-pointer group">
+        <Label
+          htmlFor="onlyOffers"
+          className="text-sm font-medium cursor-pointer group-hover:text-foreground transition-colors"
+        >
+          Solo ofertas
+        </Label>
         <input
           type="checkbox"
           id="onlyOffers"
@@ -165,19 +191,17 @@ export function ProductFilterControls({
             setOnlyOffersChecked(checked);
             updateFilter("isOffer", checked ? true : null);
           }}
-          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+          className="w-4 h-4 rounded accent-foreground cursor-pointer"
         />
-        <Label
-          htmlFor="onlyOffers"
-          className="text-sm font-medium text-gray-700 cursor-pointer"
-        >
-          Solo ofertas
-        </Label>
       </div>
+
+      <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border/60 to-transparent" />
 
       {/* Ordenar por */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-gray-700">Ordenar por</Label>
+        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+          Ordenar
+        </Label>
         <Select
           value={filters.sortBy || "none"}
           onValueChange={(value) =>
@@ -187,15 +211,17 @@ export function ProductFilterControls({
             )
           }
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl focus:ring-1 focus:ring-offset-0 transition-all">
             <SelectValue placeholder="Seleccionar orden" />
           </SelectTrigger>
-          <SelectContent position="popper">
+          <SelectContent
+            position="popper"
+            className="max-h-60 overflow-y-auto rounded-xl border-border/50 shadow-lg"
+          >
             <SelectItem value="none">Sin orden</SelectItem>
             <SelectItem value="price_asc">Precio (menor a mayor)</SelectItem>
             <SelectItem value="price_desc">Precio (mayor a menor)</SelectItem>
             <SelectItem value="newest">Más recientes</SelectItem>
-            {/* <SelectItem value="display_order">Orden de tienda</SelectItem> */}
           </SelectContent>
         </Select>
       </div>

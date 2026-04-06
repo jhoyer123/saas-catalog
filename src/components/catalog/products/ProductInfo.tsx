@@ -85,7 +85,7 @@ export function ProductInfo({
   const telefono = whatssapNumber;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full px-2 py-4 bg-catalog-primary border border-border rounded-2xl md:px-6 md:py-10">
+    <div className="flex flex-col items-center justify-center h-full w-full px-2 py-4 bg-catalog-tertiary border border-border rounded-2xl md:px-6 md:py-10">
       {/* ── BRAND ── */}
       {product.brand && (
         <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-catalog-secondary">
@@ -146,17 +146,28 @@ export function ProductInfo({
           {/* WhatsApp primero en mobile */}
           <a
             href={`https://wa.me/${telefono}?text=${encodeURIComponent(
-              `Hola, quiero este producto: ${product.name} (Bs. ${displayPrice!.toFixed(2)}). ¿Está disponible?`,
+              `¡Hola! Me gustaría hacer un pedido:
+
+De este producto:
+${product.name}
+Precio: Bs. ${displayPrice!.toFixed(2)}
+
+¿Está disponible? Me gustaría más información`,
             )}`}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              buttonVariants({ variant: "default", size: "default" }),
-              "order-1 md:order-2 gap-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white md:text-[16px]",
+              buttonVariants({ size: "lg" }),
+              "w-full flex flex-col items-center justify-center gap-1.5",
+              "bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851]",
+              "text-white font-semibold rounded-xl py-4",
+              "shadow-lg hover:shadow-xl transition-all duration-200",
             )}
           >
-            <MessageCircle className="h-5 w-5" />
-            Consultar stock y entrega
+            <span className="flex items-center gap-2 text-[16px]">
+              <MessageCircle className="h-5 w-5" />
+              Pedir por WhatsApp
+            </span>
           </a>
 
           <Button
@@ -169,7 +180,7 @@ export function ProductInfo({
         </div>
 
         <p className="mt-2 text-center text-xs text-catalog-secondary/70">
-          Respuesta rápida por WhatsApp. Sin compromiso.
+          Respuesta rápida por WhatsApp.
         </p>
       </div>
     </div>

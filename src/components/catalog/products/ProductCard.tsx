@@ -63,7 +63,13 @@ export const ProductCard = React.memo(function ProductCard({
     e.stopPropagation();
     // ajusta el número si lo tienes disponible en el store
     const msg = encodeURIComponent(
-      `Hola, me interesa: ${product.name} - Bs. ${displayPrice!.toFixed(2)}`,
+      `¡Hola! Me gustaría hacer un pedido:
+
+De este producto:
+${product.name}
+Precio: Bs. ${displayPrice!.toFixed(2)}
+
+¿Está disponible? Me gustaría más información`,
     );
     window.open(`https://wa.me/${telefono}?text=${msg}`, "_blank");
   };

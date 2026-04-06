@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { checkIsPlanActive } from "@/lib/helpers/validations";
 
 export default function CatalogNotAvailable({ handle }: { handle?: string }) {
   const [attempts, setAttempts] = useState(0);
