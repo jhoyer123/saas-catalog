@@ -1,18 +1,45 @@
 "use client";
 
 import { ProductDetailCatalog } from "@/types/product.types";
-import { ShoppingCart, MessageCircle, Star, Sparkles } from "lucide-react";
+import {
+  ShoppingCart,
+  MessageCircle,
+  Star,
+  Sparkles,
+  ChevronDown,
+} from "lucide-react";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useRef, useState, useEffect } from "react";
 
 interface ProductInfoProps {
   product: ProductDetailCatalog;
   whatssapNumber?: string | null;
   isOfferActive: boolean;
   discountPercent?: number | null;
+}
+
+function useHasOverflow() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const check = () => setHasOverflow(el.scrollHeight > el.clientHeight);
+
+    check(); // al montar
+    const observer = new ResizeObserver(check); // si cambia el tamaño
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, hasOverflow };
 }
 
 // ─── Badge config ───────────────────────────────────────────────
@@ -83,6 +110,7 @@ export function ProductInfo({
   };
 
   const telefono = whatssapNumber;
+  const { ref, hasOverflow } = useHasOverflow();
 
   return (
     <>
@@ -167,7 +195,10 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
       </div>
 
       <div className="relative">
-        <div className="mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary border border-border md:px-6 md:py-10 max-h-100 overflow-y-auto md:max-h-150 custom-scroll">
+        <div
+          ref={ref}
+          className="mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary border border-border md:px-6 md:py-10 max-h-100 overflow-y-auto md:max-h-150 custom-scroll"
+        >
           {/* ── DESCRIPTION ── */}
           <div>
             <h3 className="mb-3 text-xs font-bold font-inter uppercase tracking-[0.15em] text-catalog-secondary/80">
@@ -184,8 +215,15 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
           </div>
         </div>
 
-        {/* Fade bottom */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 rounded-b-lg bg-linear-to-t from-catalog-tertiary to-transparent" />
+        {/* Fade solo si hay overflow */}
+        {hasOverflow && (
+          <>
+            <div className="pointer-events-none absolute bottom-px left-px right-px h-12 bg-linear-to-t from-catalog-tertiary to-transparent" />
+            <div className="pointer-events-none absolute bottom-2 left-0 right-0 flex justify-center">
+              <ChevronDown className="h-4 w-4 animate-bounce text-catalog-secondary/50" />
+            </div>
+          </>
+        )}
       </div>
     </>
   );
