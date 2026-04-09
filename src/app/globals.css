@@ -171,3 +171,14 @@
   --catalog-secondary: #ffffff;
   --catalog-tertiary: #121212;
 }
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--catalog-secondary) / 0.3);
+  border-radius: 999px;
+}

@@ -116,59 +116,63 @@ export default function PanelPage({
 
       {/* Cards principales */}
       {store ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Catálogo */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-gray-700">
-              <Store className="w-5 h-5" />
-              <h3 className="font-semibold">Tu catálogo público</h3>
-            </div>
-            <p className="text-sm text-gray-500">
-              Comparte este enlace con tus clientes.
-            </p>
-            <div className="bg-gray-50 rounded px-3 py-2 flex items-center justify-between gap-2">
-              <span className="text-sm text-gray-500 truncate font-mono">
-                {catalogUrl}
-              </span>
-              <button
-                onClick={handleCopy}
-                className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
+        <>
+          {/* <StatsCards slug={store.slug} /> */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Catálogo */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-2 text-gray-700">
+                <Store className="w-5 h-5" />
+                <h3 className="font-semibold">Tu catálogo público</h3>
+              </div>
+              <p className="text-sm text-gray-500">
+                Comparte este enlace con tus clientes.
+              </p>
+              <div className="bg-gray-50 rounded px-3 py-2 flex items-center justify-between gap-2">
+                <span className="text-sm text-gray-500 truncate font-mono">
+                  {catalogUrl}
+                </span>
+                <button
+                  onClick={handleCopy}
+                  className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-fit"
+                disabled={!canShowCatalog}
+                onClick={() =>
+                  canShowCatalog &&
+                  window.open(`/public/${store.slug}`, "_blank")
+                }
               >
-                {copied ? (
-                  <Check className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Ver catálogo
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-fit"
-              disabled={!canShowCatalog}
-              onClick={() =>
-                canShowCatalog && window.open(`/public/${store.slug}`, "_blank")
-              }
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Ver catálogo
-            </Button>
-          </div>
 
-          {/* Productos */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-gray-700">
-              <Package className="w-5 h-5" />
-              <h3 className="font-semibold">Productos</h3>
+            {/* Productos */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-2 text-gray-700">
+                <Package className="w-5 h-5" />
+                <h3 className="font-semibold">Productos</h3>
+              </div>
+              <p className="text-sm text-gray-500">
+                Administra el inventario de tu tienda.
+              </p>
+              <Button asChild variant="outline" size="sm" className="w-fit">
+                <Link href="/dashboard/products">Ir a productos</Link>
+              </Button>
             </div>
-            <p className="text-sm text-gray-500">
-              Administra el inventario de tu tienda.
-            </p>
-            <Button asChild variant="outline" size="sm" className="w-fit">
-              <Link href="/dashboard/products">Ir a productos</Link>
-            </Button>
           </div>
-        </div>
+        </>
       ) : (
         <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-12 flex flex-col gap-4 items-center justify-center text-center">
           <Store className="w-10 h-10 text-gray-300" />

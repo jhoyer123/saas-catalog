@@ -85,104 +85,108 @@ export function ProductInfo({
   const telefono = whatssapNumber;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full px-2 py-4 bg-catalog-tertiary border border-border rounded-2xl md:px-6 md:py-10">
-      {/* ── BRAND ── */}
-      {product.brand && (
-        <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-catalog-secondary">
-          {product.brand}
-        </p>
-      )}
-
-      {/* ── TITLE ── */}
-      <h1 className="font-popins text-center text-3xl font-bold leading-tight text-catalog-secondary md:text-4xl">
-        {product.name}
-      </h1>
-
-      {/* ── BADGE (reemplaza las estrellas) ── */}
-      <div className="flex flex-wrap items-center justify-center gap-2 my-5">
-        <ProductBadge type="featured" />
-        <ProductBadge type="recommended" />
-      </div>
-
-      {/* ── PRICING ── */}
-      <div className="flex items-end gap-4 flex-wrap justify-center">
-        <span className="font-['Playfair_Display',serif] text-5xl font-bold tracking-tight text-catalog-secondary">
-          Bs. {displayPrice!.toFixed(2)}
-        </span>
-
-        {isOfferActive && (
-          <div className="mb-1 flex flex-col items-start">
-            <span className="text-lg text-gray-400 line-through">
-              Bs. {product.price.toFixed(2)}
-            </span>
-            <span className="rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
-              AHORRA {discountPercent}%
-            </span>
-          </div>
+    <>
+      <div className="flex flex-col gap-5 items-center justify-center h-full w-full px-2 py-4 bg-catalog-tertiary border border-border md:px-6 md:py-10">
+        {/* ── BRAND ── */}
+        {product.brand && (
+          <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-catalog-secondary">
+            {product.brand}
+          </p>
         )}
-      </div>
 
-      {/* ── DIVIDER ── */}
-      <div className="my-5 h-px bg-linear-to-r from-transparent via-gray-200 to-transparent" />
+        {/* ── TITLE ── */}
+        <h1 className="font-popins text-center text-2xl font-bold leading-tight text-catalog-secondary md:text-3xl">
+          {product.name}
+        </h1>
 
-      {/* ── DESCRIPTION ── */}
-      <div className="mb-6">
-        <h3 className="mb-3 text-xs font-bold font-inter uppercase tracking-[0.15em] text-catalog-secondary/80">
-          Descripción
-        </h3>
-        <div
-          className="prose prose-sm font-inter max-w-none text-catalog-secondary/90 leading-relaxed [&>p]:mb-2"
-          dangerouslySetInnerHTML={{
-            __html: product.description
-              ? product.description
-              : "No hay descripción disponible.",
-          }}
-        />
-      </div>
+        {/* ── BADGE (reemplaza las estrellas) ── */}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <ProductBadge type="featured" />
+          <ProductBadge type="recommended" />
+        </div>
 
-      {/* ── CTA BUTTONS ── */}
-      <div className="w-full">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {/* WhatsApp primero en mobile */}
-          <a
-            href={`https://wa.me/${telefono}?text=${encodeURIComponent(
-              `¡Hola! Me gustaría hacer un pedido:
+        {/* ── PRICING ── */}
+        <div className="flex items-end gap-4 flex-wrap justify-center">
+          <span className="font-['Playfair_Display',serif] text-4xl font-bold tracking-tight text-catalog-secondary">
+            Bs. {displayPrice!.toFixed(2)}
+          </span>
+
+          {isOfferActive && (
+            <div className="mb-1 flex flex-col items-start">
+              <span className="text-lg text-gray-400 line-through">
+                Bs. {product.price.toFixed(2)}
+              </span>
+              <span className="rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                AHORRA {discountPercent}%
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* ── CTA BUTTONS ── */}
+        <div className="w-full">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 ">
+            {/* WhatsApp primero en mobile */}
+            <a
+              href={`https://wa.me/${telefono}?text=${encodeURIComponent(
+                `¡Hola! Me gustaría hacer un pedido:
 
 De este producto:
 ${product.name}
 Precio: Bs. ${displayPrice!.toFixed(2)}
 
 ¿Está disponible? Me gustaría más información`,
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              buttonVariants({ size: "lg" }),
-              "w-full flex flex-col items-center justify-center gap-1.5",
-              "bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851]",
-              "text-white font-semibold rounded-xl py-4",
-              "shadow-lg hover:shadow-xl transition-all duration-200",
-            )}
-          >
-            <span className="flex items-center gap-2 text-[16px]">
-              <MessageCircle className="h-5 w-5" />
-              Pedir por WhatsApp
-            </span>
-          </a>
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                buttonVariants({ variant: "default" }),
+                "w-full flex items-center justify-center gap-2",
+                "bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851]",
+                "text-white font-semibold text-[16px]",
+                "shadow-lg hover:shadow-xl transition-all duration-200 rounded-none",
+              )}
+            >
+              <span className="flex items-center gap-2 text-[16px]">
+                <MessageCircle className="h-5 w-5" />
+                Pedir por WhatsApp
+              </span>
+            </a>
+            <Button
+              onClick={handleAddToCart}
+              className="md:text-[16px] bg-catalog-secondary text-catalog-primary rounded-none"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              Agregar al carrito
+            </Button>
+            <p className="mt-2 text-center text-xs text-catalog-secondary/70">
+              Respuesta rápida por WhatsApp.
+            </p>
+          </div>
+        </div>
+      </div>
 
-          <Button
-            onClick={handleAddToCart}
-            className="order-2 md:order-1 md:text-[16px] bg-catalog-secondary text-catalog-primary"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            Agregar al carrito
-          </Button>
+      <div className="relative">
+        <div className="mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary border border-border md:px-6 md:py-10 max-h-100 overflow-y-auto md:max-h-150 custom-scroll">
+          {/* ── DESCRIPTION ── */}
+          <div>
+            <h3 className="mb-3 text-xs font-bold font-inter uppercase tracking-[0.15em] text-catalog-secondary/80">
+              Descripción
+            </h3>
+            <div
+              className="prose prose-sm font-inter max-w-none text-catalog-secondary/90 leading-relaxed [&>p]:mb-2"
+              dangerouslySetInnerHTML={{
+                __html: product.description
+                  ? product.description
+                  : "No hay descripción disponible.",
+              }}
+            />
+          </div>
         </div>
 
-        <p className="mt-2 text-center text-xs text-catalog-secondary/70">
-          Respuesta rápida por WhatsApp.
-        </p>
+        {/* Fade bottom */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 rounded-b-lg bg-linear-to-t from-catalog-tertiary to-transparent" />
       </div>
-    </div>
+    </>
   );
 }

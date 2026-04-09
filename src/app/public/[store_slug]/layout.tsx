@@ -20,6 +20,7 @@ export default async function StoreLayout({
   `;
 
   const umamiId = process.env.NEXT_PUBLIC_UMAMI_ID;
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
     <>
@@ -31,6 +32,27 @@ export default async function StoreLayout({
           strategy="afterInteractive"
         />
       )}
+
+      {/* Google Analytics - sin afectar performance */}
+      {gaId && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaId}', {
+                page_path: window.location.pathname,
+              });
+            `}
+          </Script>
+        </>
+      )}
+
       {children}
     </>
   );
