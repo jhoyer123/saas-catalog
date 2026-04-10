@@ -62,6 +62,70 @@ function GalleryImage({
   );
 }
 
+// Lightbox con pinch-to-zoom para móviles, usando el mismo componente GalleryImage con fallback integrado
+function Lightbox({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  const [scale, setScale] = useState(1);
+  const lastDistance = useRef<number | null>(null);
+
+  const getDistance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const distance = getDistance(e.touches);
+
+      if (lastDistance.current) {
+        const ratio = distance / lastDistance.current;
+        setScale((prev) => Math.min(Math.max(prev * ratio, 1), 3));
+      }
+
+      lastDistance.current = distance;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    lastDistance.current = null;
+  };
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[90vh] max-w-[90vw] w-full overflow-hidden"
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes="90vw"
+          className="object-contain transition-transform duration-75"
+          style={{
+            transform: `scale(${scale})`,
+          }}
+        />
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export function ProductImageGallery({
   images,
   productName,
@@ -130,14 +194,19 @@ export function ProductImageGallery({
       {discountPercent && <OfferBadge discountPercent={discountPercent} />}
       {!is_available && <AvailableBadge />}
 
-      {!isMobile && (
+      {/* {!isMobile && (
         <button
           onClick={() => setZoomed(true)}
           className="absolute right-4 top-4 z-10 grid h-8 w-8 place-items-center rounded-full bg-white/70 backdrop-blur-sm text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white shadow-sm"
         >
           <ZoomIn className="h-3.5 w-3.5" />
         </button>
-      )}
+      )} */}
+
+      <div
+        onClick={() => setZoomed(true)}
+        className="absolute inset-0 z-10 cursor-zoom-in"
+      />
 
       {safeImages.map((src, index) => (
         <div

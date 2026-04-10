@@ -32,9 +32,8 @@ export default async function StoreLayout({
           strategy="afterInteractive"
         />
       )}
-
       {/* Google Analytics - sin afectar performance */}
-      {gaId && (
+      {/*   {gaId && (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
@@ -52,7 +51,7 @@ export default async function StoreLayout({
           </Script>
         </>
       )}
-
+ */}
       {children}
     </>
   );
