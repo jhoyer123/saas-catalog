@@ -44,7 +44,7 @@ export default function Plans() {
 
   const getWhatsappLink = (planName: string) => {
     const phone = "62557286";
-    const message = `Hola, quiero hacer el cambio de mi plan actual al plan ${planName}`;
+    const message = `Hola, quiero solicitar el plan ${planName} en JPLATAFORM. ¿Podrían brindarme más información?`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
 
