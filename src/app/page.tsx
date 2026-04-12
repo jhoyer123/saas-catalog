@@ -23,7 +23,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-linear-to-r from-white/95 via-white/80 to-white/40" />
         </div>
         {/* Mobile */}
-        <div className="md:hidden fixed inset-0">
+        <div className="md:hidden fixed inset-0" style={{ height: "100lvh" }}>
           <Image
             src="/images/backgroundMainMobil.webp"
             alt="Fondo móvil"
