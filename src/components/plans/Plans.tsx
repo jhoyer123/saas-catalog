@@ -16,10 +16,18 @@ export default function Plans() {
 
   const plans = data?.map((p) => {
     const getFeatures = [
+      "Catálogo online listo para vender",
+      "Pedidos directos por WhatsApp",
+      "Comparte tu tienda con un link",
+      "Gestión de productos y ofertas",
+      "Activa o desactiva productos fácilmente",
+      "Diseño optimizado para tu negocio",
+      "Personaliza tu tienda con tu logo",
+      "Colores adaptados profesionalmente",
+      "Sucursales y redes sociales integradas",
       `Hasta ${p.max_products} productos`,
       `${p.max_images_per_product} imágenes por producto`,
       `${p.max_banners} banners en tu tienda`,
-      "Catálogo online",
     ];
     return {
       id: p.id,
@@ -34,25 +42,14 @@ export default function Plans() {
     };
   });
 
-  return (
-    <div className="min-h-screen bg-[#fafaf9] px-4 sm:px-6 lg:px-8">
-      {/* Hero */}
-      <div className="max-w-2xl mx-auto text-center pt-16 pb-12">
-        <span className="inline-block text-xs font-medium tracking-widest uppercase text-gray-400 mb-6 px-5 py-2 border border-gray-200 rounded-full bg-white">
-          Planes y precios
-        </span>
-        <h1 className="text-2xl sm:text-5xl font-serif text-gray-900 leading-tight tracking-tight mb-5">
-          Tu tienda online,
-          <br />
-          sin complicaciones
-        </h1>
-        <p className="text-base text-gray-400 leading-relaxed">
-          Elige el plan que se adapta a tu negocio.
-          <br />
-          Sin contratos, cancela cuando quieras.
-        </p>
-      </div>
+  const getWhatsappLink = (planName: string) => {
+    const phone = "62557286";
+    const message = `Hola, quiero hacer el cambio de mi plan actual al plan ${planName}`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  };
 
+  return (
+    <div className="px-4 sm:px-6 lg:px-8">
       {/* Toggle moneda */}
       <div className="flex justify-center mb-12">
         <div className="flex bg-gray-100 rounded-full p-1.5">
@@ -140,17 +137,17 @@ export default function Plans() {
               ))}
             </ul>
 
-            {/* CTA */}
-            <button
-              disabled
-              className={`w-full py-3.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-not-allowed opacity-50 ${
+            <a
+              href={getWhatsappLink(plan.name)}
+              target="_blank"
+              className={`block w-full text-center py-3.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 plan.popular
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-900 border border-gray-200"
+                  ? "bg-gray-900 text-white hover:opacity-90"
+                  : "bg-white text-gray-900 border border-gray-200 hover:bg-gray-50"
               }`}
             >
-              Próximamente
-            </button>
+              Solicitar Plan
+            </a>
           </div>
         ))}
       </div>

@@ -6,11 +6,11 @@ import { TermsModal } from "@/components/dashboard/TermModal";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen w-full bg-[#FDFDFD] text-[#1A1A1A] overflow-x-hidden flex flex-col font-sans">
+    <main className="relative min-h-screen w-full bg-[#FDFDFD] text-[#1A1A1A] overflow-x-hidden flex flex-col font-sans">
       {/* BACKGROUND */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none">
         {/* Desktop */}
-        <div className="hidden md:block absolute inset-0">
+        <div className="hidden md:block fixed inset-0">
           <Image
             src="/images/backgroundMain.webp"
             alt="Fondo"
@@ -23,7 +23,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-linear-to-r from-white/95 via-white/80 to-white/40" />
         </div>
         {/* Mobile */}
-        <div className="md:hidden absolute inset-0">
+        <div className="md:hidden fixed inset-0">
           <Image
             src="/images/backgroundMainMobil.webp"
             alt="Fondo móvil"
@@ -85,13 +85,13 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="text-center md:text-start text-gray-700 text-lg max-w-lg">
+            <p className="text-center md:text-start text-gray-800 text-lg max-w-lg font-inter">
               Transforma la forma en que muestras tus productos. Diseña un
               catálogo digital profesional y recibe pedidos directamente en tu
               WhatsApp.
             </p>
 
-            <div className="flex justify-center md:justify-start">
+            <div className="flex flex-col gap-5 justify-center items-center md:justify-start lg:flex-row">
               <Link href="/auth/register" prefetch={false}>
                 <Button
                   size="lg"
@@ -99,6 +99,15 @@ export default function Home() {
                            px-12 h-16 text-sm font-bold uppercase tracking-[0.2em]"
                 >
                   Crear mi catálogo
+                </Button>
+              </Link>
+              <Link href="/public/plans" prefetch={false}>
+                <Button
+                  size="lg"
+                  className="bg-black hover:bg-[#6D001A] text-white
+                           px-12 h-16 text-sm font-bold uppercase tracking-[0.2em]"
+                >
+                  Ver planes
                 </Button>
               </Link>
             </div>
@@ -150,6 +159,6 @@ export default function Home() {
         <p>© {new Date().getFullYear()} JPlatform - Catalog</p>
         <TermsModal />
       </footer>
-    </div>
+    </main>
   );
 }
