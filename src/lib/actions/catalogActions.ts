@@ -15,7 +15,7 @@ async function getPublicStoreRaw(storeSlug: string) {
   const { data, error } = await supabasePublic
     .from("stores")
     .select(
-      "id,name, slug, logo_url, whatsapp_number,primary_color,secondary_color,tertiary_color, updated_at,plan_expires_at,is_active",
+      "id,name,description, slug, logo_url, whatsapp_number,primary_color,secondary_color,tertiary_color, updated_at,plan_expires_at,is_active",
     )
     .eq("slug", storeSlug)
     .single();
@@ -211,5 +211,51 @@ export async function getPublicProductBySlug(storeSlug: string, slug: string) {
     async () => getPublicProductBySlugRaw(slug),
     ["public-product", storeSlug, slug],
     { tags: [`product-${storeSlug}-${slug}`], revalidate: false },
+  )();
+}
+
+/**
+ * get store social media links for footer
+ */
+async function getPublicStoreSocialMediaRaw(storeId: string) {
+  const { data, error } = await supabasePublic
+    .from("store_social_links")
+    .select("id, platform, url")
+    .eq("store_id", storeId);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export async function getPublicStoreSocialMedia(
+  storeSlug: string,
+  storeId: string,
+) {
+  return unstable_cache(
+    async () => getPublicStoreSocialMediaRaw(storeId),
+    ["public-store-social-links", storeSlug],
+    { tags: [`store-social-links-${storeSlug}`], revalidate: false },
+  )();
+}
+
+/**
+ * get branches for footer
+ */
+async function getPublicStoreBranchesRaw(storeId: string) {
+  const { data, error } = await supabasePublic
+    .from("store_branches")
+    .select("id, name, address, phone, lat, lng")
+    .eq("store_id", storeId);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export async function getPublicStoreBranches(
+  storeSlug: string,
+  storeId: string,
+) {
+  return unstable_cache(
+    async () => getPublicStoreBranchesRaw(storeId),
+    ["public-store-branches", storeSlug],
+    { tags: [`store-branches-${storeSlug}`], revalidate: false },
   )();
 }

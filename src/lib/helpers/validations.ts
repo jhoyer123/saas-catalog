@@ -71,3 +71,36 @@ export function checkIsPlanActive(
 
   return true;
 }
+
+/**
+ * Verifica si el plan de una tienda está próximo a expirar (menos de 7 días).
+ *
+ * Casos:
+ * - is_active false → no aplica (false)
+ * - plan_expires_at null → no aplica (false)
+ * - plan ya expirado → no aplica (false), usar checkIsPlanActive para eso
+ * - expira en menos de 7 días → true
+ * - expira en 7 días o más → false
+ *
+ * @param store - Tienda con campos de plan
+ * @param now - Fecha de referencia (default: new Date()). Útil para tests.
+ */
+export function checkIsPlanExpiringSoon(
+  store: {
+    is_active: boolean | null;
+    plan_expires_at: string | null;
+  },
+  now: Date = new Date(),
+): boolean {
+  if (!store.is_active) return false;
+  if (!store.plan_expires_at) return false;
+
+  const nowMs = now.getTime();
+  const expiresMs = new Date(store.plan_expires_at).getTime();
+
+  // Plan ya expirado → no aplica
+  if (nowMs > expiresMs) return false;
+
+  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  return expiresMs - nowMs < sevenDaysMs;
+}

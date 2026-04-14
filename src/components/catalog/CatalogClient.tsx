@@ -163,8 +163,8 @@ export default function CatalogClient({
   }
 
   return (
-    <main className="min-h-screen  bg-catalog-primary">
-      <Header store={store} />
+    <main className="min-h-screen  bg-catalog-primary pb-6">
+      {/*  <Header store={store} /> */}
 
       <div
         id="catalog-input-bar"

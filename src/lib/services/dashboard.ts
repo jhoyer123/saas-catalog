@@ -22,7 +22,6 @@ import type { BrandDashboard, BrandOfForm } from "@/types/brand.types";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 
 // ── Tipos ──
-
 export type SessionData = {
   profile: User | null;
   store: Store | null;
@@ -367,6 +366,44 @@ export const fetchPlans = async (): Promise<PlanDetails[]> => {
       "id, name, price, max_products, max_images_per_product, max_banners, description",
     )
     .order("sort_order", { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  return data ?? [];
+};
+
+// ── Redes sociales ──
+export const fetchSocialLinks = async (
+  storeId: string,
+): Promise<{ platform: string; url: string }[]> => {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("store_social_links")
+    .select("platform, url")
+    .eq("store_id", storeId);
+
+  if (error) throw new Error(error.message);
+
+  return data ?? [];
+};
+
+// ── Sucursales ──
+type Branch = {
+  name: string;
+  address: string;
+  phone: string;
+  lat?: number;
+  lng?: number;
+};
+
+export const fetchBranches = async (storeId: string): Promise<Branch[]> => {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("store_branches")
+    .select("id, name, address, phone, lat, lng")
+    .eq("store_id", storeId);
 
   if (error) throw new Error(error.message);
 

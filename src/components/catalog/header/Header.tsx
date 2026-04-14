@@ -5,15 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { CartButton } from "@/components/cart/CartButton";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
+import { StoreCatalogData } from "@/types/catalog/catalog.types";
 
 interface HeaderProps {
-  store: {
-    name: string;
-    slug: string;
-    logo_url: string | null;
-    whatsapp_number?: string | null;
-    updated_at: string;
-  };
+  store: StoreCatalogData;
 }
 
 const Header: React.FC<HeaderProps> = ({ store }) => {
@@ -22,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
       id="catalog-header"
       className="bg-catalog-primary/80 border-b w-full fixed top-0 left-0 right-0 z-20"
     >
-      <div className="container mx-auto px-1.5 py-1 flex items-center justify-between">
+      <div className="container mx-auto px-1.5 py-1 flex items-center justify-between md:px-6 lg:px-35">
         <Link href={`/public/${store.slug}`}>
           <Image
             src={

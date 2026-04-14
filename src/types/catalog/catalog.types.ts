@@ -18,6 +18,30 @@ export interface BrandsCatalog {
   slug: string;
 }
 
+export interface BranchCatalog {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface SocialLinkCatalog {
+  id: string;
+  platform: string;
+  url: string;
+}
+
+export interface StoreCatalogData {
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  whatsapp_number?: string | null;
+  updated_at: string;
+  description?: string | null;
+}
+
 // Cuánto tiempo muestra cada banner antes de pasar al siguiente
 export const AUTOPLAY_INTERVAL = 5000;
 

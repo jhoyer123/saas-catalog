@@ -26,7 +26,7 @@ export function DashboardGuard({ children }: { children: React.ReactNode }) {
     return <UserInactive />;
   }
 
-  // Usuario suspendido por falta de
+  // Usuario suspendido por falta de pago
   if (
     session.store &&
     !checkIsPlanActive({

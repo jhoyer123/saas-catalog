@@ -1,5 +1,11 @@
 import Script from "next/script";
-import { getPublicStore } from "@/lib/actions/catalogActions";
+import {
+  getPublicStore,
+  getPublicStoreBranches,
+  getPublicStoreSocialMedia,
+} from "@/lib/actions/catalogActions";
+import Header from "@/components/catalog/header/Header";
+import Footer from "@/components/catalog/footer/Footer";
 
 export default async function StoreLayout({
   children,
@@ -11,6 +17,12 @@ export default async function StoreLayout({
   const { store_slug } = await params;
   const store = await getPublicStore(store_slug);
 
+  // 2. Las que dependen del id, en paralelo
+  const [branches, socialLinks] = await Promise.all([
+    getPublicStoreBranches(store.slug, store.id),
+    getPublicStoreSocialMedia(store.slug, store.id),
+  ]);
+
   const css = `
     :root {
       --catalog-primary: ${store.primary_color ?? "#000000"};
@@ -20,7 +32,6 @@ export default async function StoreLayout({
   `;
 
   const umamiId = process.env.NEXT_PUBLIC_UMAMI_ID;
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
     <>
@@ -32,27 +43,9 @@ export default async function StoreLayout({
           strategy="afterInteractive"
         />
       )}
-      {/* Google Analytics - sin afectar performance */}
-      {/*   {gaId && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            strategy="afterInteractive"
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaId}', {
-                page_path: window.location.pathname,
-              });
-            `}
-          </Script>
-        </>
-      )}
- */}
+      <Header store={store} />
       {children}
+      <Footer branches={branches} socialLinks={socialLinks} store={store} />
     </>
   );
 }

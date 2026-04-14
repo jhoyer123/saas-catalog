@@ -16,6 +16,7 @@ import {
   Layers,
   LucideIcon,
   Package,
+  Settings,
   Store,
 } from "lucide-react";
 import { useSessionData } from "@/hooks/auth/useSessionData";
@@ -58,6 +59,7 @@ const navItems: NavItem[] = [
     requiresStore: true,
   },
   { name: "Mi Tienda", url: "/dashboard/store", icon: Store },
+  { name: "Configuración", url: "/dashboard/settings", icon: Settings },
 ];
 
 const navSecondaryItems: NavItem[] = [

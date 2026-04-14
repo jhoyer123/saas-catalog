@@ -14,6 +14,7 @@ import type { Store as StoreType } from "@/types/store.types";
 
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { PlanAlert } from "../plans/PlanAlert";
 
 interface DashboardPageProps {
   hasProducts?: boolean;
@@ -117,6 +118,7 @@ export default function PanelPage({
       {/* Cards principales */}
       {store ? (
         <>
+          <PlanAlert store={store} />
           {/* <StatsCards slug={store.slug} /> */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Catálogo */}

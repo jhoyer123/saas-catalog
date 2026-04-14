@@ -19,16 +19,11 @@ export function useCreateProduct() {
       }
       return result;
     },
-    /* onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["categories-paginated"] });
-    }, */
     onSuccess: (_data, variables) => {
       const invalidations = [
         queryClient.invalidateQueries({ queryKey: ["products"] }),
         queryClient.invalidateQueries({ queryKey: ["categories"] }),
       ];
-
       // solo invalida brands si el producto se creó con marca
       if (variables.brand_id) {
         invalidations.push(
