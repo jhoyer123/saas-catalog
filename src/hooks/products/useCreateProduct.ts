@@ -9,11 +9,13 @@ export function useCreateProduct() {
   //get data session
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
-  const slugStore = sessionData?.store?.slug;
 
   return useMutation({
     mutationFn: async (dataProducto: ProductInputService) => {
-      const result = await createProduct(dataProducto, storeId!, slugStore!);
+      const result = await createProduct(
+        dataProducto,
+        storeId! /* , slugStore! */,
+      );
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }
@@ -21,7 +23,7 @@ export function useCreateProduct() {
     },
     onSuccess: (_data, variables) => {
       const invalidations = [
-        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        //queryClient.invalidateQueries({ queryKey: ["products"] }),
         queryClient.invalidateQueries({ queryKey: ["categories"] }),
       ];
       // solo invalida brands si el producto se creó con marca

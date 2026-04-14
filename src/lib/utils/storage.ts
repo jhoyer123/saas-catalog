@@ -1,5 +1,6 @@
 // src/lib/utils/storage.ts
-import { createClient } from "@/lib/supabase/supabaseServer";
+//import { createClient } from "@/lib/supabase/supabaseServer";
+import { createClient } from "@/lib/supabase/supabaseClient";
 
 // estructura: bucket/userId/carpeta/archivo
 // ejemplo:  stores/uuid-user/logo/logo.webp

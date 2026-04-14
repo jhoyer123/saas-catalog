@@ -19,7 +19,7 @@ import {
  * @param storeId
  * @returns
  */
-export const createProduct = async (
+/* export const createProduct = async (
   dataProducto: ProductInputService,
   storeId: string,
   storeSlug: string,
@@ -101,6 +101,84 @@ export const createProduct = async (
   await purgeCatalogCache(storeSlug);
 
   return data;
+}; */
+
+export const createProduct = async (
+  dataProducto: ProductInputService,
+  storeId: string,
+) => {
+  const supabase = await createClient();
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { error: "No autenticado" };
+
+  const { data, error } = await supabase
+    .from("products")
+    .insert({
+      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
+      name: dataProducto.name,
+      slug: generateSlug(dataProducto.name),
+      price: dataProducto.price,
+      description: dataProducto.description,
+      brand_id: dataProducto.brand_id ?? null,
+      category_id: dataProducto.category_id,
+      store_id: storeId,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      if (error.message.includes("name")) {
+        console.error("createProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este nombre" };
+      }
+      if (error.message.includes("sku")) {
+        console.error("createProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este codigo" };
+      }
+      if (error.message.includes("slug")) {
+        console.error("createProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este slug" };
+      }
+    }
+    if (error.code === "P0001") {
+      console.error("createProduct DB ERROR:", error);
+      return { error: error.message };
+    }
+    console.error("createProduct DB ERROR:", error);
+    return { error: "Error al crear el producto" };
+  }
+
+  return data;
+};
+
+export const saveProductImages = async (
+  productId: string,
+  imageUrls: string[],
+  storeSlug: string,
+) => {
+  const supabase = await createClient();
+
+  for (const url of imageUrls) {
+    const { error } = await supabase.from("product_images").insert({
+      product_id: productId,
+      image_url: url,
+    });
+
+    if (error) {
+      console.error("Error al guardar imagen:", error);
+      return { error: error.message };
+    }
+  }
+
+  revalidateTag(`products-${storeSlug}`, "max");
+  revalidatePath(`/public/${storeSlug}`);
+  await purgeCatalogCache(storeSlug);
+
+  return { success: true };
 };
 
 /**

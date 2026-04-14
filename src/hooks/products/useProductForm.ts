@@ -12,6 +12,8 @@ import {
 } from "@/lib/schemas/product";
 import { useProductActions } from "./useHandleAction";
 import { ProductDetail } from "@/types/product.types";
+import { uploadFile } from "@/lib/utils/storage";
+import { useSessionData } from "../auth/useSessionData";
 
 type FormMode = "create" | "update" | "view";
 
@@ -33,6 +35,9 @@ export function useProductForm({
   const isView = mode === "view";
 
   const { createProduct, updateProduct, isPending } = useProductActions();
+  const { data: sessionData } = useSessionData();
+  const storeId = sessionData?.store?.id;
+  const storeSlug = sessionData?.store?.slug;
 
   const {
     register,
@@ -100,7 +105,7 @@ export function useProductForm({
     }
   }, [register, isUpdate]);
 
-  const handleFormSubmit = (
+  /*  const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
   ) => {
     const transformed = isUpdate
@@ -144,6 +149,56 @@ export function useProductForm({
           });
         },
       );
+    }
+  }; */
+
+  const handleFormSubmit = async (
+    data: ProductFormInput | ProductFormInputUpdate,
+  ) => {
+    const transformed = isUpdate
+      ? {
+          ...data,
+          images: (data as ProductFormInputUpdate).images
+            ? Array.from((data as ProductFormInputUpdate).images!)
+            : [],
+        }
+      : {
+          ...data,
+          images: Array.from((data as ProductFormInput).images),
+        };
+
+    try {
+      if (isCreate) {
+        await createProduct(transformed as ProductInputService, storeId!);
+        reset({
+          name: "",
+          brand_id: "",
+          sku: "",
+          category_id: "",
+          description: "",
+          price: 0,
+        });
+      }
+
+      if (isUpdate) {
+        updateProduct(
+          initialData?.id!,
+          initialData?.slug!,
+          transformed as ProductInputServiceUpdate,
+          () => {
+            reset({
+              name: "",
+              brand_id: "",
+              sku: "",
+              category_id: "",
+              description: "",
+              price: 0,
+            });
+          },
+        );
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
