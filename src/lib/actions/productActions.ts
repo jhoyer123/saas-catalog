@@ -159,6 +159,7 @@ export const saveProductImages = async (
   productId: string,
   imageUrls: string[],
   storeSlug: string,
+  slugProd?: string, // 👈 opcional
 ) => {
   const supabase = await createClient();
 
@@ -178,6 +179,12 @@ export const saveProductImages = async (
   revalidatePath(`/public/${storeSlug}`);
   await purgeCatalogCache(storeSlug);
 
+  if (slugProd) {
+    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    revalidatePath(`/public/${storeSlug}/${slugProd}`);
+    await purgeProductDetailCache(storeSlug, slugProd);
+  }
+
   return { success: true };
 };
 
@@ -188,7 +195,7 @@ export const saveProductImages = async (
  * @param storeId
  * @returns
  */
-export const updateProduct = async (
+/* export const updateProduct = async (
   id: string,
   slugProd: string,
   dataProducto: ProductInputServiceUpdate,
@@ -306,6 +313,107 @@ export const updateProduct = async (
     revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
     revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
+  }
+  return data;
+};
+ */
+
+export const updateProduct = async (
+  id: string,
+  slugProd: string,
+  dataProducto: ProductInputServiceUpdate,
+  //storeId: string,
+  storeSlug: string,
+) => {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { error: "No autenticado" };
+
+  //Actualizar datos del producto
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
+      name: dataProducto.name,
+      price: dataProducto.price,
+      slug: generateSlug(dataProducto.name),
+      description: dataProducto.description,
+      brand_id: dataProducto.brand_id ?? null,
+      category_id: dataProducto.category_id,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) {
+    if (error.code === "23505") {
+      if (error.message.includes("name")) {
+        console.error("updateProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este nombre",
+        };
+      }
+      if (error.message.includes("sku")) {
+        console.error("updateProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este codigo",
+        };
+      }
+
+      if (error.message.includes("slug")) {
+        console.error("updateProduct DB ERROR", error);
+        return {
+          error: "Ya existe un producto con este slug",
+        };
+      }
+    }
+    if (error.code === "P0001") {
+      console.error("updateProduct DB ERROR:", error);
+      return { error: error.message };
+    }
+    console.error("updateProduct DB ERROR:", error);
+    return { error: "Error al actualizar el producto" };
+  }
+
+  //Eliminar imágenes marcadas
+  if (dataProducto.imageToDelete?.length! > 0) {
+    //Eliminar registros en DB
+    const { error: dbError } = await supabase
+      .from("product_images")
+      .delete()
+      .in("image_url", dataProducto.imageToDelete!);
+
+    if (dbError) {
+      console.error("updateProduct DB ERROR:", dbError);
+      return { error: "Error al eliminar las imágenes del producto" };
+    }
+
+    //Eliminar archivos del bucket
+    const paths = dataProducto.imageToDelete!.map((url: string) => {
+      const pathname = new URL(url).pathname;
+      return pathname.replace("/storage/v1/object/public/products/", "");
+    });
+
+    const { error: storageError } = await supabase.storage
+      .from("products")
+      .remove(paths);
+
+    if (storageError) {
+      console.error("updateProduct Storage ERROR:", storageError);
+      return { error: `Error al eliminar la imagen: ${storageError.message}` };
+    }
+  }
+
+  if (dataProducto.images?.length === 0) {
+    revalidateTag(`products-${storeSlug}`, "max");
+    revalidatePath(`/public/${storeSlug}`);
+    await purgeCatalogCache(storeSlug);
+    if (slugProd) {
+      revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+      revalidatePath(`/public/${storeSlug}/${slugProd}`);
+      await purgeProductDetailCache(storeSlug, slugProd);
+    }
   }
   return data;
 };

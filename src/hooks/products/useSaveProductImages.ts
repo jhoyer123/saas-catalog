@@ -5,6 +5,7 @@ import { useSessionData } from "../auth/useSessionData";
 interface SaveProductImagesParams {
   productId: string;
   imageUrls: string[];
+  slugProd?: string;
 }
 
 export const useSaveProductImages = () => {
@@ -15,17 +16,37 @@ export const useSaveProductImages = () => {
   const slugStore = sessionData?.store?.slug;
 
   return useMutation({
-    mutationFn: async ({ productId, imageUrls }: SaveProductImagesParams) => {
-      const result = await saveProductImages(productId, imageUrls, slugStore!);
+    mutationFn: async ({
+      productId,
+      imageUrls,
+      slugProd,
+    }: SaveProductImagesParams) => {
+      const result = await saveProductImages(
+        productId,
+        imageUrls,
+        slugStore!,
+        slugProd,
+      );
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }
       return result;
     },
 
-    onSuccess: (data) => {
+    /*  onSuccess: (data) => {
       if (data.error) return;
       queryClient.invalidateQueries({ queryKey: ["products"] });
+    }, */
+
+    onSuccess: async (_data, variables) => {
+      const invalidations = [
+        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["product", variables.productId],
+        }), // 👈 FIX
+      ];
+
+      await Promise.all(invalidations);
     },
 
     onError: (error) => {

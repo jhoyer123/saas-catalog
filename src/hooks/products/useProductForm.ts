@@ -37,7 +37,7 @@ export function useProductForm({
   const { createProduct, updateProduct, isPending } = useProductActions();
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
-  const storeSlug = sessionData?.store?.slug;
+  //const storeSlug = sessionData?.store?.slug;
 
   const {
     register,
@@ -152,7 +152,7 @@ export function useProductForm({
     }
   }; */
 
-  const handleFormSubmit = async (
+  const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
   ) => {
     const transformed = isUpdate
@@ -169,14 +169,15 @@ export function useProductForm({
 
     try {
       if (isCreate) {
-        await createProduct(transformed as ProductInputService, storeId!);
-        reset({
-          name: "",
-          brand_id: "",
-          sku: "",
-          category_id: "",
-          description: "",
-          price: 0,
+        createProduct(transformed as ProductInputService, storeId!, () => {
+          reset({
+            name: "",
+            brand_id: "",
+            sku: "",
+            category_id: "",
+            description: "",
+            price: 0,
+          });
         });
       }
 
@@ -185,6 +186,7 @@ export function useProductForm({
           initialData?.id!,
           initialData?.slug!,
           transformed as ProductInputServiceUpdate,
+          storeId!,
           () => {
             reset({
               name: "",

@@ -95,7 +95,7 @@ export function useProductActions() {
           await saveProductImages({ productId: productRes.id!, imageUrls });
 
           router.push("/dashboard/products");
-          //onSuccess?.();
+          onSuccess?.();
         });
       },
       messages: {
@@ -115,7 +115,7 @@ export function useProductActions() {
    * @param data
    * @param onSuccess
    */
-  const updateProduct = (
+  /* const updateProduct = (
     id: string,
     slugProd: string,
     data: ProductInputServiceUpdate,
@@ -125,6 +125,46 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           await update({ id, slugProd, dataProducto: data });
+          router.push("/dashboard/products");
+          onSuccess?.();
+        });
+      },
+      messages: {
+        loading: "Actualizando producto...",
+        success: "Producto actualizado",
+        error: (err) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
+  }; */
+
+  const updateProduct = (
+    id: string,
+    slugProd: string,
+    data: ProductInputServiceUpdate,
+    storeId: string,
+    onSuccess?: () => void,
+  ) => {
+    showPromise({
+      promise: async () => {
+        await withPending(async () => {
+          // 1. Actualizar producto (incluye eliminar imágenes viejas)
+          await update({ id, slugProd, dataProducto: data });
+
+          // 2. Subir imágenes nuevas si existen
+          if (data.images && data.images.length > 0) {
+            const imageUrls: string[] = [];
+            for (const file of data.images) {
+              const url = await uploadFile("products", storeId, id, file);
+              imageUrls.push(url);
+            }
+
+            // 3. Guardar URLs nuevas en tabla
+            await saveProductImages({ productId: id, imageUrls, slugProd });
+          }
+
           router.push("/dashboard/products");
           onSuccess?.();
         });

@@ -8,7 +8,7 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient();
   //get data session
   const { data: sessionData } = useSessionData();
-  const storeId = sessionData?.store?.id;
+  //const storeId = sessionData?.store?.id;
   const slugStore = sessionData?.store?.slug;
   return useMutation({
     mutationFn: async ({
@@ -24,7 +24,7 @@ export function useUpdateProduct() {
         id,
         slugProd,
         dataProducto,
-        storeId!,
+        //storeId!,
         slugStore!,
       );
       if (result && typeof result === "object" && "error" in result) {
@@ -41,9 +41,21 @@ export function useUpdateProduct() {
 
       const invalidations = [
         // siempre se invalida el producto y la lista
-        queryClient.invalidateQueries({ queryKey: ["products"] }),
-        queryClient.invalidateQueries({ queryKey: ["product", variables.id] }),
+        //queryClient.invalidateQueries({ queryKey: ["products"] }),
+        //queryClient.invalidateQueries({ queryKey: ["product", variables.id] }),
       ];
+
+      if (!variables.dataProducto.images?.length) {
+        //console.log("No hay imágenes, invalidando detalle y catálogo");
+        invalidations.push(
+          queryClient.invalidateQueries({ queryKey: ["products"] }),
+        );
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: ["product", variables.id],
+          }),
+        );
+      }
 
       // solo si cambió la categoría
       if (prev?.category_id !== next.category_id) {
