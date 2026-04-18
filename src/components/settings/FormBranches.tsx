@@ -43,9 +43,7 @@ export const FormBranches = ({
   } = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      branches: defaultValues?.branches?.length
-        ? defaultValues.branches
-        : [emptyBranch],
+      branches: defaultValues?.branches?.length ? defaultValues.branches : [],
     },
   });
 
@@ -107,7 +105,7 @@ export const FormBranches = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => remove(index)}
-                  disabled={disabled || fields.length === 1}
+                  disabled={disabled}
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />

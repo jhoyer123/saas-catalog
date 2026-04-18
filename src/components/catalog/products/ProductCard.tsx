@@ -18,6 +18,7 @@ interface ProductCardProps {
   isOfferActive: boolean; // Nuevo prop para indicar si la oferta está activa
   priority?: boolean;
 }
+
 export const ProductCard = React.memo(function ProductCard({
   product,
   whatssapNumber,
@@ -110,6 +111,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
           priority={priority}
         />
 
+        {/* Badge de descuento y disponibilidad */}
         {discountPercent && <OfferBadge discountPercent={discountPercent} />}
         {!product.is_available && <AvailableBadge />}
 
@@ -159,7 +161,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
             onClick={handleWhatsApp}
             aria-label="Consultar por WhatsApp"
             className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-green-500 text-green-600 text-xs font-medium hover:bg-green-50 transition-colors"
-            data-umami-event="Contactar WhatsApp"
+            data-umami-event="Pedir por WhatsApp un producto desde la tarjeta"
             data-umami-event-product={product.name}
           >
             <WhatsAppIcon />

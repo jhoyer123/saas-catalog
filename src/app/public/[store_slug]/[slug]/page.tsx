@@ -1,7 +1,4 @@
-import {
-  getPublicProductBySlug,
-  getPublicStore,
-} from "@/lib/actions/catalogActions";
+import { getPublicProductBySlug } from "@/lib/actions/catalogActions";
 import ProductDetailClient from "@/components/catalog/products/ProductDetailClient";
 import { notFound } from "next/navigation";
 import {

@@ -1,25 +1,22 @@
 "use client";
 
 import { ProductDetailCatalog } from "@/types/product.types";
-import {
-  ShoppingCart,
-  MessageCircle,
-  Star,
-  Sparkles,
-  ChevronDown,
-} from "lucide-react";
+import { ShoppingCart, Star, Sparkles, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRef, useState, useEffect } from "react";
+import { string } from "zod";
 
 interface ProductInfoProps {
   product: ProductDetailCatalog;
   whatssapNumber?: string | null;
   isOfferActive: boolean;
   discountPercent?: number | null;
+  slugProd: string;
+  store_slug: string;
 }
 
 function useHasOverflow() {
@@ -104,6 +101,8 @@ export function ProductInfo({
   whatssapNumber,
   isOfferActive,
   discountPercent,
+  slugProd,
+  store_slug,
 }: ProductInfoProps) {
   const addItem = useCartStore((s) => s.addItem);
 
@@ -121,6 +120,24 @@ export function ProductInfo({
 
   const telefono = whatssapNumber;
   const { ref, hasOverflow } = useHasOverflow();
+
+  const handleWhatsApp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // ajusta el número si lo tienes disponible en el store
+    const msg = encodeURIComponent(
+      `¡Hola! Me gustaría hacer un pedido:
+  
+De este producto:
+${product.name}
+app.jhoyerdev.me/public/${store_slug}/${slugProd}
+
+Precio: Bs. ${displayPrice!.toFixed(2)}
+  
+¿Está disponible? Me gustaría más información`,
+    );
+    window.open(`https://wa.me/${telefono}?text=${msg}`, "_blank");
+  };
 
   return (
     <>
@@ -165,18 +182,9 @@ export function ProductInfo({
         <div className="w-full">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-1 ">
             {/* WhatsApp primero en mobile */}
-            <a
-              href={`https://wa.me/${telefono}?text=${encodeURIComponent(
-                `Hola, vi este producto en su catálogo.
-
-De este producto:
-${product.name}
-Precio: Bs. ${displayPrice!.toFixed(2)}
-
-¿Está disponible?`,
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={handleWhatsApp}
+              aria-label="Consultar por WhatsApp"
               className={cn(
                 buttonVariants({ variant: "default" }),
                 "w-full flex items-center justify-center gap-2",
@@ -184,12 +192,14 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
                 "text-white font-semibold text-[16px]",
                 "shadow-lg hover:shadow-xl transition-all duration-200 rounded-none",
               )}
+              data-umami-event="Pedir por WhatsApp un producto desde la tarjeta"
+              data-umami-event-product={product.name}
             >
               <span className="flex items-center gap-2 text-[16px]">
                 <WhatsAppIcon />
                 Comprar por WhatsApp
               </span>
-            </a>
+            </button>
             <Button
               onClick={handleAddToCart}
               className="md:text-[16px] bg-catalog-secondary text-catalog-primary rounded-none lg:w-auto hover:bg-catalog-secondary/90 focus:bg-catalog-secondary/90 active:bg-catalog-secondary/80"

@@ -22,7 +22,7 @@ export const branchSchema = z.object({
 });
 
 export const settingsSchema = z.object({
-  branches: z.array(branchSchema).min(1, "Agrega al menos una sucursal"),
+  branches: z.array(branchSchema),
 });
 
 export type BranchForm = z.infer<typeof branchSchema>;

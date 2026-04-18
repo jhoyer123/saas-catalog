@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import Header from "@/components/catalog/header/Header";
 import { ProductImageGallery } from "@/components/catalog/products/ProductImageGallery";
 import { ProductInfo } from "@/components/catalog/products/ProductInfo";
 import { Button } from "@/components/ui/button";
@@ -29,15 +28,6 @@ export default function ProductDetailClient({
 }: ProductDetailClientProps) {
   const router = useRouter();
   const [headerHeight, setHeaderHeight] = useState(0);
-
-  /* useEffect(() => {
-    const header = document.getElementById("catalog-header");
-    if (!header) return;
-    const ro = new ResizeObserver(() => setHeaderHeight(header.offsetHeight));
-    ro.observe(header);
-    setHeaderHeight(header.offsetHeight);
-    return () => ro.disconnect();
-  }, []); */
 
   // 1. Recuperamos el store directo de la memoria compartida
   const { data: store } = useQuery({
@@ -165,6 +155,8 @@ export default function ProductDetailClient({
               whatssapNumber={store.whatsapp_number}
               isOfferActive={isOfferActive}
               discountPercent={discountPercent}
+              slugProd={slugProd}
+              store_slug={storeSlug}
             />
           </div>
         </div>
