@@ -46,7 +46,7 @@ export function CartDrawer({
   const cartSummaryText = items
     .map(
       (item) =>
-        `• ${item.name} x${item.quantity} — Bs. ${(item.price * item.quantity).toFixed(2)}`,
+        `• ${item.name} x${item.quantity} — Bs. ${(item.price * item.quantity).toFixed(2)} - ${item.link}`,
     )
     .join("\n");
 

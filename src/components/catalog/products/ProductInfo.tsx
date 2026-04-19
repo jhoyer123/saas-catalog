@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRef, useState, useEffect } from "react";
-import { string } from "zod";
 
 interface ProductInfoProps {
   product: ProductDetailCatalog;
@@ -112,6 +111,7 @@ export function ProductInfo({
     addItem({
       id: product.id,
       name: product.name,
+      link: `app.jhoyerdev.me/public/${store_slug}/${slugProd}`,
       image: product.images[0] || "/images/placeholder.png",
       price: displayPrice!,
     });
@@ -127,13 +127,12 @@ export function ProductInfo({
     // ajusta el número si lo tienes disponible en el store
     const msg = encodeURIComponent(
       `¡Hola! Me gustaría hacer un pedido:
-  
+      
 De este producto:
 ${product.name}
 app.jhoyerdev.me/public/${store_slug}/${slugProd}
-
 Precio: Bs. ${displayPrice!.toFixed(2)}
-  
+
 ¿Está disponible? Me gustaría más información`,
     );
     window.open(`https://wa.me/${telefono}?text=${msg}`, "_blank");
@@ -141,7 +140,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
 
   return (
     <>
-      <div className="flex flex-col gap-5 items-center justify-center h-full w-full px-2 py-4 bg-catalog-tertiary border border-border md:px-6 md:py-10">
+      <div className="flex flex-col gap-5 items-center justify-center h-full w-full px-2 py-4 bg-catalog-tertiary md:px-6 md:py-10 shadow-sm shadow-catalog-secondary/30 rounded-md ring-1 ring-catalog-secondary/10">
         {/* ── BRAND ── */}
         {product.brand && (
           <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-catalog-secondary">
@@ -187,7 +186,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
               aria-label="Consultar por WhatsApp"
               className={cn(
                 buttonVariants({ variant: "default" }),
-                "w-full flex items-center justify-center gap-2",
+                "w-full flex items-center justify-center gap-2 cursor-pointer",
                 "bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851]",
                 "text-white font-semibold text-[16px]",
                 "shadow-lg hover:shadow-xl transition-all duration-200 rounded-none",
@@ -202,7 +201,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
             </button>
             <Button
               onClick={handleAddToCart}
-              className="md:text-[16px] bg-catalog-secondary text-catalog-primary rounded-none lg:w-auto hover:bg-catalog-secondary/90 focus:bg-catalog-secondary/90 active:bg-catalog-secondary/80"
+              className="md:text-[16px] cursor-pointer bg-catalog-secondary text-catalog-primary rounded-none lg:w-auto hover:bg-catalog-secondary/90 focus:bg-catalog-secondary/90 active:bg-catalog-secondary/80"
             >
               <ShoppingCart className="h-5 w-5" />
               Agregar al carrito
@@ -217,7 +216,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
       <div className="relative">
         <div
           ref={ref}
-          className="mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary border border-border md:px-6 md:py-10 max-h-100 overflow-y-auto md:max-h-150 custom-scroll"
+          className="shadow-sm shadow-catalog-secondary/30 rounded-md ring-1 ring-catalog-secondary/10 mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary md:px-6 md:py-10 max-h-100 overflow-y-auto md:max-h-150 custom-scroll"
         >
           {/* ── DESCRIPTION ── */}
           <div>
@@ -238,7 +237,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
         {/* Fade solo si hay overflow */}
         {hasOverflow && (
           <>
-            <div className="pointer-events-none absolute bottom-px left-px right-px h-12 bg-linear-to-t from-catalog-tertiary to-transparent" />
+            <div className="rounded-b-md pointer-events-none absolute bottom-px left-px right-px h-12 bg-linear-to-t from-catalog-tertiary to-transparent" />
             <div className="pointer-events-none absolute bottom-2 left-0 right-0 flex justify-center">
               <ChevronDown className="h-4 w-4 animate-bounce text-catalog-secondary/50" />
             </div>

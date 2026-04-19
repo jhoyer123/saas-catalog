@@ -128,9 +128,11 @@ export default function ProductDetailClient({
 
       <div className="container mx-auto px-4 py-3 text-catalog-secondary">
         {/* Cambiamos el onClick para usar la función controlada */}
-        <Button variant="ghost" onClick={handleVolver} className="gap-2">
+        <Button
+          onClick={handleVolver}
+          className="rounded-full bg-catalog-secondary/20 hover:bg-catalog-secondary/30 text-catalog-secondary/80 focus:bg-catalog-primary/90 active:bg-catalog-primary transition-colors text-sm"
+        >
           <ArrowLeft className="h-4 w-4" />
-          Volver
         </Button>
       </div>
 

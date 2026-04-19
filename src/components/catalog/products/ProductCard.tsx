@@ -51,6 +51,7 @@ export const ProductCard = React.memo(function ProductCard({
     addItem({
       id: product.id,
       name: product.name,
+      link: `app.jhoyerdev.me/public/${store_slug}/${product.slug}`,
       image: getCatalogImageUrl(product.images[0]?.image_url),
       price: displayPrice!,
     });
@@ -68,6 +69,7 @@ export const ProductCard = React.memo(function ProductCard({
 
 De este producto:
 ${product.name}
+app.jhoyerdev.me/public/${store_slug}/${product.slug}
 Precio: Bs. ${displayPrice!.toFixed(2)}
 
 ¿Está disponible? Me gustaría más información`,
