@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/supabaseServer";
 import { generateSlug } from "@/lib/utils/slug";
-import { uploadFile } from "@/lib/utils/storage";
+import * as Sentry from "@sentry/nextjs";
 import type {
   ProductInputService,
   ProductInputServiceUpdate,
@@ -103,7 +103,7 @@ import {
   return data;
 }; */
 
-export const createProduct = async (
+/* export const createProduct = async (
   dataProducto: ProductInputService,
   storeId: string,
 ) => {
@@ -153,6 +153,63 @@ export const createProduct = async (
   }
 
   return data;
+}; */
+
+export const createProduct = async (
+  dataProducto: ProductInputService,
+  storeId: string,
+) => {
+  const supabase = await createClient();
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { error: "No autenticado" };
+
+  const { data, error } = await supabase
+    .from("products")
+    .insert({
+      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
+      name: dataProducto.name,
+      slug: generateSlug(dataProducto.name),
+      price: dataProducto.price,
+      description: dataProducto.description,
+      brand_id: dataProducto.brand_id ?? null,
+      category_id: dataProducto.category_id,
+      store_id: storeId,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code !== "23505" && error.code !== "P0001") {
+      Sentry.captureException(error, {
+        extra: { storeId, productName: dataProducto.name },
+      });
+    }
+    if (error.code === "23505") {
+      if (error.message.includes("name")) {
+        console.error("createProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este nombre" };
+      }
+      if (error.message.includes("sku")) {
+        console.error("createProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este codigo" };
+      }
+      if (error.message.includes("slug")) {
+        console.error("createProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este slug" };
+      }
+    }
+    if (error.code === "P0001") {
+      console.error("createProduct DB ERROR:", error);
+      return { error: error.message };
+    }
+    console.error("createProduct DB ERROR:", error);
+    return { error: "Error al crear el producto" };
+  }
+
+  return data;
 };
 
 export const saveProductImages = async (
@@ -170,6 +227,10 @@ export const saveProductImages = async (
     });
 
     if (error) {
+      // Capturamos el error específico de la imagen
+      Sentry.captureException(error, {
+        extra: { productId, failedUrl: url },
+      });
       console.error("Error al guardar imagen:", error);
       return { error: error.message };
     }
