@@ -131,19 +131,33 @@ export const productFormSchemaUpdate = productBaseSchema
 
 export type ProductFormInput = z.infer<typeof productFormSchema>;
 
-export type ProductInputService = Omit<ProductFormInput, "images"> & {
+/* export type ProductInputService = Omit<ProductFormInput, "images"> & {
   images: File[];
-};
+}; */
+export type ProductInputService = z.infer<typeof productBaseSchema>;
 
 export type ProductFormInputUpdate = z.infer<typeof productFormSchemaUpdate>;
 
-export type ProductInputServiceUpdate = Omit<
+/* export type ProductInputServiceUpdate = Omit<
   ProductFormInputUpdate,
   "images"
 > & {
   images?: File[];
   imageExisting?: string[];
   imageToDelete?: string[];
+}; */
+export type ProductInputServiceUpdate = z.infer<typeof productBaseSchema> & {
+  thereAreNewImages: boolean; // para indicar si se subieron nuevas imágenes
+  imageExisting?: string[];
+  imageToDelete?: string[];
+};
+
+export type ProductInputClient = ProductInputService & {
+  images: File[];
+};
+
+export type ProductInputClientUpdate = ProductInputServiceUpdate & {
+  images?: File[];
 };
 
 // Este esquema se usa SOLO al activar la oferta.

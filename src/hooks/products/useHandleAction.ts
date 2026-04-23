@@ -1,6 +1,8 @@
 import {
   ProductInputService,
   ProductInputServiceUpdate,
+  ProductInputClient,
+  ProductInputClientUpdate,
 } from "@/lib/schemas/product";
 import type { ToggleOfferParams } from "@/lib/actions/productActions";
 import { useToastPromise } from "../shared/useToastPromise";
@@ -69,19 +71,21 @@ export function useProductActions() {
   // useProductActions.ts
 
   const createProduct = (
-    data: ProductInputService,
+    data: ProductInputClient,
     storeId: string,
     onSuccess?: () => void,
   ) => {
     showPromise({
       promise: async () => {
         await withPending(async () => {
+          const { images, ...dataProducto } = data;
+
           // 1. Crear producto
-          const productRes = await create(data);
+          const productRes = await create(dataProducto);
 
           // 2. Subir imágenes al storage
           const imageUrls: string[] = [];
-          for (const file of data.images) {
+          for (const file of images) {
             const url = await uploadFile(
               "products",
               storeId,
@@ -143,20 +147,26 @@ export function useProductActions() {
   const updateProduct = (
     id: string,
     slugProd: string,
-    data: ProductInputServiceUpdate,
+    data: ProductInputClientUpdate,
     storeId: string,
     onSuccess?: () => void,
   ) => {
     showPromise({
       promise: async () => {
         await withPending(async () => {
+          const { images, ...dataProducto } = data;
+          const dataProductoToUpdate = {
+            ...dataProducto,
+            thereAreNewImages: Boolean(images && images.length > 0),
+          };
+
           // 1. Actualizar producto (incluye eliminar imágenes viejas)
-          await update({ id, slugProd, dataProducto: data });
+          await update({ id, slugProd, dataProducto: dataProductoToUpdate });
 
           // 2. Subir imágenes nuevas si existen
-          if (data.images && data.images.length > 0) {
+          if (images && images.length > 0) {
             const imageUrls: string[] = [];
-            for (const file of data.images) {
+            for (const file of images) {
               const url = await uploadFile("products", storeId, id, file);
               imageUrls.push(url);
             }

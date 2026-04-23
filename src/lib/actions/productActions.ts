@@ -466,7 +466,8 @@ export const updateProduct = async (
     }
   }
 
-  if (dataProducto.images?.length === 0) {
+  //revalidar si no hay nuevas imagenes
+  if (!dataProducto.thereAreNewImages) {
     revalidateTag(`products-${storeSlug}`, "max");
     revalidatePath(`/public/${storeSlug}`);
     await purgeCatalogCache(storeSlug);

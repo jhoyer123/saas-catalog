@@ -7,12 +7,11 @@ import {
   productFormSchemaUpdate,
   type ProductFormInput,
   type ProductFormInputUpdate,
-  type ProductInputService,
-  type ProductInputServiceUpdate,
+  type ProductInputClient,
+  type ProductInputClientUpdate,
 } from "@/lib/schemas/product";
 import { useProductActions } from "./useHandleAction";
 import { ProductDetail } from "@/types/product.types";
-import { uploadFile } from "@/lib/utils/storage";
 import { useSessionData } from "../auth/useSessionData";
 
 type FormMode = "create" | "update" | "view";
@@ -169,7 +168,7 @@ export function useProductForm({
 
     try {
       if (isCreate) {
-        createProduct(transformed as ProductInputService, storeId!, () => {
+        createProduct(transformed as ProductInputClient, storeId!, () => {
           reset({
             name: "",
             brand_id: "",
@@ -185,7 +184,7 @@ export function useProductForm({
         updateProduct(
           initialData?.id!,
           initialData?.slug!,
-          transformed as ProductInputServiceUpdate,
+          transformed as ProductInputClientUpdate,
           storeId!,
           () => {
             reset({

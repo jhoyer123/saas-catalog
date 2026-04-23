@@ -12,6 +12,9 @@ export function useCreateProduct() {
 
   return useMutation({
     mutationFn: async (dataProducto: ProductInputService) => {
+      if (!storeId) {
+        throw new Error("No se encontró el ID de la tienda en la sesión.");
+      }
       const result = await createProduct(
         dataProducto,
         storeId! /* , slugStore! */,
