@@ -44,8 +44,8 @@ export function useUpdateProduct() {
         //queryClient.invalidateQueries({ queryKey: ["products"] }),
         //queryClient.invalidateQueries({ queryKey: ["product", variables.id] }),
       ];
-
-      if (!variables.dataProducto.images?.length) {
+      //invalidar solo si no hay nuevas imagenes
+      if (!variables.dataProducto.thereAreNewImages) {
         //console.log("No hay imágenes, invalidando detalle y catálogo");
         invalidations.push(
           queryClient.invalidateQueries({ queryKey: ["products"] }),
