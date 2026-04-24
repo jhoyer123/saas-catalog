@@ -29,7 +29,6 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             width={200}
             height={200}
             className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
-            priority
           />
         </Link>
         <h1 className="text-lg font-semibold text-catalog-secondary text-center md:text-2xl">

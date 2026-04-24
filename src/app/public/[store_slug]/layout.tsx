@@ -1,8 +1,7 @@
 import Script from "next/script";
+import { Suspense } from "react";
 import {
   getPublicStore,
-  getPublicStoreBranches,
-  getPublicStoreSocialMedia,
 } from "@/lib/actions/catalogActions";
 import Header from "@/components/catalog/header/Header";
 import Footer from "@/components/catalog/footer/Footer";
@@ -17,12 +16,6 @@ export default async function StoreLayout({
   const { store_slug } = await params;
   const store = await getPublicStore(store_slug);
 
-  // 2. Las que dependen del id, en paralelo
-  const [branches, socialLinks] = await Promise.all([
-    getPublicStoreBranches(store.slug, store.id),
-    getPublicStoreSocialMedia(store.slug, store.id),
-  ]);
-
   const css = `
     :root {
       --catalog-primary: ${store.primary_color ?? "#000000"};
@@ -35,6 +28,15 @@ export default async function StoreLayout({
 
   return (
     <>
+      {/* ✅ Preconnects van aquí, Next.js los mueve al <head> automáticamente */}
+      <link
+        rel="preconnect"
+        href="https://supabase-images.jhoyervega4.workers.dev"
+      />
+      <link
+        rel="dns-prefetch"
+        href="https://supabase-images.jhoyervega4.workers.dev"
+      />
       <style dangerouslySetInnerHTML={{ __html: css }} />
       {umamiId && (
         <Script
@@ -45,7 +47,14 @@ export default async function StoreLayout({
       )}
       <Header store={store} />
       {children}
-      <Footer branches={branches} socialLinks={socialLinks} store={store} />
+      {/*
+        Footer en Suspense para no bloquear el render inicial del catálogo.
+        Rollback simple: volver a cargar branches/socialLinks en este layout
+        y pasar props directas como antes.
+      */}
+      <Suspense fallback={<div className="h-20 w-full" aria-hidden="true" />}>
+        <Footer store={store} storeSlug={store.slug} storeId={store.id} />
+      </Suspense>
     </>
   );
 }

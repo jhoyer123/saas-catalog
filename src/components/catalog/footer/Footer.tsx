@@ -1,9 +1,9 @@
 import Link from "next/link";
 import {
-  BranchCatalog,
-  SocialLinkCatalog,
-  StoreCatalogData,
-} from "@/types/catalog/catalog.types";
+  getPublicStoreBranches,
+  getPublicStoreSocialMedia,
+} from "@/lib/actions/catalogActions";
+import { StoreCatalogData } from "@/types/catalog/catalog.types";
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   instagram: (
@@ -50,11 +50,22 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
 
 interface FooterProps {
   store: StoreCatalogData;
-  branches: BranchCatalog[];
-  socialLinks: SocialLinkCatalog[];
+  storeSlug: string;
+  storeId: string;
 }
 
-export default function Footer({ store, branches, socialLinks }: FooterProps) {
+export default async function Footer({
+  store,
+  storeSlug,
+  storeId,
+}: FooterProps) {
+  // Carga no crítica para no bloquear el contenido above-the-fold del catálogo.
+  // Revertir es directo: volver a recibir branches/socialLinks por props desde el layout.
+  const [branches, socialLinks] = await Promise.all([
+    getPublicStoreBranches(storeSlug, storeId),
+    getPublicStoreSocialMedia(storeSlug, storeId),
+  ]);
+
   const year = new Date().getFullYear();
   const hasBranches = branches.length > 0;
   const hasSocials = socialLinks.length > 0;

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
 import { Banner } from "@/types/catalog/catalog.types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const FALLBACK_BANNER = "/images/placeholder.webp"; //fallback genérico para banners
 
@@ -14,12 +14,20 @@ interface BannerOfferProps {
 }
 
 // Hook de fallback (mismo patrón que en la galería)
-function useBannerFallback(src: string) {
+/* function useBannerFallback(src: string) {
   const [imgSrc, setImgSrc] = useState(src);
 
   useEffect(() => {
     setImgSrc(src);
   }, [src]);
+
+  return {
+    imgSrc,
+    onError: () => setImgSrc(FALLBACK_BANNER),
+  };
+} */
+function useBannerFallback(src: string) {
+  const [imgSrc, setImgSrc] = useState(src); // ← elimina el useEffect completamente
 
   return {
     imgSrc,
@@ -43,11 +51,12 @@ function BannerImage({
     <Image
       src={imgSrc}
       alt={alt}
-      quality={75}
+      quality={85}
       fill
       sizes="(max-width: 768px) 100vw, 80vw"
       className="object-cover pointer-events-none"
       priority={priority}
+      fetchPriority={priority ? "high" : "auto"}
       loading={priority ? "eager" : "lazy"}
       draggable={false}
       onError={onError}

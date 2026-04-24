@@ -34,6 +34,7 @@ export interface SocialLinkCatalog {
 }
 
 export interface StoreCatalogData {
+  id: string;
   name: string;
   slug: string;
   logo_url: string | null;

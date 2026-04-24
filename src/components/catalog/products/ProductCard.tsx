@@ -100,14 +100,14 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
       <Link
         href={`/public/${store_slug}/${product.slug}`}
         prefetch={false}
-        //onMouseEnter={handlePrefetch}  // ← agregar prefetch en hover
-        onTouchStart={handlePrefetch}
+        onMouseEnter={handlePrefetch}
         className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
       >
         <Image
           src={getCatalogImageUrl(product.images[0]?.image_url)}
           alt={product.name}
           fill
+          quality={75}
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           priority={priority}
