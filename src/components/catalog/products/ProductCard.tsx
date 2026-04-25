@@ -109,7 +109,8 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
           fill
           quality={75}
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          //sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 640px) 300px, (max-width: 1024px) 22vw, 18vw"
           priority={priority}
         />
 

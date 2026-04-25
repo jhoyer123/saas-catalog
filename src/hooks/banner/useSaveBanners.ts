@@ -1,34 +1,26 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateBannersAction } from "@/lib/actions/bannerActions";
+import { saveBannersAction } from "@/lib/actions/bannerActions";
 import { useSessionData } from "../auth/useSessionData";
 
-/**
- * hook for updating banner images.
- */
-
-export const useUpdateBanner = () => {
+export const useSaveBanners = () => {
   const queryClient = useQueryClient();
-
-  //get store id
   const { data } = useSessionData();
   const storeId = data?.store?.id;
   const slugStore = data?.store?.slug;
 
   return useMutation({
     mutationFn: async ({
-      newFiles,
+      imageUrls,
       imagesToDelete,
     }: {
-      newFiles: File[];
+      imageUrls: string[];
       imagesToDelete: string[];
     }) => {
       if (!storeId) throw new Error("No se encontró el ID de la tienda");
-      const result = await updateBannersAction(
-        {
-          storeId,
-          newFiles,
-          imagesToDelete,
-        },
+      const result = await saveBannersAction(
+        storeId,
+        imageUrls,
+        imagesToDelete,
         slugStore!,
       );
       if (result && typeof result === "object" && "error" in result) {
@@ -37,10 +29,7 @@ export const useUpdateBanner = () => {
       return result;
     },
     onSuccess: () => {
-      // Invalidar la consulta de banners para refetch automático
-      queryClient.invalidateQueries({
-        queryKey: ["storeBanners"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["storeBanners"] });
     },
   });
 };

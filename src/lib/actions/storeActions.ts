@@ -4,7 +4,7 @@
 import { createClient } from "@/lib/supabase/supabaseServer";
 import { uploadFile } from "@/lib/utils/storage";
 import { generateSlug } from "@/lib/utils/slug";
-import type { StoreForm } from "@/lib/schemas/store";
+import type { StoreAction, StoreForm } from "@/lib/schemas/store";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getTrialExpirationDate } from "../helpers/DataFormat";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
@@ -21,11 +21,7 @@ import { purgeCatalogCache } from "../cloudflare/purgeCache";
  *  Porque necesitamos el ID de la tienda como parte de la ruta en Storage
  *  (stores/{storeId}/logo/main.ext). Ese ID lo genera Supabase al insertar.
  */
-export const createStore = async (
-  dataInput: StoreForm,
-  userId: string,
-  storeSlug: string,
-) => {
+export const createStore = async (dataInput: StoreAction, userId: string) => {
   const supabase = await createClient();
   const {
     data: { session },
@@ -67,58 +63,50 @@ export const createStore = async (
     return { error: "Error al crear la tienda" };
   }
 
-  // ── 3. Si hay logo, subirlo y actualizar la tienda ──
-  if (dataInput.logo) {
-    const logo_url = await uploadFile(
-      "stores",
-      newStore.id,
-      "logo",
-      dataInput.logo,
-      "main",
-    );
-
-    const { error: updateError } = await supabase
-      .from("stores")
-      .update({ logo_url })
-      .eq("id", newStore.id);
-
-    if (updateError) {
-      console.error("ERROR updating store with logo: ", updateError);
-      return { error: "Error al actualizar la tienda con el logo" };
-    }
-  }
-
-  revalidateTag(`store-${storeSlug}`, "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  }
   return newStore;
 };
 
-export const updateStore = async (
-  storeId: string,
-  dataInput: StoreForm,
-  storeSlug: string,
-) => {
+/**
+ * updateStore for logo_url only
+ */
+export const updateStoreLogo = async (storeId: string, logoUrl: string) => {
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) return { error: "No autenticado" };
 
-  // solo sube imagen nueva si mandaron un File
-  const logo_url =
-    dataInput.logo instanceof File
-      ? await uploadFile("stores", storeId, "logo", dataInput.logo, "main")
-      : dataInput.logo_url; // mantiene la url actual
+  const { data, error } = await supabase
+    .from("stores")
+    .update({ logo_url: logoUrl })
+    .eq("id", storeId);
+
+  if (error) {
+    console.error("ERROR updateStoreLogo: ", error);
+    return { error: "Error al actualizar el url del logo de la tienda" };
+  }
+
+  return data;
+};
+
+/**
+ * updateStore para datos generales de la tienda (name, description, whatsapp_number)
+ * @param storeId
+ * @param dataInput
+ * @returns
+ */
+export const updateStore = async (storeId: string, dataInput: StoreAction) => {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { error: "No autenticado" };
 
   const { data, error } = await supabase
     .from("stores")
     .update({
       name: dataInput.name,
       slug: generateSlug(dataInput.name),
-      logo_url,
       description: dataInput.description,
       whatsapp_number: dataInput.whatsapp_number,
     })
@@ -129,10 +117,17 @@ export const updateStore = async (
     return { error: "Error al actualizar la tienda" };
   }
 
+  return data;
+};
+
+/**
+ * revalidateStoreCache se encarga de limpiar la cache de Next.js y Cloudflare
+ * @param storeSlug
+ */
+export const revalidateStoreCache = async (storeSlug: string) => {
   revalidateTag(`store-${storeSlug}`, "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
   }
-  return data;
 };

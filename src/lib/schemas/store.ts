@@ -1,3 +1,4 @@
+import { Store } from "@/types/store.types";
 import { z } from "zod";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -26,3 +27,11 @@ export const storeSchema = z.object({
 });
 
 export type StoreForm = z.infer<typeof storeSchema>;
+
+export const storeActionSchema = storeSchema.pick({
+  name: true,
+  description: true,
+  whatsapp_number: true,
+});
+
+export type StoreAction = z.infer<typeof storeActionSchema>;

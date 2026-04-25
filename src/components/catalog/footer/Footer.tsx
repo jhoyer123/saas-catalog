@@ -4,6 +4,8 @@ import {
   getPublicStoreSocialMedia,
 } from "@/lib/actions/catalogActions";
 import { StoreCatalogData } from "@/types/catalog/catalog.types";
+import Image from "next/image";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   instagram: (
@@ -78,12 +80,17 @@ export default async function Footer({
         <div className="flex flex-col gap-4 items-start">
           <div className="flex items-center gap-3">
             {store.logo_url && (
-              <img
-                src={store.logo_url}
+              <Image
+                src={
+                  store.logo_url
+                    ? `${getCatalogImageUrl(store.logo_url)}?v=${new Date(store.updated_at).getTime()}`
+                    : "/images/store-placeholder.png"
+                }
                 alt={store.name}
-                width={40}
-                height={40}
-                className="w-10 h-10 object-cover opacity-80"
+                width={80} // Suficiente para un logo de 40px en pantalla
+                height={80}
+                loading="lazy"
+                className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
               />
             )}
             <h2 className="text-2xl font-bold tracking-tight text-catalog-secondary/80">
@@ -119,7 +126,9 @@ export default async function Footer({
                 </span>
                 <span className="text-xs  text-catalog-secondary/60 font-inter font-light leading-relaxed line-clamp-2 lg:text-sm">
                   {branch.address}
-                  {branch.phone && ` · ${branch.phone}`}
+                </span>
+                <span className="text-xs  text-catalog-secondary/60 font-inter font-light leading-relaxed line-clamp-2 lg:text-sm">
+                  {branch.phone && `Tel: ${branch.phone}`}
                 </span>
               </div>
             ))}

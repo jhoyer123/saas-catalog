@@ -8,6 +8,7 @@ import {
   createFileListFromArray,
   validateFile,
   processImage,
+  validateImageDimensions,
 } from "@/lib/helpers/image";
 import { BannerCard, ProductCard } from "@/components/image/ImageCardStore";
 import { ImageHint } from "@/components/shared/ImageHint";
@@ -100,7 +101,7 @@ export default function InputFile({
       const errors: string[] = [];
 
       for (const file of Array.from(newFiles)) {
-        const error = validateFile(file, maxSizeMB);
+        /* const error = validateFile(file, maxSizeMB);
         if (error) {
           errors.push(error);
         } else {
@@ -114,12 +115,35 @@ export default function InputFile({
                 })
               : await processImage(file);
           validNewFiles.push(processed);
+        } */
+        const error = validateFile(file, maxSizeMB);
+        if (error) {
+          errors.push(error);
+          continue;
+        }
+        if (typeElement === "banner") {
+          const dimError = await validateImageDimensions(file, 1440, 500);
+          if (dimError) {
+            errors.push(dimError);
+            continue;
+          }
+          const processed = await processImage(file, {
+            targetWidth: 1440,
+            targetHeight: 500,
+            quality: 0.88,
+            maxSizeBytes: 300 * 1024,
+          });
+          validNewFiles.push(processed);
+        }
+
+        if (typeElement === "product") {
+          const processed = await processImage(file);
+          validNewFiles.push(processed);
         }
       }
 
       // Mostrar errores
       if (errors.length > 0) {
-        //alert(errors.join("\n"));
         toast.error(errors.join("\n"), {
           position: "top-center",
           duration: 5000,

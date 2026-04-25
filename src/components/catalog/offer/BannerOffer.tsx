@@ -51,7 +51,7 @@ function BannerImage({
     <Image
       src={imgSrc}
       alt={alt}
-      quality={85}
+      quality={75}
       fill
       sizes="(max-width: 768px) 100vw, 80vw"
       className="object-cover pointer-events-none"
@@ -72,6 +72,7 @@ const EMPTY_BANNER: Banner = {
 
 const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
   const safeBanners = banners && banners.length > 0 ? banners : [EMPTY_BANNER];
+  const isThereMultiple = banners && banners.length > 1;
 
   const {
     currentIndex,
@@ -104,12 +105,16 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
             isAnimating && !isDragging.current
               ? "transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)"
               : "none",
-          cursor: isDragging.current ? "grabbing" : "grab",
+          cursor: isThereMultiple
+            ? isDragging.current
+              ? "grabbing"
+              : "grab"
+            : "default",
         }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
+        onPointerDown={isThereMultiple ? onPointerDown : undefined}
+        onPointerMove={isThereMultiple ? onPointerMove : undefined}
+        onPointerUp={isThereMultiple ? onPointerUp : undefined}
+        onPointerCancel={isThereMultiple ? onPointerCancel : undefined}
         onDragStart={(e) => e.preventDefault()}
       >
         {safeBanners.map((banner, index) => (
@@ -127,38 +132,42 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
         ))}
       </div>
 
-      <button
-        onClick={() => goTo(currentIndex - 1)}
-        aria-label="Banner anterior"
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-1.5 transition-colors"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-      <button
-        onClick={() => goTo(currentIndex + 1)}
-        aria-label="Banner siguiente"
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-1.5 transition-colors"
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
-
-      <div
-        className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10"
-        role="tablist"
-      >
-        {safeBanners.map((banner, index) => (
+      {isThereMultiple && ( // Solo mostrar controles si hay más de un banner
+        <>
           <button
-            key={banner.id}
-            role="tab"
-            aria-selected={index === currentIndex}
-            aria-label={`Banner ${index + 1}`}
-            onClick={() => goTo(index)}
-            className={`h-2.5 rounded-full transition-all duration-300 ${
-              index === currentIndex ? "bg-white w-6" : "bg-white/50 w-2.5"
-            }`}
-          />
-        ))}
-      </div>
+            onClick={() => goTo(currentIndex - 1)}
+            aria-label="Banner anterior"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-1.5 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => goTo(currentIndex + 1)}
+            aria-label="Banner siguiente"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 text-white rounded-full p-1.5 transition-colors"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          <div
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10"
+            role="tablist"
+          >
+            {safeBanners.map((banner, index) => (
+              <button
+                key={banner.id}
+                role="tab"
+                aria-selected={index === currentIndex}
+                aria-label={`Banner ${index + 1}`}
+                onClick={() => goTo(index)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  index === currentIndex ? "bg-white w-6" : "bg-white/50 w-2.5"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

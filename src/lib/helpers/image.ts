@@ -35,6 +35,29 @@ export function validateFile(file: File, maxSizeMB: number): string | null {
   return null;
 }
 
+/**
+ * Validar tamaño del archivo solo para banner
+ */
+export async function validateImageDimensions(
+  file: File,
+  minWidth: number,
+  minHeight: number,
+): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.width < minWidth || img.height < minHeight) {
+        resolve(
+          `${file.name} debe ser mínimo ${minWidth}x${minHeight}px de tamaño`,
+        );
+      } else {
+        resolve(null);
+      }
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // ============================================
 // image-utils.ts
 // Utilidades para procesamiento de imágenes
@@ -44,8 +67,8 @@ export function validateFile(file: File, maxSizeMB: number): string | null {
 interface ProcessImageOptions {
   /** Ancho máximo del canvas de salida en px */
   targetWidth?: number;
-  /** Alto máximo del canvas de salida en px */
-  targetHeight?: number;
+  /** Alto máximo del canvas de salida en px. null = proporcional al ancho */
+  targetHeight?: number | null;
   /** Color de fondo para el letterbox (default: blanco) */
   backgroundColor?: string;
   /** Calidad WebP entre 0 y 1 (default: 0.85) */
@@ -80,25 +103,37 @@ export async function processImage(
   // 1. Cargar la imagen en un elemento HTMLImageElement
   const img = await loadImage(file);
 
-  // 2. Calcular dimensiones manteniendo proporción (letterbox)
-  const { drawWidth, drawHeight, offsetX, offsetY } = calculateLetterbox(
-    img.width,
-    img.height,
-    targetWidth,
-    targetHeight,
-  );
+  // En logos (targetHeight = null), usamos alto proporcional con límite.
+  const canvasHeight =
+    targetHeight ??
+    Math.min(
+      Math.round(targetWidth * (img.height / img.width)),
+      targetWidth * 2,
+    );
+
+  // 2. Productos/banners mantienen letterbox; logos ocupan todo el canvas.
+  const { drawWidth, drawHeight, offsetX, offsetY } = targetHeight
+    ? calculateLetterbox(img.width, img.height, targetWidth, canvasHeight)
+    : {
+        drawWidth: targetWidth,
+        drawHeight: canvasHeight,
+        offsetX: 0,
+        offsetY: 0,
+      };
 
   // 3. Crear canvas y dibujar
   const canvas = document.createElement("canvas");
   canvas.width = targetWidth;
-  canvas.height = targetHeight;
+  canvas.height = canvasHeight;
 
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("No se pudo obtener el contexto del canvas");
 
-  // Fondo
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, targetWidth, targetHeight);
+  // Solo rellenamos fondo cuando hay letterbox.
+  if (targetHeight) {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, targetWidth, canvasHeight);
+  }
 
   // Imagen centrada
   ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
@@ -180,7 +215,7 @@ async function exportToWebP(
   let quality = initialQuality;
   let workingCanvas = canvas;
 
-  // 🔁 Loop principal
+  //Loop principal
   while (true) {
     let blob = await canvasToBlob(workingCanvas, "image/webp", quality);
 
@@ -188,17 +223,17 @@ async function exportToWebP(
       return buildFile(blob, originalName);
     }
 
-    // 🔻 FASE 1: bajar calidad (pero con límite sano)
+    //FASE 1: bajar calidad (pero con límite sano)
     if (quality > 0.6) {
       quality -= 0.05;
       continue;
     }
 
-    // 🔻 FASE 2: reducir resolución
+    //FASE 2: reducir resolución
     const nextWidth = Math.floor(workingCanvas.width * 0.85);
     const nextHeight = Math.floor(workingCanvas.height * 0.85);
 
-    // 🔴 límite mínimo (evitar imágenes feas)
+    //límite mínimo (evitar imágenes feas)
     if (nextWidth < 600) {
       return buildFile(blob, originalName); // mejor esto que destruir la imagen
     }

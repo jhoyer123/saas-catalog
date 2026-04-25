@@ -1,8 +1,6 @@
 import Script from "next/script";
 import { Suspense } from "react";
-import {
-  getPublicStore,
-} from "@/lib/actions/catalogActions";
+import { getPublicStore } from "@/lib/actions/catalogActions";
 import Header from "@/components/catalog/header/Header";
 import Footer from "@/components/catalog/footer/Footer";
 
@@ -28,7 +26,7 @@ export default async function StoreLayout({
 
   return (
     <>
-      {/* ✅ Preconnects van aquí, Next.js los mueve al <head> automáticamente */}
+      {/* Preconnects van aquí, Next.js los mueve al <head> automáticamente */}
       <link
         rel="preconnect"
         href="https://supabase-images.jhoyervega4.workers.dev"
@@ -45,7 +43,9 @@ export default async function StoreLayout({
           strategy="afterInteractive"
         />
       )}
+      {/* Header no va en Suspense porque queremos que se pinte lo antes posible */}
       <Header store={store} />
+      {/* el page */}
       {children}
       {/*
         Footer en Suspense para no bloquear el render inicial del catálogo.

@@ -40,7 +40,7 @@ export const uploadFile = async (
  * @param bucket
  * @param url
  */
-export const deleteFile = async (
+/* export const deleteFile = async (
   bucket: string,
   url: string,
 ): Promise<void> => {
@@ -51,4 +51,4 @@ export const deleteFile = async (
 
   const { error } = await supabase.storage.from(bucket).remove([path]);
   if (error) throw new Error(error.message);
-};
+}; */

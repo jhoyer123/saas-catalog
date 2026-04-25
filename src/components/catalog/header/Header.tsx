@@ -26,8 +26,8 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
                 : "/images/store-placeholder.png"
             }
             alt="Logo de la Tienda"
-            width={200}
-            height={200}
+            width={80}
+            height={80}
             className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
           />
         </Link>

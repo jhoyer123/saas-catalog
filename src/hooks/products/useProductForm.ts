@@ -104,53 +104,6 @@ export function useProductForm({
     }
   }, [register, isUpdate]);
 
-  /*  const handleFormSubmit = (
-    data: ProductFormInput | ProductFormInputUpdate,
-  ) => {
-    const transformed = isUpdate
-      ? {
-          ...data,
-          images: (data as ProductFormInputUpdate).images
-            ? Array.from((data as ProductFormInputUpdate).images!)
-            : undefined,
-        }
-      : {
-          ...data,
-          images: Array.from((data as ProductFormInput).images),
-        };
-
-    if (isCreate) {
-      createProduct(transformed as ProductInputService, () => {
-        reset({
-          name: "",
-          brand_id: "",
-          sku: "",
-          category_id: "",
-          description: "",
-          price: 0,
-        });
-      });
-    }
-
-    if (isUpdate) {
-      updateProduct(
-        initialData?.id!,
-        initialData?.slug!,
-        transformed as ProductInputServiceUpdate,
-        () => {
-          reset({
-            name: "",
-            brand_id: "",
-            sku: "",
-            category_id: "",
-            description: "",
-            price: 0,
-          });
-        },
-      );
-    }
-  }; */
-
   const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
   ) => {

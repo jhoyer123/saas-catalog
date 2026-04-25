@@ -6,29 +6,27 @@ import { storeSchema, type StoreForm } from "@/lib/schemas/store";
 import type { Store } from "@/types/store.types";
 import FormInput from "@/components/shared/InputForm";
 import { Label } from "@/components/ui/label";
-import { useToastPromise } from "@/hooks/shared/useToastPromise";
-import { useCreateStore } from "@/hooks/store/useCreateStore";
-import { useUpdateStore } from "@/hooks/store/useStoreUpdate";
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { processImage } from "@/lib/helpers/image";
 import { ImageHint } from "../shared/ImageHint";
+import { useHandleStoreActions } from "@/hooks/store/useHandleStoreAction";
+import { useSessionData } from "@/hooks/auth/useSessionData";
+import { OverlayProcess } from "../shared/OverlayProcess";
 
 interface Props {
   defaultValues?: Store;
 }
 
 const StoreForm = ({ defaultValues }: Props) => {
-  const { showPromise } = useToastPromise();
-  const { mutateAsync: createStore, isPending: isCreating } = useCreateStore();
-  const { mutateAsync: updateStore, isPending: isUpdating } = useUpdateStore();
-
   const isEditing = !!defaultValues;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(
-    defaultValues?.logo_url ?? null,
+    defaultValues?.logo_url
+      ? `${defaultValues.logo_url}?t=${Date.now()}`
+      : null,
   );
 
   const {
@@ -52,8 +50,8 @@ const StoreForm = ({ defaultValues }: Props) => {
     if (!file) return;
 
     const finalFile = await processImage(file, {
-      targetWidth: 200,
-      targetHeight: 200,
+      targetWidth: 100,
+      targetHeight: null,
       backgroundColor: "#ffffff",
       quality: 0.85,
       maxSizeBytes: 100 * 1024, // 100kb para un logo
@@ -63,47 +61,30 @@ const StoreForm = ({ defaultValues }: Props) => {
     setPreview(URL.createObjectURL(finalFile));
   };
 
+  const { createStore, updateStore, isPending } = useHandleStoreActions();
+  const { data: sessionData } = useSessionData();
+  const storeSlug = sessionData?.store?.slug;
+
   const onSubmit = (data: StoreForm) => {
-    const promise = isEditing
-      ? updateStore({ id: defaultValues?.id || "", data })
-      : createStore(data);
-
-    promise.then(() => {
-      reset(data); // resetea con los valores actuales, isDirty vuelve a false
-    });
-
-    showPromise({
-      promise,
-      messages: {
-        loading: isEditing ? "Actualizando tienda..." : "Creando tienda...",
-        success: isEditing ? "Tienda actualizada" : "Tienda creada",
-        error: (err: Error) => err.message,
-      },
-      position: "top-right",
-      duration: 4000,
-    });
+    if (isEditing) {
+      updateStore(defaultValues?.id || "", data, storeSlug!, () => reset(data));
+    } else {
+      createStore(data, () => reset(data));
+    }
   };
-
-  const isPending = isCreating || isUpdating;
 
   return (
     <>
       {/* Overlay de bloqueo */}
-      {isPending && (
-        <div className="fixed inset-0 z-9999 bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3 shadow-xl">
-            <span className="text-sm text-gray-600">Procesando...</span>
-          </div>
-        </div>
-      )}
+      {isPending && <OverlayProcess />}
       <form
         id="store-form"
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
       >
         <div className="flex items-end justify-end mb-10">
-          <Button type="submit" disabled={isCreating || isUpdating || !isDirty}>
-            {isCreating || isUpdating ? "Guardando..." : "Guardar Datos"}
+          <Button type="submit" disabled={isPending || !isDirty}>
+            {isPending ? "Guardando..." : "Guardar Datos"}
           </Button>
         </div>
         <div className="flex flex-col w-full gap-5 md:flex-row">
@@ -114,17 +95,17 @@ const StoreForm = ({ defaultValues }: Props) => {
             </Label>
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-input dark:bg-input/30 flex h-32 w-32 cursor-pointer items-center mx-auto justify-center rounded-md border border-dashed transition hover:opacity-80"
+              className="border-input dark:bg-input/30 flex max-h-48 max-w-48 h-auto w-auto cursor-pointer items-center mx-auto justify-center rounded-md border border-dashed transition hover:opacity-80"
             >
               {preview ? (
                 <Image
                   src={preview}
                   alt="Logo preview"
-                  width={128}
-                  height={128}
+                  width={192}
+                  height={192}
                   loading="eager"
                   priority
-                  className="h-full w-full rounded-md object-cover"
+                  className="h-auto w-auto max-h-48 max-w-48 rounded-md object-contain"
                 />
               ) : (
                 <span className="text-muted-foreground text-sm">

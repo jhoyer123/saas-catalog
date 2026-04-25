@@ -5,25 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import InputFile from "@/components/products/form/InputFile";
 import { bannerSchema, type BannerFormValues } from "@/lib/schemas/banner";
 import { Button } from "@/components/ui/button";
-import { useUploadBanner } from "@/hooks/banner/useUploadBanner";
-import { useToastPromise } from "@/hooks/shared/useToastPromise";
-import { useUpdateBanner } from "@/hooks/banner/useUpdateBanner";
 import React from "react";
 import { Plan } from "@/types/plan.types";
-
-// ============================================
-// PROPS
-// ============================================
+import { useHandleBannerActions } from "@/hooks/banner/useHandleBannerActions";
+import { OverlayProcess } from "../shared/OverlayProcess";
 
 interface BannerFormProps {
   existingBanners?: string[];
   setIsEditing?: React.Dispatch<React.SetStateAction<boolean>>;
   plan?: Plan;
 }
-
-// ============================================
-// COMPONENTE
-// ============================================
 
 export default function BannerForm({
   existingBanners = [],
@@ -47,69 +38,32 @@ export default function BannerForm({
   const images = watch("images");
   const imageToDelete = watch("imageToDelete");
 
-  const UpdateOrCreate = existingBanners ? true : false;
-
-  // ============================================
   // SUBMIT
-  // ============================================
-  const { showPromise } = useToastPromise();
-  const uploadB = useUploadBanner();
-  const updateB = useUpdateBanner();
+  const { saveBanners, isPending } = useHandleBannerActions();
+
   const onSubmit = (data: BannerFormValues) => {
     const newFiles = data.images ? Array.from(data.images) : [];
-
-    showPromise({
-      promise: async () => {
-        if (UpdateOrCreate) {
-          await updateB.mutateAsync({
-            newFiles,
-            imagesToDelete: data.imageToDelete || [],
-          });
-        } else {
-          await uploadB.mutateAsync(newFiles);
-        }
-        setIsEditing?.(false);
-      },
-      messages: {
-        loading: UpdateOrCreate ? "Actualizando..." : "Subiendo banners...",
-        success: UpdateOrCreate ? "Banners actualizados" : "Banners subidos",
-        error: (err) => err.message,
-      },
-      position: "top-right",
-      duration: 4000,
-      richColors: true,
-      className: "max-w-md bg-red-50 text-red-700 border border-red-200",
-    });
+    saveBanners(newFiles, data.imageToDelete || [], () =>
+      setIsEditing?.(false),
+    );
   };
 
   const hasChanges =
     (images && images.length > 0) ||
     (imageToDelete && imageToDelete.length > 0);
 
-  const isPending = uploadB.isPending || updateB.isPending;
-
   return (
     <>
       {/* Overlay de bloqueo */}
-      {isPending && (
-        <div className="fixed inset-0 z-9999 bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3 shadow-xl">
-            <span className="text-sm text-gray-600">Procesando...</span>
-          </div>
-        </div>
-      )}
+      {isPending && <OverlayProcess />}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
       >
         <div className="flex items-end justify-end mb-10">
-          <Button
-            type="submit"
-            disabled={uploadB.isPending || updateB.isPending || !hasChanges}
-          >
-            {uploadB.isPending || updateB.isPending
-              ? "Guardando..."
-              : "Guardar Banners"}
+          <Button type="submit" disabled={isPending || !hasChanges}>
+            {isPending ? "Guardando..." : "Guardar Banners"}
           </Button>
         </div>
         <div className="space-y-2">

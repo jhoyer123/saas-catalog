@@ -1,6 +1,4 @@
 import {
-  ProductInputService,
-  ProductInputServiceUpdate,
   ProductInputClient,
   ProductInputClientUpdate,
 } from "@/lib/schemas/product";
@@ -48,28 +46,6 @@ export function useProductActions() {
    * @param data
    * @param onSuccess
    */
-  /* const createProduct = (data: ProductInputService, onSuccess?: () => void) => {
-    showPromise({
-      promise: async () => {
-        await withPending(async () => {
-          await create(data);
-          router.push("/dashboard/products");
-          onSuccess?.();
-        });
-      },
-      messages: {
-        loading: "Creando producto...",
-        success: "Producto creado exitosamente",
-        error: (err) => err.message,
-      },
-      richColors: true,
-      position: "top-right",
-      duration: 3000,
-    });
-  }; */
-
-  // useProductActions.ts
-
   const createProduct = (
     data: ProductInputClient,
     storeId: string,
@@ -119,31 +95,6 @@ export function useProductActions() {
    * @param data
    * @param onSuccess
    */
-  /* const updateProduct = (
-    id: string,
-    slugProd: string,
-    data: ProductInputServiceUpdate,
-    onSuccess?: () => void,
-  ) => {
-    showPromise({
-      promise: async () => {
-        await withPending(async () => {
-          await update({ id, slugProd, dataProducto: data });
-          router.push("/dashboard/products");
-          onSuccess?.();
-        });
-      },
-      messages: {
-        loading: "Actualizando producto...",
-        success: "Producto actualizado",
-        error: (err) => err.message,
-      },
-      richColors: true,
-      position: "top-right",
-      duration: 3000,
-    });
-  }; */
-
   const updateProduct = (
     id: string,
     slugProd: string,
