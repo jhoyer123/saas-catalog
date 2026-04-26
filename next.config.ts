@@ -6,10 +6,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/public/plans",
-        headers: [{ key: "Cache-Control", value: "no-store, max-age=0" }],
-      },
-      {
         source: "/public/:path*",
         headers: [
           {
@@ -18,6 +14,10 @@ const nextConfig: NextConfig = {
               "public, max-age=0, s-maxage=31536000, stale-while-revalidate=0",
           },
         ],
+      },
+      {
+        source: "/public/plans",
+        headers: [{ key: "Cache-Control", value: "no-store, max-age=0" }],
       },
     ];
   },
