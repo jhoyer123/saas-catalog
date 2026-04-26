@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { useGetPlans } from "@/hooks/plans/useGetPlans";
 
-const USD_TO_BS = 9;
+const USD_TO_BS = 9.7;
 
 function formatBs(usd: number): string {
   return Math.round(usd * USD_TO_BS).toLocaleString("es-BO");
