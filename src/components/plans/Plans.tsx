@@ -12,7 +12,7 @@ function formatBs(usd: number): string {
 
 export default function Plans() {
   const [currency, setCurrency] = useState<"usd" | "bs">("bs");
-  const { data } = useGetPlans();
+  const { data, isPending } = useGetPlans();
 
   const plans = data?.map((p) => {
     const getFeatures = [
@@ -47,6 +47,14 @@ export default function Plans() {
     const message = `Hola, quiero solicitar el plan ${planName} en JPLATAFORM. ¿Podrían brindarme más información?`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
