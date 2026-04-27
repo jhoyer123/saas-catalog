@@ -13,14 +13,15 @@ const HeaderSidebar = () => {
     <div className="w-full h-auto flex items-center justify-center pt-2 gap-2 pb-3 border-b">
       {/* Logo */}
       <div className="flex flex-col items-center justify-center gap-3 w-full">
-        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="w-auto h-auto max-h-20 max-w-20 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
           <Image
             src={sessionData?.store?.logo_url || "/images/logoDefault.webp"}
             alt="Logo"
             width={48}
             height={48}
             priority
-            className="w-full h-full object-contain"
+            className="h-auto w-auto max-h-20 max-w-20 rounded-md object-contain"
+            //className="h-auto w-auto max-h-12 max-w-12 lg:max-h-13 lg:max-w-13  rounded-md object-contain"
           />
         </div>
 

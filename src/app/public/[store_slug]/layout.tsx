@@ -16,9 +16,9 @@ export default async function StoreLayout({
 
   const css = `
     :root {
-      --catalog-primary: ${store.primary_color ?? "#000000"};
-      --catalog-secondary: ${store.secondary_color ?? "#ffffff"};
-      --catalog-tertiary: ${store.tertiary_color ?? "#121212"};
+      --catalog-primary: ${store.primary_color ?? "#f7f8fa"};
+      --catalog-secondary: ${store.secondary_color ?? "#000000"};
+      --catalog-tertiary: ${store.tertiary_color ?? "#ffffff"};
     }
   `;
 

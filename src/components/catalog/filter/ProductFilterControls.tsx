@@ -52,7 +52,7 @@ export function ProductFilterControls({
     <div className="bg-card rounded-2xl lg:border lg:border-border/50 p-4 lg:p-7 space-y-5 lg:shadow-sm">
       {/* Header */}
       <div className="items-center justify-between flex pb-1 border-b border-border/40">
-        <h2 className="font-poppins text-sm lg:text-base hidden lg:flex tracking-widest uppercase text-muted-foreground/70 font-medium">
+        <h2 className="font-poppins text-sm lg:text-base hidden lg:flex tracking-widest uppercase text-muted-foreground font-medium">
           Filtros
         </h2>
         {hasActiveFilters && (
@@ -69,15 +69,15 @@ export function ProductFilterControls({
 
       {/* Búsqueda */}
       <div className="space-y-2 hidden md:block">
-        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Buscar
         </Label>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-3.5 w-3.5" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/80 h-3.5 w-3.5" />
           <Input
             type="text"
             placeholder="Buscar productos..."
-            className="pl-9 h-9 text-sm bg-muted/30 border-border/40 rounded-xl placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-offset-0 transition-all"
+            className="pl-9 h-9 text-sm bg-muted/30 border-border/80 rounded-xs placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-offset-0 transition-all"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
@@ -85,11 +85,11 @@ export function ProductFilterControls({
       </div>
 
       {/* Separador decorativo */}
-      <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border/60 to-transparent" />
+      <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border to-transparent" />
 
       {/* Categoría */}
       <div className="space-y-2">
-        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Categoría
         </Label>
         <Select
@@ -98,7 +98,7 @@ export function ProductFilterControls({
             updateFilter("category", value === "all" ? null : value)
           }
         >
-          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl focus:ring-1 focus:ring-offset-0 transition-all">
+          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
             <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
           <SelectContent
@@ -118,7 +118,7 @@ export function ProductFilterControls({
       {/* Marca */}
       {brands.length > 0 && (
         <div className="space-y-2">
-          <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
+          <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
             Marca
           </Label>
           <Select
@@ -127,7 +127,7 @@ export function ProductFilterControls({
               updateFilter("brand", value === "all" ? null : value)
             }
           >
-            <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl focus:ring-1 focus:ring-offset-0 transition-all">
+            <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
               <SelectValue placeholder="Todas las marcas" />
             </SelectTrigger>
             <SelectContent
@@ -174,8 +174,39 @@ export function ProductFilterControls({
         </div>
       </div> */}
 
+      {/* Ordenar por */}
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+          Ordenar
+        </Label>
+        <Select
+          value={filters.sortBy || "none"}
+          onValueChange={(value) =>
+            updateFilter(
+              "sortBy",
+              value === "none" ? null : (value as ProductFilters["sortBy"]),
+            )
+          }
+        >
+          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
+            <SelectValue placeholder="Seleccionar orden" />
+          </SelectTrigger>
+          <SelectContent
+            position="popper"
+            className="max-h-60 overflow-y-auto rounded-md border-border/80 shadow-lg"
+          >
+            <SelectItem value="none">Sin orden</SelectItem>
+            <SelectItem value="price_asc">Precio (menor a mayor)</SelectItem>
+            <SelectItem value="price_desc">Precio (mayor a menor)</SelectItem>
+            <SelectItem value="newest">Más recientes</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border to-transparent" />
+
       {/* Solo ofertas */}
-      <div className="flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-muted/30 border border-border/30 hover:border-border/60 transition-all cursor-pointer group">
+      <div className="flex items-center justify-between py-2.5 px-3.5 rounded-xs bg-muted/30 border border-border/80 hover:border-border/60 transition-all cursor-pointer group">
         <Label
           htmlFor="onlyOffers"
           className="text-sm font-medium cursor-pointer group-hover:text-foreground transition-colors"
@@ -193,37 +224,6 @@ export function ProductFilterControls({
           }}
           className="w-4 h-4 rounded accent-foreground cursor-pointer"
         />
-      </div>
-
-      <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border/60 to-transparent" />
-
-      {/* Ordenar por */}
-      <div className="space-y-2">
-        <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/60">
-          Ordenar
-        </Label>
-        <Select
-          value={filters.sortBy || "none"}
-          onValueChange={(value) =>
-            updateFilter(
-              "sortBy",
-              value === "none" ? null : (value as ProductFilters["sortBy"]),
-            )
-          }
-        >
-          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/40 rounded-xl focus:ring-1 focus:ring-offset-0 transition-all">
-            <SelectValue placeholder="Seleccionar orden" />
-          </SelectTrigger>
-          <SelectContent
-            position="popper"
-            className="max-h-60 overflow-y-auto rounded-xl border-border/50 shadow-lg"
-          >
-            <SelectItem value="none">Sin orden</SelectItem>
-            <SelectItem value="price_asc">Precio (menor a mayor)</SelectItem>
-            <SelectItem value="price_desc">Precio (mayor a menor)</SelectItem>
-            <SelectItem value="newest">Más recientes</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
     </div>
   );

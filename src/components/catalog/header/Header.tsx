@@ -28,7 +28,8 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             alt="Logo de la Tienda"
             width={80}
             height={80}
-            className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
+            //lassName="w-10 h-10 lg:w-12 lg:h-12 object-contain"
+            className="h-auto w-auto max-h-12 max-w-12 lg:max-h-13 lg:max-w-13  rounded-md object-contain"
           />
         </Link>
         <h1 className="text-lg font-semibold text-catalog-secondary text-center md:text-2xl">

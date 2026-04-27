@@ -90,7 +90,8 @@ export default async function Footer({
                 width={80} // Suficiente para un logo de 40px en pantalla
                 height={80}
                 loading="lazy"
-                className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
+                //className="w-10 h-10 lg:w-12 lg:h-12 object-contain"
+                className="h-auto w-auto max-h-12 max-w-12 lg:max-h-13 lg:max-w-13  rounded-md object-contain"
               />
             )}
             <h2 className="text-2xl font-bold tracking-tight text-catalog-secondary/80">
