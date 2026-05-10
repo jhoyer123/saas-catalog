@@ -2,12 +2,13 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/supabaseServer";
-import { uploadFile } from "@/lib/utils/storage";
+//import { uploadFile } from "@/lib/utils/storage";
 import { generateSlug } from "@/lib/utils/slug";
 import type { StoreAction, StoreForm } from "@/lib/schemas/store";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getTrialExpirationDate } from "../helpers/DataFormat";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
+import { cacheTag } from "../helpers/cacheKeys";
 
 /**
  * Crea una tienda nueva.
@@ -125,7 +126,8 @@ export const updateStore = async (storeId: string, dataInput: StoreAction) => {
  * @param storeSlug
  */
 export const revalidateStoreCache = async (storeSlug: string) => {
-  revalidateTag(`store-${storeSlug}`, "max");
+  //revalidateTag(`store-${storeSlug}`, "max");
+  revalidateTag(cacheTag("store", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);

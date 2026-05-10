@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/supabaseServer";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
+import { cacheTag } from "../helpers/cacheKeys";
 
 type SocialLink = {
   platform: string;
@@ -43,7 +44,8 @@ export const saveSocialLinks = async (
     if (insertError) return { error: "Error al guardar las redes sociales" };
   }
 
-  revalidateTag(`store-social-links-${storeSlug}`, "max");
+  //revalidateTag(`store-social-links-${storeSlug}`, "max");
+  revalidateTag(cacheTag("store-social-links", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   await purgeCatalogCache(storeSlug);
   return { success: true };
@@ -92,7 +94,8 @@ export const saveBranches = async (
     if (insertError) return { error: "Error al guardar las sucursales" };
   }
 
-  revalidateTag(`store-branches-${storeSlug}`, "max");
+  //revalidateTag(`store-branches-${storeSlug}`, "max");
+  revalidateTag(cacheTag("store-branches", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   await purgeCatalogCache(storeSlug);
   return { success: true };

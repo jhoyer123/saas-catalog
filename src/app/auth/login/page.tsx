@@ -102,10 +102,10 @@ export default function Login() {
                 width={500}
                 height={500}
                 priority
-                className="object-contain w-20 lg:w-30 h-auto"
+                className="object-contain w-15 lg:w-20 h-auto"
               />
             </div>
-            <h1 className="text-3xl font-bold font-poppins">Iniciar Sesión</h1>
+            <h1 className="text-2xl font-bold font-poppins">Iniciar Sesión</h1>
             <p className="text-gray-600 max-w-sm mx-auto font-inter">
               Bienvenido de nuevo, por favor ingresa tus credenciales.
             </p>

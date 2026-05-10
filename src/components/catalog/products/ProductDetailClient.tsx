@@ -10,12 +10,14 @@ import { ArrowLeft } from "lucide-react";
 import {
   fetchPublicBrands,
   fetchPublicProductBySlug,
+  fetchRelatedProducts,
 } from "@/lib/services/catalogServiceProduct";
 import { useTiempoActual } from "@/hooks/catalog/useTiempoActual";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 import { SkeletonDetailProduct } from "@/components/detailProduct/SkeletonDetailProduct";
 import { getPublicStore } from "@/lib/actions/catalogActions";
+import RelatedProductsSlider from "./RelatedProductsSlider";
 
 interface ProductDetailClientProps {
   slugProd: string;
@@ -29,7 +31,7 @@ export default function ProductDetailClient({
   const router = useRouter();
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  // 1. Recuperamos el store directo de la memoria compartida
+  //Recuperamos el store directo de la memoria compartida
   const { data: store } = useQuery({
     queryKey: ["public-store", storeSlug],
     queryFn: async () => {
@@ -39,19 +41,33 @@ export default function ProductDetailClient({
     staleTime: Infinity, // El store no cambia, así que nunca consideramos los datos como obsoletos
     gcTime: Infinity, // Mantener en caché indefinidamente
   });
-
+  //Recuperamos el producto directo
   const { data: product } = useQuery({
     queryKey: ["public-product", storeSlug, slugProd],
-    queryFn: () => fetchPublicProductBySlug(slugProd),
-    staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
+    queryFn: () => fetchPublicProductBySlug(slugProd, storeSlug),
+    staleTime: 1000 * 60 * 10, // Los datos se consideran frescos por 10 minutos
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
-
+  //Recuperamos las marcas para resolver el nombre de la marca del producto (OJO AQUI PODRIAMOS SIMPLEMTE TRAER DEL UNESTABLE CACHE)
   const { data: brands = [] } = useQuery({
     queryKey: ["public-brands", storeSlug],
     queryFn: () => fetchPublicBrands(storeSlug),
     staleTime: Infinity, // El brand no cambia, así que nunca consideramos los datos como obsoletos
     gcTime: Infinity, // Mantener en caché indefinidamentes
+  });
+  //Recuperamos productos relacionados (mismo category_id, distinto id)
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: [
+      "related-products",
+      storeSlug,
+      product?.category_id,
+      product?.id,
+    ],
+    queryFn: () =>
+      fetchRelatedProducts(storeSlug, product!.category_id, product!.id),
+    enabled: !!product, // Solo correr esta query si ya tenemos el producto (porque necesitamos su category_id)
+    staleTime: 1000 * 60 * 10, // Los datos se consideran frescos por 10 minutos
+    gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
 
   useEffect(() => {
@@ -125,9 +141,8 @@ export default function ProductDetailClient({
     <main className="min-h-screen bg-catalog-primary">
       {/* <Header store={store} /> */}
       <div style={{ height: headerHeight }} />
-
+      {/* buton regresar */}
       <div className="container mx-auto px-4 py-3 text-catalog-secondary">
-        {/* Cambiamos el onClick para usar la función controlada */}
         <Button
           onClick={handleVolver}
           className="rounded-full bg-catalog-secondary/20 hover:bg-catalog-secondary/30 text-catalog-secondary/80 focus:bg-catalog-primary/90 active:bg-catalog-primary transition-colors text-sm"
@@ -135,9 +150,10 @@ export default function ProductDetailClient({
           <ArrowLeft className="h-4 w-4" />
         </Button>
       </div>
-
+      {/* imagen + detalles del producto */}
       <section className="container mx-auto px-2 pb-6">
         <div className="w-full max-w-5xl mx-auto grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-7 justify-center items-start">
+          {/* imagenes del producto */}
           <div
             className="lg:sticky lg:self-start"
             style={{ top: headerHeight + 16 }}
@@ -151,6 +167,7 @@ export default function ProductDetailClient({
               is_available={productWithResolvedBrand.is_available}
             />
           </div>
+          {/* info del producto */}
           <div>
             <ProductInfo
               product={productWithResolvedBrand}
@@ -163,6 +180,10 @@ export default function ProductDetailClient({
           </div>
         </div>
       </section>
+      {/* products related section*/}
+      {relatedProducts.length > 0 && (
+        <RelatedProductsSlider products={relatedProducts} />
+      )}
     </main>
   );
 }

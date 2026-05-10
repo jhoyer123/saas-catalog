@@ -2,7 +2,10 @@ import {
   ProductInputClient,
   ProductInputClientUpdate,
 } from "@/lib/schemas/product";
-import type { ToggleOfferParams } from "@/lib/actions/productActions";
+import {
+  revalidateProductCache,
+  type ToggleOfferParams,
+} from "@/lib/actions/productActions";
 import { useToastPromise } from "../shared/useToastPromise";
 import { useCreateProduct } from "./useCreateProduct";
 import { useDeleteProduct } from "./useDeleteProduct";
@@ -49,6 +52,7 @@ export function useProductActions() {
   const createProduct = (
     data: ProductInputClient,
     storeId: string,
+    storeSlug: string,
     onSuccess?: () => void,
   ) => {
     showPromise({
@@ -56,25 +60,51 @@ export function useProductActions() {
         await withPending(async () => {
           const { images, ...dataProducto } = data;
 
-          // 1. Crear producto
+          //Crear producto
           const productRes = await create(dataProducto);
 
-          // 2. Subir imágenes al storage
-          const imageUrls: string[] = [];
-          for (const file of images) {
-            const url = await uploadFile(
-              "products",
-              storeId,
-              productRes.id!,
-              file,
-            );
-            imageUrls.push(url);
-          }
+          // ==================== ANTIGUO (comentado - PARALELO SEGURO) ====================
+          // //Subir imágenes al storage (SECUENCIAL)
+          // const imageUrls: string[] = [];
+          // for (const file of images) {
+          //   const url = await uploadFile(
+          //     "products",
+          //     storeId,
+          //     productRes.id!,
+          //     file,
+          //   );
+          //   imageUrls.push(url);
+          // }
+          // ================================================================================
 
-          // 3. Guardar URLs en tabla
+          // ==================== NUEVO: Subir imágenes en PARALELO ====================
+          // Usando Promise.allSettled para garantizar que si 1 falla, rechazamos todo
+          // y no guardamos URLs parciales en la BD
+          const uploadPromises = images.map((file) =>
+            uploadFile("products", storeId, productRes.id!, file)
+          );
+
+          const uploadResults = await Promise.allSettled(uploadPromises);
+
+          // Validar que TODAS las subidas fueron exitosas
+          const imageUrls = uploadResults.map((result, index) => {
+            if (result.status === "fulfilled") {
+              return result.value;
+            }
+            throw new Error(
+              `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`
+            );
+          });
+          // ================================================================================
+
+          //Guardar URLs en tabla
           await saveProductImages({ productId: productRes.id!, imageUrls });
 
           router.push("/dashboard/products");
+
+          //revalidar cache
+          await revalidateProductCache(storeSlug, null);
+
           onSuccess?.();
         });
       },
@@ -100,6 +130,7 @@ export function useProductActions() {
     slugProd: string,
     data: ProductInputClientUpdate,
     storeId: string,
+    storeSlug: string,
     onSuccess?: () => void,
   ) => {
     showPromise({
@@ -111,22 +142,47 @@ export function useProductActions() {
             thereAreNewImages: Boolean(images && images.length > 0),
           };
 
-          // 1. Actualizar producto (incluye eliminar imágenes viejas)
+          //Actualizar producto (incluye eliminar imágenes viejas)
           await update({ id, slugProd, dataProducto: dataProductoToUpdate });
 
-          // 2. Subir imágenes nuevas si existen
+          //Subir imágenes nuevas si existen
           if (images && images.length > 0) {
-            const imageUrls: string[] = [];
-            for (const file of images) {
-              const url = await uploadFile("products", storeId, id, file);
-              imageUrls.push(url);
-            }
+            // ==================== ANTIGUO (comentado - PARALELO SEGURO) ====================
+            // const imageUrls: string[] = [];
+            // for (const file of images) {
+            //   const url = await uploadFile("products", storeId, id, file);
+            //   imageUrls.push(url);
+            // }
+            // ================================================================================
 
-            // 3. Guardar URLs nuevas en tabla
+            // ==================== NUEVO: Subir imágenes en PARALELO ====================
+            // Usando Promise.allSettled para garantizar que si 1 falla, rechazamos todo
+            const uploadPromises = images.map((file) =>
+              uploadFile("products", storeId, id, file)
+            );
+
+            const uploadResults = await Promise.allSettled(uploadPromises);
+
+            // Validar que TODAS las subidas fueron exitosas
+            const imageUrls = uploadResults.map((result, index) => {
+              if (result.status === "fulfilled") {
+                return result.value;
+              }
+              throw new Error(
+                `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`
+              );
+            });
+            // ================================================================================
+
+            //Guardar URLs nuevas en tabla
             await saveProductImages({ productId: id, imageUrls, slugProd });
           }
 
           router.push("/dashboard/products");
+
+          //revalidar cache
+          await revalidateProductCache(storeSlug, slugProd);
+
           onSuccess?.();
         });
       },
@@ -160,15 +216,26 @@ export function useProductActions() {
     });
   };
 
+  /**
+   * Action for activate offer in product
+   * @param slugProd
+   * @param params
+   * @param onSuccess
+   */
   const toggleOffer = (
     slugProd: string,
     params: ToggleOfferParams,
+    storeSlug: string,
     onSuccess?: () => void,
   ) => {
     showPromise({
       promise: async () => {
         await withPending(async () => {
           await offerProduct({ slugProd, params });
+
+          //revalidar cache
+          await revalidateProductCache(storeSlug, slugProd);
+
           onSuccess?.();
         });
       },
@@ -185,16 +252,28 @@ export function useProductActions() {
     });
   };
 
+  /**
+   * Action for toggling product availability
+   * @param id
+   * @param slugProd
+   * @param is_available
+   * @param onSuccess
+   */
   const toggleAvailable = (
     id: string,
     slugProd: string,
     is_available: boolean,
+    storeSlug: string,
     onSuccess?: () => void,
   ) => {
     showPromise({
       promise: async () => {
         await withPending(async () => {
           await toggleAvailableProduct({ id, slugProd, is_available });
+
+          //revalidar cache
+          await revalidateProductCache(storeSlug, slugProd);
+
           onSuccess?.();
         });
       },

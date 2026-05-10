@@ -14,6 +14,7 @@ import { DebouncedInput } from "@/components/shared/DebouncedInput";
 import SkeletonTable from "@/components/shared/SkeletonTable";
 import { ModalBrand } from "@/components/brands/ModalBrand";
 import { useModalsBrand } from "@/hooks/brand/useModalsBrand";
+import { OverlayProcess } from "@/components/shared/OverlayProcess";
 
 export function BrandsTable() {
   const { data: sessionData, isPending } = useSessionData();
@@ -21,7 +22,7 @@ export function BrandsTable() {
 
   const { modalState, openModal, closeModal } = useModalsBrand();
 
-  const { mutateAsync: removeBrand } = useDeleteBrand();
+  const { mutateAsync: removeBrand, isPending: isDeleting } = useDeleteBrand();
   const { showPromise } = useToastPromise();
 
   const handleDelete = (brand: BrandDashboard) => {
@@ -50,6 +51,7 @@ export function BrandsTable() {
 
   return (
     <>
+      {isDeleting && <OverlayProcess />}
       <div className="flex flex-col justify-between items-center gap-4 lg:flex-row">
         <div className="flex flex-col gap-2">
           <h1 className="text-xl font-bold tracking-tight font-poppins md:text-2xl">

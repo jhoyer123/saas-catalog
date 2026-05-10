@@ -11,12 +11,12 @@ export default function ProductError({ error, reset }: ErrorProps) {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white px-6 text-center">
-      <h1 className="text-[150px] md:text-[200px] font-black text-[#3d3d3d] leading-none">
+    <div className="flex flex-col gap-5 items-center justify-center min-h-screen bg-white px-6 text-center">
+      <h1 className="text-[80px] md:text-[150px] font-black text-[#3d3d3d] leading-none">
         ¡Ups!
       </h1>
 
-      <h2 className="text-xl md:text-2xl font-bold text-[#3d3d3d] mt-2">
+      <h2 className="text-xl md:text-2xl md:mt-10 font-bold text-[#3d3d3d] mt-2">
         Error al cargar el producto
       </h2>
 

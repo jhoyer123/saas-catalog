@@ -25,8 +25,8 @@ export const BannerPreview = ({
 
   if (isEditing) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+      <div>
+        <div className="flex mb-4 items-center justify-between border-b border-gray-200 pb-2">
           <h2 className="text-sm font-medium text-gray-700">Banners</h2>
           <button
             type="button"
@@ -36,7 +36,11 @@ export const BannerPreview = ({
             Cancelar
           </button>
         </div>
-        <BannerForm existingBanners={banners} setIsEditing={setIsEditing} plan={plan} />
+        <BannerForm
+          existingBanners={banners}
+          setIsEditing={setIsEditing}
+          plan={plan}
+        />
       </div>
     );
   }

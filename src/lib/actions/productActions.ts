@@ -12,6 +12,7 @@ import {
   purgeCatalogCache,
   purgeProductDetailCache,
 } from "../cloudflare/purgeCache";
+import { cacheTag } from "../helpers/cacheKeys";
 
 /**
  * action for create product
@@ -19,142 +20,6 @@ import {
  * @param storeId
  * @returns
  */
-/* export const createProduct = async (
-  dataProducto: ProductInputService,
-  storeId: string,
-  storeSlug: string,
-) => {
-  const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
-
-  const { data, error } = await supabase
-    .from("products")
-    .insert({
-      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
-      name: dataProducto.name,
-      slug: generateSlug(dataProducto.name),
-      price: dataProducto.price,
-      description: dataProducto.description,
-      brand_id: dataProducto.brand_id ?? null,
-      category_id: dataProducto.category_id,
-      store_id: storeId,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    if (error.code === "23505") {
-      if (error.message.includes("name")) {
-        console.error("createProduct DB ERROR:", error);
-        return {
-          error: "Ya existe un producto con este nombre",
-        };
-      }
-      if (error.message.includes("sku")) {
-        console.error("createProduct DB ERROR:", error);
-        return {
-          error: "Ya existe un producto con este codigo",
-        };
-      }
-
-      if (error.message.includes("slug")) {
-        console.error("createProduct DB ERROR:", error);
-        return {
-          error: "Ya existe un producto con este slug",
-        };
-      }
-    }
-    if (error.code === "P0001") {
-      console.error("createProduct DB ERROR:", error);
-      return { error: error.message };
-    }
-    console.error("createProduct DB ERROR:", error);
-    return { error: "Error al crear el producto" };
-  }
-
-  for (let i = 0; i < dataProducto.images.length; i++) {
-    const file = dataProducto.images[i];
-
-    // Subir archivo
-    const urlImage = await uploadFile("products", storeId, data.id, file);
-
-    // Guardar URL en la base de datos
-    const insert = await supabase.from("product_images").insert({
-      product_id: data.id,
-      image_url: urlImage,
-    });
-
-    if (insert.error) {
-      console.error("Error al subir la imagen:", insert.error);
-      return {
-        error: `Error al subir la imagen: ${insert.error.message}`,
-      };
-    }
-  }
-
-  revalidateTag(`products-${storeSlug}`, "max");
-  revalidatePath(`/public/${storeSlug}`);
-  await purgeCatalogCache(storeSlug);
-
-  return data;
-}; */
-
-/* export const createProduct = async (
-  dataProducto: ProductInputService,
-  storeId: string,
-) => {
-  const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
-
-  const { data, error } = await supabase
-    .from("products")
-    .insert({
-      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
-      name: dataProducto.name,
-      slug: generateSlug(dataProducto.name),
-      price: dataProducto.price,
-      description: dataProducto.description,
-      brand_id: dataProducto.brand_id ?? null,
-      category_id: dataProducto.category_id,
-      store_id: storeId,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    if (error.code === "23505") {
-      if (error.message.includes("name")) {
-        console.error("createProduct DB ERROR:", error);
-        return { error: "Ya existe un producto con este nombre" };
-      }
-      if (error.message.includes("sku")) {
-        console.error("createProduct DB ERROR:", error);
-        return { error: "Ya existe un producto con este codigo" };
-      }
-      if (error.message.includes("slug")) {
-        console.error("createProduct DB ERROR:", error);
-        return { error: "Ya existe un producto con este slug" };
-      }
-    }
-    if (error.code === "P0001") {
-      console.error("createProduct DB ERROR:", error);
-      return { error: error.message };
-    }
-    console.error("createProduct DB ERROR:", error);
-    return { error: "Error al crear el producto" };
-  }
-
-  return data;
-}; */
-
 export const createProduct = async (
   dataProducto: ProductInputService,
   storeId: string,
@@ -220,23 +85,49 @@ export const saveProductImages = async (
 ) => {
   const supabase = await createClient();
 
-  for (const url of imageUrls) {
-    const { error } = await supabase.from("product_images").insert({
-      product_id: productId,
-      image_url: url,
+  // ==================== ANTIGUO (comentado - BATCH INSERT) ====================
+  // for (const url of imageUrls) {
+  //   const { error } = await supabase.from("product_images").insert({
+  //     product_id: productId,
+  //     image_url: url,
+  //   });
+  //
+  //   if (error) {
+  //     // Capturamos el error específico de la imagen
+  //     Sentry.captureException(error, {
+  //       extra: { productId, failedUrl: url },
+  //     });
+  //     console.error("Error al guardar imagen:", error);
+  //     return { error: error.message };
+  //   }
+  // }
+  // ===============================================================================
+
+  // ==================== NUEVO: Batch INSERT (1 INSERT con múltiples filas) ====================
+  // En lugar de N INSERTs secuenciales, hacemos 1 INSERT con todo
+  // Esto reduce latencia de red de N round-trips a 1 round-trip
+  const imageRecords = imageUrls.map((url) => ({
+    product_id: productId,
+    image_url: url,
+  }));
+
+  const { error } = await supabase.from("product_images").insert(imageRecords);
+
+  if (error) {
+    // Capturamos el error de todo el batch
+    Sentry.captureException(error, {
+      extra: {
+        productId,
+        imageCount: imageRecords.length,
+        failedUrls: imageUrls,
+      },
     });
-
-    if (error) {
-      // Capturamos el error específico de la imagen
-      Sentry.captureException(error, {
-        extra: { productId, failedUrl: url },
-      });
-      console.error("Error al guardar imagen:", error);
-      return { error: error.message };
-    }
+    console.error("Error al guardar imágenes (batch):", error);
+    return { error: error.message };
   }
+  // ==========================================================================================
 
-  revalidateTag(`products-${storeSlug}`, "max");
+  /* revalidateTag(`products-${storeSlug}`, "max");
   revalidatePath(`/public/${storeSlug}`);
   await purgeCatalogCache(storeSlug);
 
@@ -244,7 +135,7 @@ export const saveProductImages = async (
     revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
     revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
-  }
+  } */
 
   return { success: true };
 };
@@ -256,134 +147,10 @@ export const saveProductImages = async (
  * @param storeId
  * @returns
  */
-/* export const updateProduct = async (
-  id: string,
-  slugProd: string,
-  dataProducto: ProductInputServiceUpdate,
-  storeId: string,
-  storeSlug: string,
-) => {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
-
-  //Actualizar datos del producto
-  const { data, error } = await supabase
-    .from("products")
-    .update({
-      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
-      name: dataProducto.name,
-      price: dataProducto.price,
-      slug: generateSlug(dataProducto.name),
-      description: dataProducto.description,
-      brand_id: dataProducto.brand_id ?? null,
-      category_id: dataProducto.category_id,
-    })
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) {
-    if (error.code === "23505") {
-      if (error.message.includes("name")) {
-        console.error("updateProduct DB ERROR:", error);
-        return {
-          error: "Ya existe un producto con este nombre",
-        };
-      }
-      if (error.message.includes("sku")) {
-        console.error("updateProduct DB ERROR:", error);
-        return {
-          error: "Ya existe un producto con este codigo",
-        };
-      }
-
-      if (error.message.includes("slug")) {
-        console.error("updateProduct DB ERROR", error);
-        return {
-          error: "Ya existe un producto con este slug",
-        };
-      }
-    }
-    if (error.code === "P0001") {
-      console.error("updateProduct DB ERROR:", error);
-      return { error: error.message };
-    }
-    console.error("updateProduct DB ERROR:", error);
-    return { error: "Error al actualizar el producto" };
-  }
-
-  //Eliminar imágenes marcadas
-  if (dataProducto.imageToDelete?.length! > 0) {
-    //Eliminar registros en DB
-    const { error: dbError } = await supabase
-      .from("product_images")
-      .delete()
-      .in("image_url", dataProducto.imageToDelete!);
-
-    if (dbError) {
-      console.error("updateProduct DB ERROR:", dbError);
-      return { error: "Error al eliminar las imágenes del producto" };
-    }
-
-    //Eliminar archivos del bucket
-    const paths = dataProducto.imageToDelete!.map((url: string) => {
-      const pathname = new URL(url).pathname;
-      return pathname.replace("/storage/v1/object/public/products/", "");
-    });
-
-    const { error: storageError } = await supabase.storage
-      .from("products")
-      .remove(paths);
-
-    if (storageError) {
-      console.error("updateProduct Storage ERROR:", storageError);
-      return { error: `Error al eliminar la imagen: ${storageError.message}` };
-    }
-  }
-
-  //Subir nuevas imágenes
-  if (dataProducto.images?.length) {
-    for (let i = 0; i < dataProducto.images.length; i++) {
-      const file = dataProducto.images[i];
-
-      // Subir archivo
-      const urlImage = await uploadFile("products", storeId, data.id, file);
-
-      // Guardar URL en la base de datos
-      const insert = await supabase.from("product_images").insert({
-        product_id: data.id,
-        image_url: urlImage,
-      });
-
-      if (insert.error) {
-        console.error(
-          "updateProduct Storage ERROR error al subir la imagen:",
-          insert.error,
-        );
-        return { error: "Error al subir la imagen: " + i };
-      }
-    }
-  }
-
-  revalidateTag(`products-${storeSlug}`, "max");
-  revalidatePath(`/public/${storeSlug}`);
-  await purgeCatalogCache(storeSlug);
-  if (slugProd) {
-    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-    revalidatePath(`/public/${storeSlug}/${slugProd}`);
-    await purgeProductDetailCache(storeSlug, slugProd);
-  }
-  return data;
-};
- */
-
 export const updateProduct = async (
   id: string,
   slugProd: string,
   dataProducto: ProductInputServiceUpdate,
-  //storeId: string,
   storeSlug: string,
 ) => {
   const supabase = await createClient();
@@ -407,6 +174,7 @@ export const updateProduct = async (
     .eq("id", id)
     .select()
     .single();
+
   if (error) {
     if (error.code === "23505") {
       if (error.message.includes("name")) {
@@ -467,7 +235,7 @@ export const updateProduct = async (
   }
 
   //revalidar si no hay nuevas imagenes
-  if (!dataProducto.thereAreNewImages) {
+  /* if (!dataProducto.thereAreNewImages) {
     revalidateTag(`products-${storeSlug}`, "max");
     revalidatePath(`/public/${storeSlug}`);
     await purgeCatalogCache(storeSlug);
@@ -476,7 +244,7 @@ export const updateProduct = async (
       revalidatePath(`/public/${storeSlug}/${slugProd}`);
       await purgeProductDetailCache(storeSlug, slugProd);
     }
-  }
+  } */
   return data;
 };
 
@@ -521,11 +289,13 @@ export const deleteProductAction = async (
     await supabase.storage.from("products").remove(paths);
   }
 
-  revalidateTag(`products-${storeSlug}`, "max");
+  //revalidateTag(`products-${storeSlug}`, "max");
+  revalidateTag(cacheTag("products", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   await purgeCatalogCache(storeSlug);
   if (slugProd) {
-    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    //revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    revalidateTag(cacheTag(`product-${slugProd}`, storeSlug), "max");
     revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
   }
@@ -575,14 +345,14 @@ export const toggleOfferAction = async (
     return { error: "Error al actualizar la oferta del producto" };
   }
 
-  revalidateTag(`products-${storeSlug}`, "max");
+  /* revalidateTag(`products-${storeSlug}`, "max");
   revalidatePath(`/public/${storeSlug}`);
   await purgeCatalogCache(storeSlug);
   if (slugProd) {
     revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
     revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
-  }
+  } */
 };
 
 /**
@@ -610,7 +380,7 @@ export const toggleAvailableAction = async (
     return { error: "Error al actualizar la disponibilidad del producto" };
   }
 
-  revalidateTag(`products-${storeSlug}`, "max");
+  /* revalidateTag(`products-${storeSlug}`, "max");
   revalidatePath(`/public/${storeSlug}`);
   await purgeCatalogCache(storeSlug);
 
@@ -618,7 +388,30 @@ export const toggleAvailableAction = async (
     revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
     revalidatePath(`/public/${storeSlug}/${slugProd}`);
     await purgeProductDetailCache(storeSlug, slugProd);
-  }
+  } */
 
   return { data };
+};
+
+/**
+ * @param slugProd
+ * @param storeSlug
+ * @returns
+ * Esta función se encarga de limpiar la cache de Next.js y Cloudflare del catálogo y detalle del producto.
+ */
+export const revalidateProductCache = async (
+  storeSlug: string,
+  slugProd: string | null,
+) => {
+  //revalidateTag(`products-${storeSlug}`, "max");
+  revalidateTag(cacheTag("products", storeSlug), "max");
+  revalidatePath(`/public/${storeSlug}`);
+  await purgeCatalogCache(storeSlug);
+
+  if (slugProd) {
+    //revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
+    revalidateTag(cacheTag(`product-${slugProd}`, storeSlug), "max");
+    revalidatePath(`/public/${storeSlug}/${slugProd}`);
+    await purgeProductDetailCache(storeSlug, slugProd);
+  }
 };

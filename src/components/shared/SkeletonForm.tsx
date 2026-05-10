@@ -2,7 +2,7 @@ import { Skeleton } from "../ui/skeleton";
 
 const SkeletonForm = () => {
   return (
-    <div className="w-full mx-auto grid gap-6 max-w-6xl">
+    <div className="w-full mx-auto grid gap-6 max-w-6xl h-full py-6 px-4">
       <div className="grid md:grid-cols-2 gap-6">
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />

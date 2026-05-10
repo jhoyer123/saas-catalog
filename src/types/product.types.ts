@@ -43,6 +43,8 @@ export interface ProductDetailCatalog {
   description: string;
   price: number;
   brand_id?: string | null;
+  //store_id: string;
+  category_id: string;
   is_offer: boolean;
   offer_price?: number | null;
   offer_start?: string | null;
@@ -88,7 +90,7 @@ export interface ProductCatalogCard {
   description?: string | null;
   price: number;
   is_available: boolean;
-  is_offer_active: boolean;
+  //is_offer_active: boolean;
   is_offer: boolean;
   offer_price: number | null;
   offer_start: string | null;

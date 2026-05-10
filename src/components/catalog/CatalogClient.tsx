@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchPublicProducts } from "@/lib/services/catalogServiceProduct";
-import Header from "@/components/catalog/header/Header";
 import HeroSection from "@/components/catalog/offer/HeroSection";
 import { ProductGrid } from "@/components/catalog/products/ProductGrid";
 import { ProductFilterControls } from "@/components/catalog/filter/ProductFilterControls";
@@ -16,6 +15,7 @@ import { BrandCatalog } from "@/types/brand.types";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 import CatalogNotAvailable from "./CatalogNotAvailable";
 import { checkIsPlanActive } from "@/lib/helpers/validations";
+import CategoryPills from "./category/CategoryPills";
 
 // Hook reutilizable para medir altura
 function useElementHeight(id: string) {
@@ -39,7 +39,7 @@ function useElementHeight(id: string) {
 }
 
 interface CatalogClientProps {
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; slug: string }[];
   brands: BrandCatalog[];
   banners: Banner[];
   store: {
@@ -68,9 +68,7 @@ export default function CatalogClient({
 
   // Evitar múltiples scrolls
   const filterKey = JSON.stringify(filters);
-
   const isMounted = useRef(false);
-
   const prevFilterKey = useRef(filterKey);
   useEffect(() => {
     // Primera vez no hacer nada
@@ -149,6 +147,7 @@ export default function CatalogClient({
   const totalPages = data?.totalPages ?? 0;
   const total = data?.total ?? 0;
   const hasBanners = banners.length > 0;
+
   //validar si el plan está activo
   const [isBlocked, setIsBlocked] = useState(() => !checkIsPlanActive(store));
 
@@ -164,8 +163,6 @@ export default function CatalogClient({
 
   return (
     <main className="min-h-screen  bg-catalog-primary pb-6">
-      {/*  <Header store={store} /> */}
-
       <div
         id="catalog-input-bar"
         className="bg-catalog-primary py-2 sticky z-20 top-0 h-full w-full flex items-center justify-center lg:hidden"
@@ -184,7 +181,7 @@ export default function CatalogClient({
       />
 
       {hasBanners && (
-        <div className="max-w-7xl w-full mx-auto py-3 px-2">
+        <div className="max-w-7xl w-full mx-auto py-1 lg:py-3 px-1">
           <div className="flex gap-3 items-center justify-center">
             <aside className="hidden lg:block w-90 shrink-0">
               <ProductFilterControls categories={categories} brands={brands} />
@@ -207,7 +204,7 @@ export default function CatalogClient({
         className="container w-full h-full max-w-7xl mx-auto px-1"
       >
         <div
-          className={`flex h-full ${hasBanners ? "py-0 gap-6" : "py-6 gap-3"}`}
+          className={`flex flex-col h-full ${hasBanners ? "py-0 gap-4" : "py-6 gap-3"}`}
         >
           {!hasBanners && (
             <aside
@@ -218,16 +215,23 @@ export default function CatalogClient({
             </aside>
           )}
 
-          <div className="flex-1">
-            <div className="pb-6 flex flex-col items-start md:pt-3 md:flex-row md:items-center md:justify-between w-full px-4">
-              <h1 className="text-xl font-bold font-poppins text-catalog-secondary/95 md:text-2xl">
-                Catálogo de Productos
-              </h1>
-              <p className="text-sm font-inter text-catalog-secondary/80">
-                {total} productos encontrados
-              </p>
-            </div>
+          <div className="w-full flex flex-col gap-1.5 md:gap-2 md:mt-4 lg:hidden">
+            <h2 className="px-2 text-[17px] md:text-md font-bold font-poppins text-catalog-secondary/70">
+              Categorías
+            </h2>
+            <CategoryPills categories={categories} />
+          </div>
 
+          <div className="flex flex-col items-start md:pt-3 md:flex-row md:items-center md:justify-between w-full px-1.5">
+            <h2 className="text-sm font-bold font-inter text-catalog-secondary/65 md:text-md lg:text-lg">
+              Catálogo de Productos
+            </h2>
+            <p className="text-sm font-inter text-catalog-secondary/60">
+              {total} productos encontrados
+            </p>
+          </div>
+
+          <div className="flex-1">
             {/* Loader mejorado */}
             {isFetching && !isLoading && (
               <div className="h-0.5 w-full overflow-hidden mb-2 bg-border rounded-full">

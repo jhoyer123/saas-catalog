@@ -45,7 +45,7 @@ export default function Home() {
             width={600}
             height={500}
             priority
-            className="object-contain w-20 lg:w-35 h-auto"
+            className="object-contain w-15 lg:w-20 h-auto"
           />
         </div>
 

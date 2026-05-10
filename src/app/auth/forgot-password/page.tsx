@@ -69,18 +69,18 @@ export default function ForgotPassword() {
       <main className="w-full max-w-md p-6 relative z-10">
         <header className="mb-8 text-center flex flex-col gap-2">
           <div className="relative mx-auto mb-8 flex items-center justify-center">
-            <div className="relative w-32 h-32 rounded-2xl bg-background border shadow-xl flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               <Image
                 src="/images/logoCat.webp"
-                alt="JhoyLabs Logo"
-                width={80}
-                height={80}
+                alt="Logo"
+                width={500}
+                height={500}
                 priority
-                className="object-contain"
+                className="object-contain w-15 lg:w-20 h-auto"
               />
             </div>
           </div>
-          <h1 className="text-3xl font-bold">Recuperar contraseña</h1>
+          <h1 className="text-2xl font-bold">Recuperar contraseña</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Te enviaremos un link para restablecer tu contraseña.
           </p>

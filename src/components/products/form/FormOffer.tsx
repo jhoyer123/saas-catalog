@@ -9,6 +9,7 @@ import { offerSchema, type OfferFormValues } from "@/lib/schemas/product";
 import type { ProductCatalog } from "@/types/product.types";
 import { useProductActions } from "@/hooks/products/useHandleAction";
 import { MessageFormOffer } from "./MessageFormOffer";
+import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface FormOfferProps {
   product: ProductCatalog;
@@ -46,6 +47,9 @@ export function FormOffer({ product, onClose }: FormOfferProps) {
   const isOffer = watch("is_offer");
   const offerPrice = watch("offer_price");
 
+  const { data: sessionData } = useSessionData();
+  const storeSlug = sessionData?.store?.slug;
+
   // Tiene datos guardados previamente (aunque ahora esté desactivando)
   const hasExistingData = Boolean(
     product.offer_price && product.offer_start && product.offer_end,
@@ -78,6 +82,7 @@ export function FormOffer({ product, onClose }: FormOfferProps) {
             ? new Date(data.offer_end).toISOString()
             : null,
       },
+      storeSlug!,
       onClose,
     );
   };

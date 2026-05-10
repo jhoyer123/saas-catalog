@@ -122,14 +122,15 @@ export default function InputFile({
           continue;
         }
         if (typeElement === "banner") {
-          const dimError = await validateImageDimensions(file, 1440, 500);
+          const dimError = await validateImageDimensions(file, 1280, 730);
           if (dimError) {
             errors.push(dimError);
             continue;
           }
           const processed = await processImage(file, {
-            targetWidth: 1440,
-            targetHeight: 500,
+            //1440x500
+            targetWidth: 1280,
+            targetHeight: 730,
             quality: 0.88,
             maxSizeBytes: 300 * 1024,
           });

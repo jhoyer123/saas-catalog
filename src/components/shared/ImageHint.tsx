@@ -37,7 +37,7 @@ const IMAGE_HINTS = {
     preview: "banner",
     tips: [
       { icon: RectangleHorizontal, text: "Formato panorámico (ancho)" },
-      { icon: Maximize2, text: "Resolución recomendada 1440 × 500 px" },
+      { icon: Maximize2, text: "Resolución recomendada 1280 x 730 px" },
       { icon: ImageIcon, text: "Ideal para promociones o anuncios" },
       { icon: Info, text: "La plataforma ajusta la imagen automáticamente" },
     ],

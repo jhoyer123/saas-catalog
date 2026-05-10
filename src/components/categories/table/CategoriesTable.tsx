@@ -14,6 +14,7 @@ import { useToastPromise } from "@/hooks/shared/useToastPromise";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import { DebouncedInput } from "@/components/shared/DebouncedInput";
 import SkeletonTable from "@/components/shared/SkeletonTable";
+import { OverlayProcess } from "@/components/shared/OverlayProcess";
 
 /**
  * CategoriesTable — self-contained, igual que ProductsTable.
@@ -33,7 +34,8 @@ export function CategoriesTable() {
   const { modalState, openModal, closeModal } = useModalsCategory();
 
   // Acciones
-  const { mutateAsync: removeCategory } = useDeleteCategory();
+  const { mutateAsync: removeCategory, isPending: isDeleting } =
+    useDeleteCategory();
   const { showPromise } = useToastPromise();
 
   // Eliminar con toast — mismo patrón que useProductActions
@@ -64,6 +66,7 @@ export function CategoriesTable() {
 
   return (
     <>
+      {isDeleting && <OverlayProcess />}
       {/* Botón para crear — abre el modal en modo "create" */}
       <div className="flex flex-col justify-between items-center gap-4 lg:flex-row">
         <div className="flex flex-col gap-2">

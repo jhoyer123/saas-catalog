@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/supabaseServer";
 import { generateSlug } from "@/lib/utils/slug";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
+import { cacheTag } from "../helpers/cacheKeys";
 
 /**
  * service for creating a new brand in the database
@@ -36,7 +37,8 @@ export const createBrand = async (
     }
     return { error: "Error al crear la marca" };
   }
-  revalidateTag(`brands-${storeSlug}`, "max");
+  //revalidateTag(`brands-${storeSlug}`, "max");
+  revalidateTag(cacheTag("brands", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
@@ -83,7 +85,8 @@ export const updateBrand = async (
     }
     return { error: "Error al actualizar la marca" };
   }
-  revalidateTag(`brands-${storeSlug}`, "max");
+  //revalidateTag(`brands-${storeSlug}`, "max");
+  revalidateTag(cacheTag("brands", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
@@ -120,7 +123,8 @@ export const deleteBrand = async (
     console.error("ERROR deleteBrand: ", error);
     return { error: "Error al eliminar la marca" }; // error técnico
   }
-  revalidateTag(`brands-${storeSlug}`, "max");
+  //revalidateTag(`brands-${storeSlug}`, "max");
+  revalidateTag(cacheTag("brands", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);

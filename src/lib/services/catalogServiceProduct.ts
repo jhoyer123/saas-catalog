@@ -41,7 +41,7 @@ const storeIdCache = new Map<string, string>();
 
 async function getStoreId(storeSlug: string): Promise<string> {
   if (storeIdCache.has(storeSlug)) return storeIdCache.get(storeSlug)!;
-
+  console.log(`1 llamada`);
   const { data, error } = await supabase
     .from("stores")
     .select("id")
@@ -199,21 +199,22 @@ export async function fetchPublicProducts({
  */
 export async function fetchPublicProductBySlug(
   slug: string,
+  storeSlug: string,
 ): Promise<ProductDetailCatalog> {
+  const storeId = await getStoreId(storeSlug);
+
   const { data, error } = await supabase
     .from("products")
     .select(
       `
-      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id,
-      images:product_images(image_url)
+      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id, category_id, images:product_images(image_url)
       `,
     )
     .eq("slug", slug)
+    .eq("store_id", storeId)
     .single();
 
   if (error || !data) throw new Error("Producto no encontrado");
-
-  //const now = new Date();
 
   return {
     id: data.id,
@@ -221,15 +222,55 @@ export async function fetchPublicProductBySlug(
     price: data.price,
     description: data.description,
     brand_id: data.brand_id ?? null,
+    category_id: data.category_id,
     is_offer: data.is_offer ?? false,
     offer_price: data.offer_price ?? null,
     offer_start: data.offer_start ?? null,
     offer_end: data.offer_end ?? null,
     slug: data.slug,
-    //brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images: (data.images ?? []).map(
       (img: { image_url: string }) => img.image_url,
     ),
     is_available: data.is_available,
   };
+}
+
+/**
+ * Fetch de productos relacionados para el detalle público.
+ */
+export async function fetchRelatedProducts(
+  storeSlug: string,
+  categoryId: string,
+  excludeProductId: string,
+): Promise<ProductCatalogCard[]> {
+  const storeId = await getStoreId(storeSlug);
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      `id, name, price, is_offer, offer_price, offer_start, offer_end, slug,is_available, images:product_images(image_url)`,
+    )
+    .limit(1, { foreignTable: "product_images" })
+    .eq("store_id", storeId)
+    .eq("category_id", categoryId)
+    .neq("id", excludeProductId)
+    .range(0, 4)
+    .order("display_order", { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  const products = (data ?? []).map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    is_offer: product.is_offer ?? false,
+    is_available: product.is_available,
+    offer_price: product.offer_price ?? null,
+    offer_start: product.offer_start ?? null,
+    offer_end: product.offer_end ?? null,
+    slug: product.slug,
+    images: product.images ?? [],
+  })) as ProductCatalogCard[];
+
+  return products;
 }

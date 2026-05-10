@@ -7,6 +7,7 @@ import {
 } from "@/types/product.types";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
+import { cacheKey, cacheTag } from "../helpers/cacheKeys";
 
 /**
  * get public store info (name, slug, logo_url) for the catalog header
@@ -39,8 +40,13 @@ async function getPublicStoreRaw(storeSlug: string) {
 export const getPublicStore = cache((storeSlug: string) => {
   return unstable_cache(
     async () => getPublicStoreRaw(storeSlug),
-    ["public-store", storeSlug],
-    { tags: [`store-${storeSlug}`], revalidate: false },
+    //["public-store", storeSlug],
+    cacheKey("public-store", storeSlug),
+    //{ tags: [`store-${storeSlug}`], revalidate: false },
+    {
+      tags: [cacheTag("store", storeSlug), cacheTag("store-data", storeSlug)],
+      revalidate: false,
+    },
   )();
 });
 
@@ -61,8 +67,16 @@ async function getPublicCategoriesRaw(storeId: string) {
 export async function getPublicCategories(storeSlug: string, storeId: string) {
   return unstable_cache(
     async () => getPublicCategoriesRaw(storeId),
-    ["public-categories", storeSlug],
-    { tags: [`categories-${storeSlug}`], revalidate: false },
+    //["public-categories", storeSlug],
+    cacheKey("public-categories", storeSlug),
+    //{ tags: [`categories-${storeSlug}`], revalidate: false },
+    {
+      tags: [
+        cacheTag("categories", storeSlug),
+        cacheTag("store-data", storeSlug),
+      ],
+      revalidate: false,
+    },
   )();
 }
 
@@ -84,8 +98,13 @@ async function getPublicBrandsRaw(storeId: string) {
 export async function getPublicBrands(storeSlug: string, storeId: string) {
   return unstable_cache(
     async () => getPublicBrandsRaw(storeId),
-    ["public-brands", storeSlug],
-    { tags: [`brands-${storeSlug}`], revalidate: false },
+    //["public-brands", storeSlug],
+    cacheKey("public-brands", storeSlug),
+    //{ tags: [`brands-${storeSlug}`], revalidate: false },
+    {
+      tags: [cacheTag("brands", storeSlug), cacheTag("store-data", storeSlug)],
+      revalidate: false,
+    },
   )();
 }
 
@@ -109,8 +128,13 @@ async function getPublicBannersRaw(storeId: string) {
 export async function getPublicBanners(storeSlug: string, storeId: string) {
   return unstable_cache(
     async () => getPublicBannersRaw(storeId),
-    ["public-banners", storeSlug],
-    { tags: [`banners-${storeSlug}`], revalidate: false },
+    //["public-banners", storeSlug],
+    cacheKey("public-banners", storeSlug),
+    //{ tags: [`banners-${storeSlug}`], revalidate: false },
+    {
+      tags: [cacheTag("banners", storeSlug), cacheTag("store-data", storeSlug)],
+      revalidate: false,
+    },
   )();
 }
 
@@ -159,9 +183,17 @@ export async function getPublicProductsInitial(
 ) {
   return unstable_cache(
     async () => getPublicProductsInitialRaw(storeId),
-    ["public-products-initial", storeSlug],
-    {
+    //["public-products-initial", storeSlug],
+    cacheKey("public-products-initial", storeSlug),
+    /* {
       tags: [`products-${storeSlug}`],
+      revalidate: false,
+    }, */
+    {
+      tags: [
+        cacheTag("products", storeSlug),
+        cacheTag("store-data", storeSlug),
+      ],
       revalidate: false,
     },
   )();
@@ -178,8 +210,7 @@ async function getPublicProductBySlugRaw(
     .from("products")
     .select(
       `
-      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id,
-      images:product_images(image_url)
+      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id, category_id,images:product_images(image_url)
       `,
     )
     .eq("slug", slug)
@@ -193,12 +224,12 @@ async function getPublicProductBySlugRaw(
     price: data.price,
     description: data.description,
     brand_id: data.brand_id ?? null,
+    category_id: data.category_id,
     is_offer: data.is_offer ?? false,
     offer_price: data.offer_price ?? null,
     offer_start: data.offer_start ?? null,
     offer_end: data.offer_end ?? null,
     slug: data.slug,
-    //brand: (data.brand as unknown as { name: string } | null)?.name ?? null,
     images: (data.images ?? []).map(
       (img: { image_url: string }) => img.image_url,
     ),
@@ -209,8 +240,16 @@ async function getPublicProductBySlugRaw(
 export async function getPublicProductBySlug(storeSlug: string, slug: string) {
   return unstable_cache(
     async () => getPublicProductBySlugRaw(slug),
-    ["public-product", storeSlug, slug],
-    { tags: [`product-${storeSlug}-${slug}`], revalidate: false },
+    //["public-product", storeSlug, slug],
+    cacheKey("public-product", storeSlug, slug),
+    //{ tags: [`product-${storeSlug}-${slug}`], revalidate: false },
+    {
+      tags: [
+        cacheTag(`product-${slug}`, storeSlug),
+        cacheTag("store-data", storeSlug),
+      ],
+      revalidate: false,
+    },
   )();
 }
 
@@ -232,8 +271,16 @@ export async function getPublicStoreSocialMedia(
 ) {
   return unstable_cache(
     async () => getPublicStoreSocialMediaRaw(storeId),
-    ["public-store-social-links", storeSlug],
-    { tags: [`store-social-links-${storeSlug}`], revalidate: false },
+    //["public-store-social-links", storeSlug],
+    cacheKey("public-store-social-links", storeSlug),
+    //{ tags: [`store-social-links-${storeSlug}`], revalidate: false },
+    {
+      tags: [
+        cacheTag("store-social-links", storeSlug),
+        cacheTag("store-data", storeSlug),
+      ],
+      revalidate: false,
+    },
   )();
 }
 
@@ -255,7 +302,15 @@ export async function getPublicStoreBranches(
 ) {
   return unstable_cache(
     async () => getPublicStoreBranchesRaw(storeId),
-    ["public-store-branches", storeSlug],
-    { tags: [`store-branches-${storeSlug}`], revalidate: false },
+    //["public-store-branches", storeSlug],
+    cacheKey("public-store-branches", storeSlug),
+    //{ tags: [`store-branches-${storeSlug}`], revalidate: false },
+    {
+      tags: [
+        cacheTag("store-branches", storeSlug),
+        cacheTag("store-data", storeSlug),
+      ],
+      revalidate: false,
+    },
   )();
 }

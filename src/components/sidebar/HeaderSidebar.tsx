@@ -20,13 +20,12 @@ const HeaderSidebar = () => {
             width={48}
             height={48}
             priority
-            className="h-auto w-auto max-h-20 max-w-20 rounded-md object-contain"
-            //className="h-auto w-auto max-h-12 max-w-12 lg:max-h-13 lg:max-w-13  rounded-md object-contain"
+            className="h-auto w-auto max-h-15 max-w-15 rounded-md object-contain"
           />
         </div>
 
         <h1 className="text-lg font-poppins font-semibold text-gray-800 truncate">
-          {sessionData?.store?.name || "Name Empresa"}
+          {sessionData?.store?.name || "Nombre Empresa"}
         </h1>
       </div>
     </div>

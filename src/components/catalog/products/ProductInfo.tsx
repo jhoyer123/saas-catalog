@@ -95,6 +95,79 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
+function DescriptionAccordion({
+  description,
+}: {
+  description?: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const [isClamped, setIsClamped] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    // scrollHeight > clientHeight significa que hay contenido oculto
+    setIsClamped(el.scrollHeight > el.clientHeight);
+  }, [description]);
+
+  return (
+    <div className="mt-4 w-full overflow-hidden rounded-md bg-catalog-tertiary">
+      <div className="relative px-4 pt-5 md:px-6">
+        <h3 className="text-sm font-inter font-bold text-catalog-secondary/50 mb-5">
+          DESCRIPCIÓN
+        </h3>
+        <div
+          ref={contentRef}
+          className={cn(
+            "prose prose-sm font-inter text-sm lg:text-md max-w-none text-catalog-secondary/90 leading-relaxed",
+            "[&>p]:mb-2 [&>ul]:pl-4 [&>ul>li]:mb-1",
+            !open && "line-clamp-10",
+          )}
+          dangerouslySetInnerHTML={{
+            __html: description ?? "No hay descripción disponible.",
+          }}
+        />
+
+        {!open && isClamped && (
+          <div
+            className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, var(--tw-catalog-tertiary, #fafaf9))",
+            }}
+            aria-hidden="true"
+          />
+        )}
+      </div>
+
+      {isClamped && (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className={cn(
+            "w-full flex items-center justify-center gap-1.5 mt-1 mb-1",
+            "px-4 py-2.5 md:px-6",
+            "text-xs font-semibold tracking-wide text-catalog-secondary/60",
+            "transition-colors duration-200",
+            "hover:text-catalog-secondary/90",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-catalog-secondary/30",
+          )}
+        >
+          {open ? "Ver menos" : "Ver descripción completa"}
+          <ChevronDown
+            className={cn(
+              "w-3.5 h-3.5 shrink-0 transition-transform duration-300 ease-in-out",
+              open && "rotate-180",
+            )}
+            aria-hidden="true"
+          />
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function ProductInfo({
   product,
   whatssapNumber,
@@ -214,11 +287,10 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
       </div>
 
       <div className="relative">
-        <div
+        {/* <div
           ref={ref}
-          className="shadow-sm shadow-catalog-secondary/30 rounded-md ring-1 ring-catalog-secondary/10 mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary md:px-6 md:py-10 max-h-100 overflow-y-auto md:max-h-150 custom-scroll"
+          className="shadow-sm shadow-catalog-secondary/30 rounded-md ring-1 ring-catalog-secondary/10 mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary overflow-y-auto max-h-120 md:px-6 md:py-10  md:max-h-150 custom-scroll"
         >
-          {/* ── DESCRIPTION ── */}
           <div>
             <h3 className="mb-3 text-xs font-bold font-inter uppercase tracking-[0.15em] text-catalog-secondary/80">
               Descripción
@@ -233,7 +305,9 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
             />
           </div>
         </div>
-
+ */}
+        {/* ── DESCRIPCIÓN ACORDEÓN ── */}
+        <DescriptionAccordion description={product.description} />
         {/* Fade solo si hay overflow */}
         {hasOverflow && (
           <>

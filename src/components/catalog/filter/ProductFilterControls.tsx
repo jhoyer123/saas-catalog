@@ -34,10 +34,10 @@ export function ProductFilterControls({
     hasActiveFilters,
     searchInput,
     setSearchInput,
-    priceMinInput,
-    setPriceMinInput,
-    priceMaxInput,
-    setPriceMaxInput,
+    //priceMinInput,
+    //setPriceMinInput,
+    //priceMaxInput,
+    //setPriceMaxInput,
   } = useProductFilter();
 
   const [onlyOffersChecked, setOnlyOffersChecked] = useState(

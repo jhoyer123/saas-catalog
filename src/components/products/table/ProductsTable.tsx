@@ -19,6 +19,7 @@ export function ProductsTable() {
   //storeid for get products
   const { data: sessionData, isPending } = useSessionData();
   const storeId = sessionData?.store?.id!;
+  const storeSlug = sessionData?.store?.slug!;
   //hook modals for products with state and functions to open and close
   const { modalState, openModal, closeModal } = useModalsProduct();
 
@@ -38,13 +39,13 @@ export function ProductsTable() {
       createProductsColumns({
         onOpenModal: openModal,
         onToggleAvailable: ({ id, slugProd, value }) =>
-          toggleAvailable(id, slugProd, value),
+          toggleAvailable(id, slugProd, value, storeSlug),
         onNavigate: (path) => router.push(path),
       }),
     [openModal],
   );
 
-  if (isPending || !storeId) {
+  if (isPending || !storeId || !storeSlug) {
     return <SkeletonTable />;
   }
 

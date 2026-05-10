@@ -6,6 +6,7 @@ import { generateSlug } from "@/lib/utils/slug";
 import { CreateCategoryInput } from "@/types/category.types";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";
+import { cacheTag } from "../helpers/cacheKeys";
 
 /**
  * service for creating a new category in the database
@@ -38,7 +39,8 @@ export const createCategory = async (
     return { error: "Error al crear la categoría" };
   }
 
-  revalidateTag(`categories-${storeSlug}`, "max");
+  //revalidateTag(`categories-${storeSlug}`, "max");
+  revalidateTag(cacheTag("categories", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
@@ -81,7 +83,8 @@ export const updateCategory = async (
     return { error: "Error al actualizar la categoría" };
   }
 
-  revalidateTag(`categories-${storeSlug}`, "max");
+  //revalidateTag(`categories-${storeSlug}`, "max");
+  revalidateTag(cacheTag("categories", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);
@@ -115,7 +118,8 @@ export const deleteCategory = async (
     return { error: error.message || "Error al eliminar la categoría" };
   }
 
-  revalidateTag(`categories-${storeSlug}`, "max");
+  //revalidateTag(`categories-${storeSlug}`, "max");
+  revalidateTag(cacheTag("categories", storeSlug), "max");
   revalidatePath(`/public/${storeSlug}`);
   if (storeSlug) {
     await purgeCatalogCache(storeSlug);

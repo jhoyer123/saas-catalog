@@ -36,7 +36,7 @@ export function useProductForm({
   const { createProduct, updateProduct, isPending } = useProductActions();
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
-  //const storeSlug = sessionData?.store?.slug;
+  const storeSlug = sessionData?.store?.slug;
 
   const {
     register,
@@ -121,16 +121,21 @@ export function useProductForm({
 
     try {
       if (isCreate) {
-        createProduct(transformed as ProductInputClient, storeId!, () => {
-          reset({
-            name: "",
-            brand_id: "",
-            sku: "",
-            category_id: "",
-            description: "",
-            price: 0,
-          });
-        });
+        createProduct(
+          transformed as ProductInputClient,
+          storeId!,
+          storeSlug!,
+          () => {
+            reset({
+              name: "",
+              brand_id: "",
+              sku: "",
+              category_id: "",
+              description: "",
+              price: 0,
+            });
+          },
+        );
       }
 
       if (isUpdate) {
@@ -139,6 +144,7 @@ export function useProductForm({
           initialData?.slug!,
           transformed as ProductInputClientUpdate,
           storeId!,
+          storeSlug!,
           () => {
             reset({
               name: "",

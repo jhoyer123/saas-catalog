@@ -48,10 +48,10 @@ export default function Register() {
               width={500}
               height={500}
               priority
-              className="object-contain w-20 lg:w-30 h-auto"
+              className="object-contain w-15 lg:w-20 h-auto"
             />
           </div>
-          <h1 className="text-3xl font-bold">Registrarse</h1>
+          <h1 className="text-2xl font-bold">Registrarse</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Completa el formulario para crear tu cuenta y empezar a gestionar tu
             catálogo.

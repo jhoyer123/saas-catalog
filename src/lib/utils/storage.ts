@@ -15,10 +15,20 @@ export const uploadFile = async (
   const supabase = await createClient();
 
   const ext = file.name.split(".").pop();
-  //const path = `${userId}/${folder}/${Date.now()}.${ext}`;
+  
+  // ==================== ANTIGUO (comentado - garantía de rollback) ====================
+  // //const path = `${userId}/${folder}/${Date.now()}.${ext}`;
+  // const path = fileName
+  //   ? `${userId}/${folder}/${fileName}.${ext}` // fijo → sobreescribe
+  //   : `${userId}/${folder}/${Date.now()}.${ext}`; // único → acumula
+  // ==================================================================================
+  
+  // ==================== NUEVO: Date.now() + UUID para evitar colisiones ====================
+  // Ahora usamos UUID para garantizar unicidad incluso si 2+ imágenes se suben en <1ms (paralelo)
   const path = fileName
-    ? `${userId}/${folder}/${fileName}.${ext}` // fijo → sobreescribe
-    : `${userId}/${folder}/${Date.now()}.${ext}`; // único → acumula
+    ? `${userId}/${folder}/${fileName}.${ext}` // fijo → sobreescribe (para logos, etc)
+    : `${userId}/${folder}/${Date.now()}-${crypto.randomUUID()}.${ext}`; // único + UUID
+  // =======================================================================================
 
   const { data, error } = await supabase.storage
     .from(bucket)
