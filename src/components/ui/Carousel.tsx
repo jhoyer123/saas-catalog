@@ -42,10 +42,10 @@ const STYLES = `
     .crsl-item { flex: 0 0 calc(50% - 0.5rem); }
   }
   @media (max-width: 700px) {
-    .crsl-item { flex: 0 0 75vw; }
+    .crsl-item { flex: 0 0 60vw; }
   }
   @media (max-width: 480px) {
-    .crsl-item { flex: 0 0 80vw; }
+    .crsl-item { flex: 0 0 60vw; }
   }
 
   .crsl-btn {

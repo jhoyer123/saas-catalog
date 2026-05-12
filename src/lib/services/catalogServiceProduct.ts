@@ -41,7 +41,6 @@ const storeIdCache = new Map<string, string>();
 
 async function getStoreId(storeSlug: string): Promise<string> {
   if (storeIdCache.has(storeSlug)) return storeIdCache.get(storeSlug)!;
-  console.log(`1 llamada`);
   const { data, error } = await supabase
     .from("stores")
     .select("id")

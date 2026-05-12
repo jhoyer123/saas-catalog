@@ -67,6 +67,7 @@ export default function RelatedProductsSlider({ products }: Props) {
                 ahora,
               )}
               priority={false}
+              showButtons={false}
             />
           </div>
         ))}
