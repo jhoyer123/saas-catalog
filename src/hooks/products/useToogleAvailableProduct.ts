@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toggleAvailableAction } from "@/lib/actions/productActions";
+//import { toggleAvailableAction } from "@/lib/actions/productActions";
+import { toggleAvailableAction } from "@/lib/services/productServices";
 import { useSessionData } from "../auth/useSessionData";
 
 export function useToggleAvailableProduct() {

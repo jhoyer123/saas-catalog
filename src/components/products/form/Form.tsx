@@ -60,13 +60,15 @@ export default function FormProduct({
         onSubmit={handleSubmit}
         className="w-full mx-auto grid gap-6"
         id="product-form"
+        autoComplete="off"
       >
         {/* Fila Nombre + Categoría */}
         <div className="grid md:grid-cols-2 gap-6">
           <FormInput
             label="Nombre"
             name="name"
-            register={register}
+            //register={register}
+            control={control}
             errors={errors}
             inputProps={{
               type: "text",
@@ -91,10 +93,21 @@ export default function FormProduct({
         {/* Fila 2: SKU + Marca + Precio */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="grid md:grid-cols-2 gap-6">
-            <FormInput
+            {/* <FormInput
               label="Código"
               name="sku"
               register={register}
+              errors={errors}
+              inputProps={{
+                type: "text",
+                placeholder: "PROD-00123",
+                disabled: isViewMode,
+              }}
+            /> */}
+            <FormInput
+              label="Código"
+              name="sku"
+              control={control} // Pasa el control extraído de useProductForm
               errors={errors}
               inputProps={{
                 type: "text",
@@ -117,7 +130,8 @@ export default function FormProduct({
           <FormInput
             label="Precio"
             name="price"
-            register={register}
+            //register={register}
+            control={control}
             errors={errors}
             inputProps={{
               type: "number",

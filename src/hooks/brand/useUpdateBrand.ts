@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateBrand } from "@/lib/actions/brandActions";
+//import { updateBrand } from "@/lib/actions/brandActions";
+import { updateBrand } from "@/lib/services/brandServices";
 import { useSessionData } from "../auth/useSessionData";
 
 type UpdateBrandPayload = { id: string; name: string };

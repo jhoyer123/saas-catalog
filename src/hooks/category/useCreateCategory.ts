@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createCategory } from "@/lib/actions/categoryActions";
+//import { createCategory } from "@/lib/actions/categoryActions";
+import { createCategory } from "@/lib/services/categoryServices";
 import { CreateCategoryInput } from "@/types/category.types";
 import { useSessionData } from "../auth/useSessionData";
 

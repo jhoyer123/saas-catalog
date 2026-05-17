@@ -1,12 +1,8 @@
-"use server";
-/* SE PUEDE BORRAR TODO MENOS LA FUNCION DE REVALIDACION DEL CAHCE Y LA PURGA */
-import { createClient } from "@/lib/supabase/supabaseServer";
+//import { createClient } from "@/lib/supabase/supabaseServer";
+import { createClient } from "../supabase/supabaseClient";
 import type { CategoryForm } from "@/lib/schemas/category";
 import { generateSlug } from "@/lib/utils/slug";
 import { CreateCategoryInput } from "@/types/category.types";
-import { revalidatePath, revalidateTag } from "next/cache";
-import { purgeCatalogCache } from "../cloudflare/purgeCache";
-import { cacheTag } from "../helpers/cacheKeys";
 
 /**
  * service for creating a new category in the database
@@ -39,12 +35,6 @@ export const createCategory = async (
     return { error: "Error al crear la categoría" };
   }
 
-  //revalidateTag(`categories-${storeSlug}`, "max");
-  /* revalidateTag(cacheTag("categories", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  } */
   return data;
 };
 
@@ -83,13 +73,6 @@ export const updateCategory = async (
     return { error: "Error al actualizar la categoría" };
   }
 
-  //revalidateTag(`categories-${storeSlug}`, "max");
-  /* revalidateTag(cacheTag("categories", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  } */
-
   return data;
 };
 
@@ -118,25 +101,4 @@ export const deleteCategory = async (
     console.error("ERROR deleteCategory: ", error);
     return { error: error.message || "Error al eliminar la categoría" };
   }
-
-  //revalidateTag(`categories-${storeSlug}`, "max");
-  /*  
-  revalidateTag(cacheTag("categories", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  } 
-  */
 };
-
-/**
- * Revalidates the public catalog cache for a specific tag and store slug for categories.
- * @param storeSlug
- */
-export async function revalidateCategoriesCache(storeSlug: string) {
-  revalidateTag(cacheTag("categories", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  }
-}

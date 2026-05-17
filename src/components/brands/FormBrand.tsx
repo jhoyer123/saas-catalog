@@ -9,6 +9,8 @@ import { useToastPromise } from "@/hooks/shared/useToastPromise";
 import { useCreateBrand } from "@/hooks/brand/useCreateBrand";
 import { useUpdateBrand } from "@/hooks/brand/useUpdateBrand";
 import { useEffect } from "react";
+import { revalidateBrandsCache } from "@/lib/actions/brandActions";
+import { useSessionData } from "@/hooks/auth/useSessionData";
 
 interface Props {
   defaultValues?: BrandDashboard | null;
@@ -26,6 +28,7 @@ const Form = ({
   onPendingChange,
 }: Props) => {
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isDirty },
@@ -43,9 +46,30 @@ const Form = ({
   const { showPromise } = useToastPromise();
   const createBrand = useCreateBrand();
   const updateBrand = useUpdateBrand();
-
+  const { data: sessionData, isPending: isSessionPending } = useSessionData();
+  const storeSlug = sessionData?.store?.slug;
   const isEditing = !!defaultValues;
 
+  /* const onSubmit = (data: BrandForm) => {
+    const promise = isEditing
+      ? updateBrand.mutateAsync({ id: defaultValues!.id, name: data.name })
+      : createBrand.mutateAsync(data.name);
+
+    showPromise({
+      promise,
+      messages: {
+        loading: isEditing ? "Actualizando..." : "Creando...",
+        success: isEditing ? "Marca actualizada" : "Marca creada",
+        error: (err: Error) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 4000,
+    });
+
+    promise.then(() => setOpen());
+    revalidateBrandsCache(sessionData?.store?.slug!);
+  }; */
   const onSubmit = (data: BrandForm) => {
     const promise = isEditing
       ? updateBrand.mutateAsync({ id: defaultValues!.id, name: data.name })
@@ -58,16 +82,26 @@ const Form = ({
         success: isEditing ? "Marca actualizada" : "Marca creada",
         error: (err: Error) => err.message,
       },
+      richColors: true,
       position: "top-right",
       duration: 4000,
     });
 
-    promise.then(() => setOpen());
+    promise.then(() => {
+      setOpen();
+
+      if (storeSlug) {
+        revalidateBrandsCache(storeSlug);
+      }
+    });
   };
 
   useEffect(() => {
     onPendingChange?.(createBrand.isPending || updateBrand.isPending);
   }, [createBrand.isPending, updateBrand.isPending, onPendingChange]);
+
+  if (isSessionPending || !storeSlug)
+    return <div className="h-40 animate-pulse rounded-md bg-muted" />;
 
   return (
     <>
@@ -79,7 +113,8 @@ const Form = ({
         <FormInput
           label="Nombre"
           name="name"
-          register={register}
+          //register={register}
+          control={control}
           inputProps={{ placeholder: "Nike, Adidas...", disabled: readOnly }}
           errors={errors}
           required={true}

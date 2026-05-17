@@ -11,6 +11,7 @@ import { useCreateCategory } from "@/hooks/category/useCreateCategory";
 import { useUpdateCategory } from "@/hooks/category/useUpdateCategory";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useEffect } from "react";
+import { revalidateCategoriesCache } from "@/lib/actions/categoryActions";
 
 interface Props {
   defaultValues?: Category;
@@ -30,6 +31,7 @@ const Form = ({
 }: Props) => {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isDirty },
   } = useForm<CategoryForm>({
@@ -48,11 +50,41 @@ const Form = ({
   const { showPromise } = useToastPromise();
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
-  const { data: sessionData } = useSessionData();
-
+  const { data: sessionData, isPending: isSessionPending } = useSessionData();
+  const storeId = sessionData?.store?.id;
+  const storeSlug = sessionData?.store?.slug;
   const isEditing = !!defaultValues;
-
   const onSubmit = (data: CategoryForm) => {
+    if (!storeId || !storeSlug) return;
+
+    const promise = isEditing
+      ? updateCategory.mutateAsync({ id: defaultValues.id, data })
+      : createCategory.mutateAsync({
+          ...data,
+          store_id: storeId,
+        });
+
+    showPromise({
+      promise,
+      messages: {
+        loading: isEditing ? "Actualizando..." : "Creando...",
+        success: isEditing ? "Categoría actualizada" : "Categoría creada",
+        error: (err) => err.message,
+      },
+      position: "top-right",
+      duration: 4000,
+      richColors: true,
+    });
+
+    promise.then(() => {
+      setOpen();
+
+      if (storeSlug) {
+        revalidateCategoriesCache(storeSlug);
+      }
+    });
+  };
+  /* const onSubmit = (data: CategoryForm) => {
     const promise = isEditing
       ? updateCategory.mutateAsync({ id: defaultValues.id, data })
       : createCategory.mutateAsync({
@@ -69,16 +101,22 @@ const Form = ({
       },
       position: "top-right",
       duration: 4000,
+      richColors: true,
     });
 
-    //setOpen();
-    promise.then(() => setOpen());
-  };
+    promise.then(() => {
+      setOpen();
+      revalidateCategoriesCache(sessionData?.store?.slug!);
+    });
+  }; */
 
   // Sincroniza isPending hacia el modal
   useEffect(() => {
     onPendingChange?.(createCategory.isPending || updateCategory.isPending);
   }, [createCategory.isPending, updateCategory.isPending]);
+
+  if (isSessionPending || !storeSlug)
+    return <div className="h-40 animate-pulse rounded-md bg-muted" />;
 
   return (
     <>
@@ -91,7 +129,8 @@ const Form = ({
         <FormInput
           label="Nombre"
           name="name"
-          register={register}
+          //register={register}
+          control={control}
           inputProps={{ placeholder: "Chamarras", disabled: readOnly }}
           errors={errors}
           required={true}

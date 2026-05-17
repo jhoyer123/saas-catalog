@@ -15,6 +15,7 @@ import { useSessionData } from "@/hooks/auth/useSessionData";
 import { DebouncedInput } from "@/components/shared/DebouncedInput";
 import SkeletonTable from "@/components/shared/SkeletonTable";
 import { OverlayProcess } from "@/components/shared/OverlayProcess";
+import { revalidateCategoriesCache } from "@/lib/actions/categoryActions";
 
 /**
  * CategoriesTable — self-contained, igual que ProductsTable.
@@ -29,7 +30,7 @@ import { OverlayProcess } from "@/components/shared/OverlayProcess";
 export function CategoriesTable() {
   const { data: sessionData, isPending } = useSessionData();
   const storeId = sessionData?.store?.id!;
-
+  const storeSlug = sessionData?.store?.slug!;
   // Estado de modales (hook propio, no viene de afuera)
   const { modalState, openModal, closeModal } = useModalsCategory();
 
@@ -40,6 +41,27 @@ export function CategoriesTable() {
 
   // Eliminar con toast — mismo patrón que useProductActions
   const handleDelete = (category: Category) => {
+    const promise = removeCategory(category.id).then(() => {
+      closeModal();
+
+      if (storeSlug) {
+        revalidateCategoriesCache(storeSlug);
+      }
+    });
+
+    showPromise({
+      promise,
+      messages: {
+        loading: "Eliminando categoría...",
+        success: "Categoría eliminada",
+        error: (err) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
+  };
+  /*   const handleDelete = (category: Category) => {
     showPromise({
       promise: async () => {
         await removeCategory(category.id);
@@ -54,7 +76,9 @@ export function CategoriesTable() {
       position: "top-right",
       duration: 3000,
     });
-  };
+
+    revalidateCategoriesCache(sessionData?.store?.slug!);
+  }; */
 
   // Columnas memoizadas — se reconstruyen solo si cambia openModal
   const columns = useMemo(
@@ -62,13 +86,13 @@ export function CategoriesTable() {
     [openModal],
   );
 
-  if (isPending || !storeId) return <SkeletonTable />;
+  if (isPending || !storeId || !storeSlug) return <SkeletonTable />;
 
   return (
     <>
       {isDeleting && <OverlayProcess />}
       {/* Botón para crear — abre el modal en modo "create" */}
-      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row">
+      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row mb-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-xl font-bold tracking-tight font-poppins md:text-2xl">
             Lista de Categorías

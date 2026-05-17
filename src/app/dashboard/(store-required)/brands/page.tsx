@@ -8,7 +8,7 @@ import { BrandsTable } from "@/components/brands/table/BrandsTable";
 export default function DashboardPage() {
   return (
     <section className="p-4 w-full max-w-full">
-      <div className="mx-auto w-full max-w-7xl space-y-6">
+      <div className="mx-auto w-full max-w-7xl">
         <BrandsTable />
       </div>
     </section>

@@ -19,6 +19,7 @@ interface Props {
 
 const FormRegister = ({ handleRegister, isPending }: Props) => {
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -35,7 +36,8 @@ const FormRegister = ({ handleRegister, isPending }: Props) => {
       <section className="flex flex-col gap-6 w-full max-w-4xl px-4">
         <InputForm
           label="Nombre completo"
-          register={register}
+          //register={register}
+          control={control}
           name="full_name"
           errors={errors}
           inputProps={{ placeholder: "Alan Jhon Gonzales Villa" }}
@@ -43,7 +45,8 @@ const FormRegister = ({ handleRegister, isPending }: Props) => {
 
         <InputForm
           label="Correo electrónico"
-          register={register}
+          //register={register}
+          control={control}
           name="email"
           errors={errors}
           inputProps={{ placeholder: "alan.gonzales@gmail.com" }}
@@ -51,7 +54,8 @@ const FormRegister = ({ handleRegister, isPending }: Props) => {
 
         <InputForm
           label="Número de teléfono"
-          register={register}
+          //register={register}
+          control={control}
           name="phone"
           errors={errors}
           inputProps={{ placeholder: "678878654" }}

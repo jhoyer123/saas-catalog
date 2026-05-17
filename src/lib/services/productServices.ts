@@ -1,18 +1,10 @@
-"use server";
-/*  IMPORTANTE ESTE ARCHIVO PUEDE SER BORRADO PORQUE AHORA ESTAS FUNCIONES SE MANEJAN EN EL CLIENTE*/ 
-import { createClient } from "@/lib/supabase/supabaseServer";
-import { generateSlug } from "@/lib/utils/slug";
-import * as Sentry from "@sentry/nextjs";
-import type {
+import {
   ProductInputService,
   ProductInputServiceUpdate,
-} from "@/lib/schemas/product";
-import { revalidateTag, revalidatePath } from "next/cache";
-import {
-  purgeCatalogCache,
-  purgeProductDetailCache,
-} from "../cloudflare/purgeCache";
-import { cacheTag } from "../helpers/cacheKeys";
+} from "../schemas/product";
+import { createClient } from "../supabase/supabaseClient";
+import { generateSlug } from "../utils/slug";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * action for create product
@@ -361,27 +353,4 @@ export const toggleAvailableAction = async (
   } */
 
   return { data };
-};
-
-/**
- * @param slugProd
- * @param storeSlug
- * @returns
- * Esta función se encarga de limpiar la cache de Next.js y Cloudflare del catálogo y detalle del producto.
- */
-export const revalidateProductCache = async (
-  storeSlug: string,
-  slugProd: string | null,
-) => {
-  //revalidateTag(`products-${storeSlug}`, "max");
-  revalidateTag(cacheTag("products", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  await purgeCatalogCache(storeSlug);
-
-  if (slugProd) {
-    //revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-    revalidateTag(cacheTag(`product-${slugProd}`, storeSlug), "max");
-    revalidatePath(`/public/${storeSlug}/${slugProd}`);
-    await purgeProductDetailCache(storeSlug, slugProd);
-  }
 };

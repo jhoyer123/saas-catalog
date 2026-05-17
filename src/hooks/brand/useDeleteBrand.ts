@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteBrand } from "@/lib/actions/brandActions";
+//import { deleteBrand } from "@/lib/actions/brandActions";
+import { deleteBrand } from "@/lib/services/brandServices";
 import { useSessionData } from "../auth/useSessionData";
 
 /**

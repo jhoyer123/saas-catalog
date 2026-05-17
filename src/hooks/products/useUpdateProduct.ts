@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateProduct } from "@/lib/actions/productActions";
+//import { updateProduct } from "@/lib/actions/productActions";
+import { updateProduct } from "@/lib/services/productServices";
 import { useSessionData } from "../auth/useSessionData";
 import { ProductInputServiceUpdate } from "@/lib/schemas/product";
 import { ProductCatalog } from "@/types/product.types";

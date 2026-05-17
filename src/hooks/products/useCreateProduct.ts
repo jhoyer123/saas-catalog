@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createProduct } from "@/lib/actions/productActions";
+//import { createProduct } from "@/lib/actions/productActions";
+import { createProduct } from "@/lib/services/productServices";
 import { useSessionData } from "../auth/useSessionData";
 import { ProductInputService } from "@/lib/schemas/product";
 

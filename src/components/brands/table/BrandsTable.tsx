@@ -15,16 +15,38 @@ import SkeletonTable from "@/components/shared/SkeletonTable";
 import { ModalBrand } from "@/components/brands/ModalBrand";
 import { useModalsBrand } from "@/hooks/brand/useModalsBrand";
 import { OverlayProcess } from "@/components/shared/OverlayProcess";
+import { revalidateBrandsCache } from "@/lib/actions/brandActions";
 
 export function BrandsTable() {
   const { data: sessionData, isPending } = useSessionData();
   const storeId = sessionData?.store?.id!;
-
+  const storeSlug = sessionData?.store?.slug!;
   const { modalState, openModal, closeModal } = useModalsBrand();
 
   const { mutateAsync: removeBrand, isPending: isDeleting } = useDeleteBrand();
   const { showPromise } = useToastPromise();
+  const handleDelete = (brand: BrandDashboard) => {
+    const promise = removeBrand(brand.id);
 
+    showPromise({
+      promise: promise.then(() => {
+        closeModal();
+
+        if (storeSlug) {
+          revalidateBrandsCache(storeSlug);
+        }
+      }),
+      messages: {
+        loading: "Eliminando marca...",
+        success: "Marca eliminada",
+        error: (err: Error) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
+  };
+  /* 
   const handleDelete = (brand: BrandDashboard) => {
     showPromise({
       promise: async () => {
@@ -40,19 +62,21 @@ export function BrandsTable() {
       position: "top-right",
       duration: 3000,
     });
-  };
+
+    revalidateBrandsCache(sessionData?.store?.slug!);
+  }; */
 
   const columns = useMemo(
     () => getBrandsColumns({ onOpenModal: openModal }),
     [openModal],
   );
 
-  if (isPending || !storeId) return <SkeletonTable />;
+  if (isPending || !storeId || !storeSlug) return <SkeletonTable />;
 
   return (
     <>
       {isDeleting && <OverlayProcess />}
-      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row">
+      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row mb-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-xl font-bold tracking-tight font-poppins md:text-2xl">
             Lista de Marcas

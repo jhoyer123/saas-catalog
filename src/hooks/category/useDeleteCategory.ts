@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteCategory } from "@/lib/actions/categoryActions";
+//import { deleteCategory } from "@/lib/actions/categoryActions";
+import { deleteCategory } from "@/lib/services/categoryServices";
 import { useSessionData } from "../auth/useSessionData";
 
 /**

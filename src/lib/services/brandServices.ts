@@ -1,10 +1,5 @@
-"use server";
-/* SE PUEDE BORRAR TODO MENOS LA FUNCION DE REVALIDACION DEL CAHCE Y LA PURGA */
-import { createClient } from "@/lib/supabase/supabaseServer";
+import { createClient } from "../supabase/supabaseClient";
 import { generateSlug } from "@/lib/utils/slug";
-import { revalidatePath, revalidateTag } from "next/cache";
-import { purgeCatalogCache } from "../cloudflare/purgeCache";
-import { cacheTag } from "../helpers/cacheKeys";
 
 /**
  * service for creating a new brand in the database
@@ -37,12 +32,7 @@ export const createBrand = async (
     }
     return { error: "Error al crear la marca" };
   }
-  //revalidateTag(`brands-${storeSlug}`, "max");
-  /* revalidateTag(cacheTag("brands", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  } */
+
   return data;
 };
 
@@ -85,13 +75,7 @@ export const updateBrand = async (
     }
     return { error: "Error al actualizar la marca" };
   }
-  //revalidateTag(`brands-${storeSlug}`, "max");
-  /* revalidateTag(cacheTag("brands", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  }
-   */
+
   return data;
 };
 
@@ -124,21 +108,4 @@ export const deleteBrand = async (
     console.error("ERROR deleteBrand: ", error);
     return { error: "Error al eliminar la marca" }; // error técnico
   }
-  //revalidateTag(`brands-${storeSlug}`, "max");
-  /*  revalidateTag(cacheTag("brands", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  } */
 };
-
-/**
- * revalidate brands cache for a store
- */
-export async function revalidateBrandsCache(storeSlug: string) {
-  revalidateTag(cacheTag("brands", storeSlug), "max");
-  revalidatePath(`/public/${storeSlug}`);
-  if (storeSlug) {
-    await purgeCatalogCache(storeSlug);
-  }
-}

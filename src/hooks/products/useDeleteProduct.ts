@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteProductAction } from "@/lib/actions/productActions";
+//import { deleteProductAction } from "@/lib/actions/productActions";
+import { deleteProductAction } from "@/lib/services/productServices";
 import { useSessionData } from "../auth/useSessionData";
-import { ProductCatalog } from "@/types/product.types";
 
 export function useDeleteProduct() {
   const queryClient = useQueryClient();

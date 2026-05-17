@@ -59,52 +59,44 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           const { images, ...dataProducto } = data;
-
+          const startTime = performance.now(); // ⏱️ START
           //Crear producto
           const productRes = await create(dataProducto);
-
-          // ==================== ANTIGUO (comentado - PARALELO SEGURO) ====================
-          // //Subir imágenes al storage (SECUENCIAL)
-          // const imageUrls: string[] = [];
-          // for (const file of images) {
-          //   const url = await uploadFile(
-          //     "products",
-          //     storeId,
-          //     productRes.id!,
-          //     file,
-          //   );
-          //   imageUrls.push(url);
-          // }
-          // ================================================================================
-
-          // ==================== NUEVO: Subir imágenes en PARALELO ====================
-          // Usando Promise.allSettled para garantizar que si 1 falla, rechazamos todo
-          // y no guardamos URLs parciales en la BD
-          const uploadPromises = images.map((file) =>
-            uploadFile("products", storeId, productRes.id!, file)
+          console.log(
+            `⏱️ create(): ${((performance.now() - startTime) / 1000).toFixed(2)}s`,
           );
-
+          const uploadPromises = images.map((file) =>
+            uploadFile("products", storeId, productRes.id!, file),
+          );
+          const t2 = performance.now();
           const uploadResults = await Promise.allSettled(uploadPromises);
-
+          console.log(
+            `⏱️ uploads: ${((performance.now() - t2) / 1000).toFixed(2)}s`,
+          );
+          const t3 = performance.now();
           // Validar que TODAS las subidas fueron exitosas
           const imageUrls = uploadResults.map((result, index) => {
             if (result.status === "fulfilled") {
               return result.value;
             }
             throw new Error(
-              `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`
+              `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
             );
           });
-          // ================================================================================
 
           //Guardar URLs en tabla
           await saveProductImages({ productId: productRes.id!, imageUrls });
+          console.log(
+            `⏱️ saveProductImages(): ${((performance.now() - t3) / 1000).toFixed(2)}s`,
+          );
+          const endTime = performance.now(); // ⏱️ END
+          console.log(
+            `⏱️ Flujo de negocio: ${((endTime - startTime) / 1000).toFixed(2)}s`,
+          );
 
-          router.push("/dashboard/products");
-
+          //router.push("/dashboard/products");
           //revalidar cache
-          await revalidateProductCache(storeSlug, null);
-
+          revalidateProductCache(storeSlug, null);
           onSuccess?.();
         });
       },
@@ -118,6 +110,55 @@ export function useProductActions() {
       duration: 3000,
     });
   };
+  /* const createProduct = (
+    data: ProductInputClient,
+    storeId: string,
+    storeSlug: string,
+    onSuccess?: () => void,
+  ) => {
+    showPromise({
+      promise: async () => {
+        await withPending(async () => {
+          const { images, ...dataProducto } = data;
+
+          //Crear producto
+          const productRes = await create(dataProducto);
+
+          const uploadPromises = images.map((file) =>
+            uploadFile("products", storeId, productRes.id!, file),
+          );
+
+          const uploadResults = await Promise.allSettled(uploadPromises);
+
+          // Validar que TODAS las subidas fueron exitosas
+          const imageUrls = uploadResults.map((result, index) => {
+            if (result.status === "fulfilled") {
+              return result.value;
+            }
+            throw new Error(
+              `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
+            );
+          });
+
+          //Guardar URLs en tabla
+          await saveProductImages({ productId: productRes.id!, imageUrls });
+
+          router.push("/dashboard/products");
+          //revalidar cache
+          await revalidateProductCache(storeSlug, null);
+          onSuccess?.();
+        });
+      },
+      messages: {
+        loading: "Creando producto...",
+        success: "Producto creado exitosamente",
+        error: (err) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
+  }; */
 
   /**
    * Action Update Product Executed with Toast Notifications
@@ -147,18 +188,10 @@ export function useProductActions() {
 
           //Subir imágenes nuevas si existen
           if (images && images.length > 0) {
-            // ==================== ANTIGUO (comentado - PARALELO SEGURO) ====================
-            // const imageUrls: string[] = [];
-            // for (const file of images) {
-            //   const url = await uploadFile("products", storeId, id, file);
-            //   imageUrls.push(url);
-            // }
-            // ================================================================================
-
             // ==================== NUEVO: Subir imágenes en PARALELO ====================
             // Usando Promise.allSettled para garantizar que si 1 falla, rechazamos todo
             const uploadPromises = images.map((file) =>
-              uploadFile("products", storeId, id, file)
+              uploadFile("products", storeId, id, file),
             );
 
             const uploadResults = await Promise.allSettled(uploadPromises);
@@ -169,7 +202,7 @@ export function useProductActions() {
                 return result.value;
               }
               throw new Error(
-                `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`
+                `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
               );
             });
             // ================================================================================
@@ -181,7 +214,7 @@ export function useProductActions() {
           router.push("/dashboard/products");
 
           //revalidar cache
-          await revalidateProductCache(storeSlug, slugProd);
+          revalidateProductCache(storeSlug, slugProd);
 
           onSuccess?.();
         });
@@ -202,9 +235,46 @@ export function useProductActions() {
    * @param id
    * @param slugProd
    */
-  const deleteProduct = (id: string, slugProd: string) => {
+  /*   const deleteProduct = (id: string, slugProd: string) => {
     showPromise({
       promise: () => remove({ id, slugProd }),
+      messages: {
+        loading: "Eliminando producto...",
+        success: "Producto eliminado",
+        error: (err) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
+  }; */
+
+  /**
+   * Action Delete Product Executed with Toast Notifications
+   * @param id
+   * @param slugProd
+   * @param storeSlug (Opcional) Para revalidar caché
+   * @param onSuccess (Opcional) Callback de éxito
+   */
+  const deleteProduct = (
+    id: string,
+    slugProd: string,
+    storeSlug?: string,
+    onSuccess?: () => void,
+  ) => {
+    showPromise({
+      promise: async () => {
+        await withPending(async () => {
+          await remove({ id, slugProd });
+
+          // Revalidar caché si se proporciona el slug de la tienda
+          if (storeSlug) {
+            revalidateProductCache(storeSlug, slugProd);
+          }
+
+          onSuccess?.();
+        });
+      },
       messages: {
         loading: "Eliminando producto...",
         success: "Producto eliminado",
@@ -234,7 +304,7 @@ export function useProductActions() {
           await offerProduct({ slugProd, params });
 
           //revalidar cache
-          await revalidateProductCache(storeSlug, slugProd);
+          revalidateProductCache(storeSlug, slugProd);
 
           onSuccess?.();
         });
@@ -272,7 +342,7 @@ export function useProductActions() {
           await toggleAvailableProduct({ id, slugProd, is_available });
 
           //revalidar cache
-          await revalidateProductCache(storeSlug, slugProd);
+          revalidateProductCache(storeSlug, slugProd);
 
           onSuccess?.();
         });

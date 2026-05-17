@@ -44,6 +44,7 @@ export function useProductForm({
     handleSubmit,
     formState: { errors, isDirty },
     setValue,
+    getValues,
     reset,
   } = useForm({
     resolver: zodResolver(
@@ -53,7 +54,6 @@ export function useProductForm({
     defaultValues: {
       name: initialData?.name ?? "",
       sku: initialData?.sku ?? "",
-      //brand: initialData?.brand ?? "",
       price: initialData?.price ?? 0,
       description: initialData?.description ?? "",
       category_id: initialData?.category_id ?? "",
@@ -133,7 +133,9 @@ export function useProductForm({
               category_id: "",
               description: "",
               price: 0,
+              images: undefined,
             });
+            console.log(getValues());
           },
         );
       }

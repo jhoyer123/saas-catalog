@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateCategory } from "@/lib/actions/categoryActions";
+//import { updateCategory } from "@/lib/actions/categoryActions";
+import { updateCategory } from "@/lib/services/categoryServices";
 import type { CategoryForm } from "@/lib/schemas/category";
 import { useSessionData } from "../auth/useSessionData";
 

@@ -31,6 +31,7 @@ const StoreForm = ({ defaultValues }: Props) => {
 
   const {
     register,
+    control,
     handleSubmit,
     setValue,
     reset,
@@ -133,7 +134,8 @@ const StoreForm = ({ defaultValues }: Props) => {
             <FormInput
               label="Nombre de la Tienda"
               name="name"
-              register={register}
+              //register={register}
+              control={control}
               inputProps={{ placeholder: "Mi tienda" }}
               errors={errors}
               required
@@ -143,7 +145,8 @@ const StoreForm = ({ defaultValues }: Props) => {
             <FormInput
               label="WhatsApp de la Tienda"
               name="whatsapp_number"
-              register={register}
+              //register={register}
+              control={control}
               inputProps={{ placeholder: "12345678" }}
               errors={errors}
               required

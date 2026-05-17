@@ -117,7 +117,8 @@ export const FormBranches = ({
                 <FormInput
                   label="Nombre"
                   name={`branches.${index}.name`}
-                  register={register}
+                  //register={register}
+                  control={control}
                   errors={errors}
                   inputProps={{
                     placeholder: "Sucursal Centro",
@@ -129,7 +130,8 @@ export const FormBranches = ({
                 <FormInput
                   label="Teléfono"
                   name={`branches.${index}.phone`}
-                  register={register}
+                  //register={register}
+                  control={control}
                   errors={errors}
                   inputProps={{
                     placeholder: "+503 2222 2222",

@@ -20,6 +20,7 @@ interface Props {
 const FormLogin = ({ handleLogin, isPending }: Props) => {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm({
@@ -35,7 +36,8 @@ const FormLogin = ({ handleLogin, isPending }: Props) => {
       <section className="flex flex-col gap-6 w-full max-w-4xl px-4">
         <InputForm
           label="Correo electrónico"
-          register={register}
+          //register={register}
+          control={control}
           name="email"
           errors={errors}
           inputProps={{ placeholder: "alan.gonzales@gmail.com" }}
