@@ -94,7 +94,7 @@ export default async function Footer({
                 className="h-auto w-auto max-h-12 max-w-12 lg:max-h-13 lg:max-w-13  rounded-md object-contain"
               />
             )}
-            <h2 className="text-2xl font-bold tracking-tight text-catalog-secondary/80">
+            <h2 className="text-xl lg:text-2xl font-bold tracking-tight text-catalog-secondary/80">
               {store.name}
             </h2>
           </div>
@@ -131,6 +131,31 @@ export default async function Footer({
                 <span className="text-xs  text-catalog-secondary/60 font-inter font-light leading-relaxed line-clamp-2 lg:text-sm">
                   {branch.phone && `Tel: ${branch.phone}`}
                 </span>
+                {/* mapa */}
+                {branch.lat && branch.lng && (
+                  <Link
+                    href={`https://www.google.com/maps?q=${branch.lat},${branch.lng}`}
+                    target="_blank"
+                    className="group mt-2 inline-flex items-center gap-2 text-xs text-catalog-secondary/55 hover:text-catalog-secondary transition-colors w-fit"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      width={14}
+                      height={14}
+                      className="opacity-70 group-hover:opacity-100 transition-opacity"
+                    >
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+
+                    <span className="font-light tracking-wide">
+                      Ver ubicación
+                    </span>
+                  </Link>
+                )}
               </div>
             ))}
           </div>

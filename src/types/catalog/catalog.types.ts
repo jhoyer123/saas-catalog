@@ -41,6 +41,8 @@ export interface StoreCatalogData {
   whatsapp_number?: string | null;
   updated_at: string;
   description?: string | null;
+  lat?: number;
+  lng?: number;
 }
 
 // Cuánto tiempo muestra cada banner antes de pasar al siguiente

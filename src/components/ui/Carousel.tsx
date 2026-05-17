@@ -3,7 +3,6 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import clsx from "clsx";
 
 interface Props {
   children: React.ReactNode;
@@ -11,10 +10,12 @@ interface Props {
 }
 
 export default function Carousel({ children, itemsCount }: Props) {
+  // Ajustes nativos de Embla eficientes para rendimiento
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
     dragFree: false,
+    watchSlides: false, // Evita mutaciones innecesarias del DOM en producción
   });
 
   const [canPrev, setCanPrev] = useState(false);
@@ -22,7 +23,6 @@ export default function Carousel({ children, itemsCount }: Props) {
 
   const updateButtons = useCallback(() => {
     if (!emblaApi) return;
-
     setCanPrev(emblaApi.canScrollPrev());
     setCanNext(emblaApi.canScrollNext());
   }, [emblaApi]);
@@ -31,7 +31,6 @@ export default function Carousel({ children, itemsCount }: Props) {
     if (!emblaApi) return;
 
     updateButtons();
-
     emblaApi.on("select", updateButtons);
     emblaApi.on("reInit", updateButtons);
 
@@ -42,14 +41,10 @@ export default function Carousel({ children, itemsCount }: Props) {
   }, [emblaApi, updateButtons]);
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <div className="overflow-hidden" ref={emblaRef}>
-        <div
-          className={clsx(
-            "flex touch-pan-y",
-            itemsCount <= 2 && "justify-center",
-          )}
-        >
+        {/* Eliminado justify-center que rompía el layout de Embla */}
+        <div className="flex touch-pan-y backface-hidden lg:justify-center">
           {children}
         </div>
       </div>
