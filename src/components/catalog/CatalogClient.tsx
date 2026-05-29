@@ -16,6 +16,7 @@ import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 import CatalogNotAvailable from "./CatalogNotAvailable";
 import { checkIsPlanActive } from "@/lib/helpers/validations";
 import CategoryPills from "./category/CategoryPills";
+import { ProductGridSkeleton } from "./products/ProductGridSkeleton";
 
 // Hook reutilizable para medir altura
 function useElementHeight(id: string) {
@@ -64,7 +65,8 @@ export default function CatalogClient({
   const headerHeight = useElementHeight("catalog-header");
   const inputBarHeight = useElementHeight("catalog-input-bar");
 
-  const { filters } = useProductFilter();
+  //const { filters } = useProductFilter();
+  const { filters, initialized } = useProductFilter();
 
   // Evitar múltiples scrolls
   const filterKey = JSON.stringify(filters);
@@ -149,7 +151,8 @@ export default function CatalogClient({
   const hasBanners = banners.length > 0;
 
   //validar si el plan está activo
-  const [isBlocked, setIsBlocked] = useState(() => !checkIsPlanActive(store));
+  //const [isBlocked, setIsBlocked] = useState(() => !checkIsPlanActive(store));
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     if (!checkIsPlanActive(store)) {
@@ -160,6 +163,8 @@ export default function CatalogClient({
   if (isBlocked) {
     return <CatalogNotAvailable handle={store.slug} />;
   }
+
+  if (!initialized) return <ProductGridSkeleton headerHeight={headerHeight} />;
 
   return (
     <main className="min-h-screen  bg-catalog-primary pb-6">

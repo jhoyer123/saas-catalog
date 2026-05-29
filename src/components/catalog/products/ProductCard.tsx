@@ -107,17 +107,28 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
         onMouseEnter={handlePrefetch}
         className="relative block aspect-3/4 w-full overflow-hidden bg-gray-100"
       >
-        <Image
-          src={getCatalogImageUrl(product.images[0]?.image_url)}
+        {/* <Image
+          //eliminar el loader para yano hacer resize dinámico, ahora solo usar el CDN de Cloudflare para servir las imágenes optimizadas
+          //loader={catalogImageLoader} //el resize no sirve
+          //src={getCatalogImageUrl(product.images[0]?.image_url)}
+          src={getCatalogImageUrl(product.images[0]?.image_url, 500, 75)}
           alt={product.name}
           fill
           quality={75}
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-          //sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          sizes="(max-width: 640px) 300px, (max-width: 1024px) 22vw, 18vw"
+          //sizes="(max-width: 640px) 457px, (max-width: 1024px) 22vw, 18vw"
+          sizes="(max-width: 640px) 457px, 100vw"
+          priority={priority}
+        /> */}
+        <Image
+          src={getCatalogImageUrl(product.images[0]?.image_url, 500, 75)}
+          alt={product.name}
+          fill
+          sizes="(max-width: 640px) 457px, 22vw"
+          quality={80}
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           priority={priority}
         />
-
         {/* Badge de descuento y disponibilidad */}
         {discountPercent && <OfferBadge discountPercent={discountPercent} />}
         {!product.is_available && <AvailableBadge />}

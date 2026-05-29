@@ -3,6 +3,7 @@ import { useToastPromise } from "../shared/useToastPromise";
 import { useSaveBanners } from "./useSaveBanners";
 import { uploadFile } from "@/lib/utils/storage";
 import { useSessionData } from "../auth/useSessionData";
+import { SUPABASE_PUBLIC_URL } from "@/constants/storage";
 
 export function useHandleBannerActions() {
   const [isPending, setIsPending] = useState(false);
@@ -32,17 +33,32 @@ export function useHandleBannerActions() {
     showPromise({
       promise: async () => {
         await withPending(async () => {
-          if (!storeId) throw new Error("No se encontró el ID de la tienda");
-
-          // 1. Subir archivos desde el cliente
-          const imageUrls: string[] = [];
-          for (const file of newFiles) {
-            const url = await uploadFile("banners", storeId, "banners", file);
-            imageUrls.push(url);
+          if (!storeId) {
+            throw new Error("No se encontró el ID de la tienda");
           }
 
-          // 2. Guardar URLs y eliminar en DB via action
-          await saveBannersDB({ imageUrls, imagesToDelete });
+          // Subidas paralelas
+          const uploadPromises = newFiles.map((file) =>
+            uploadFile("banners", storeId, "banners", file),
+          );
+
+          const uploadResults = await Promise.allSettled(uploadPromises);
+
+          // Validar subidas
+          const imageUrls = uploadResults.map((result, index) => {
+            if (result.status === "fulfilled") {
+              return result.value.replace(SUPABASE_PUBLIC_URL, "");
+            }
+            throw new Error(
+              `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
+            );
+          });
+
+          // Guardar en DB
+          await saveBannersDB({
+            imageUrls,
+            imagesToDelete,
+          });
 
           onSuccess?.();
         });

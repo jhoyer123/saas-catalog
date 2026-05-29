@@ -222,6 +222,7 @@ const useProductFilterStore = create<ProductFilterStore>((set, get) => ({
 
 export function useProductFilter() {
   const {
+    initialized,
     filters,
     isPending,
     searchInput,
@@ -272,6 +273,7 @@ export function useProductFilter() {
   );
 
   return {
+    initialized,
     filters,
     isPending,
     searchInput,

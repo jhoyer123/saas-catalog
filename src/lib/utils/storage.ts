@@ -1,11 +1,9 @@
-// src/lib/utils/storage.ts
-//import { createClient } from "@/lib/supabase/supabaseServer";
-import { createClient } from "@/lib/supabase/supabaseClient";
+//import { createClient } from "@/lib/supabase/supabaseClient";
 
 // estructura: bucket/userId/carpeta/archivo
 // ejemplo:  stores/uuid-user/logo/logo.webp
 
-export const uploadFile = async (
+/* export const uploadFile = async (
   bucket: string,
   userId: string,
   folder: string,
@@ -15,14 +13,7 @@ export const uploadFile = async (
   const supabase = await createClient();
 
   const ext = file.name.split(".").pop();
-  
-  // ==================== ANTIGUO (comentado - garantía de rollback) ====================
-  // //const path = `${userId}/${folder}/${Date.now()}.${ext}`;
-  // const path = fileName
-  //   ? `${userId}/${folder}/${fileName}.${ext}` // fijo → sobreescribe
-  //   : `${userId}/${folder}/${Date.now()}.${ext}`; // único → acumula
-  // ==================================================================================
-  
+
   // ==================== NUEVO: Date.now() + UUID para evitar colisiones ====================
   // Ahora usamos UUID para garantizar unicidad incluso si 2+ imágenes se suben en <1ms (paralelo)
   const path = fileName
@@ -43,22 +34,35 @@ export const uploadFile = async (
   } = supabase.storage.from(bucket).getPublicUrl(data.path);
 
   return publicUrl;
-};
-
-/**
- * Delete a file from Supabase Storage given its public URL
- * @param bucket
- * @param url
- */
-/* export const deleteFile = async (
-  bucket: string,
-  url: string,
-): Promise<void> => {
-  const supabase = await createClient();
-
-  // extraer el path de la url publica
-  const path = url.split(`${bucket}/`)[1];
-
-  const { error } = await supabase.storage.from(bucket).remove([path]);
-  if (error) throw new Error(error.message);
 }; */
+
+import { CLOUDINARY_URL } from "@/constants/storage";
+
+//con cloudinary (recomendado para producción por su optimización y CDN)
+export const uploadFile = async (
+  bucket: string,
+  userId: string,
+  folder: string,
+  file: File,
+  fileName?: string,
+): Promise<string> => {
+  const ext = file.name.split(".").pop();
+
+  const public_id = fileName
+    ? `${userId}/${folder}/${fileName}` // fijo → sobreescribe
+    : `${userId}/${folder}/${Date.now()}-${crypto.randomUUID()}`; // único
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_PRESET!);
+  formData.append("folder", bucket);
+  formData.append("public_id", public_id);
+
+  const res = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+
+  // retorna solo el path relativo (sin el prefijo de cloudinary)
+  return `${bucket}/${public_id}.${ext}`;
+};

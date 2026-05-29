@@ -12,6 +12,7 @@ import {
 } from "@/lib/helpers/image";
 import { BannerCard, ProductCard } from "@/components/image/ImageCardStore";
 import { ImageHint } from "@/components/shared/ImageHint";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 // TYPES
 export interface ImagePreview {
@@ -292,14 +293,14 @@ export default function InputFile({
               typeElement === "banner" ? (
                 <BannerCard
                   key={`existing-${index}`}
-                  url={url}
+                  url={getCatalogImageUrl(url)}
                   onRemove={() => handleRemoveExistingImage(index)}
                   disabled={disabled}
                 />
               ) : (
                 <ProductCard
                   key={`existing-${index}`}
-                  url={url}
+                  url={getCatalogImageUrl(url)}
                   onRemove={() => handleRemoveExistingImage(index)}
                   disabled={disabled}
                 />

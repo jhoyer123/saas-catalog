@@ -1,0 +1,99 @@
+# Fix — React Error #418 (Hydration Mismatch) en Next.js
+
+## Problema
+`Uncaught Error: Minified React error #418` en el catálogo público. El HTML generado en el servidor no coincidía con el render del cliente.
+
+---
+
+## Causas encontradas
+
+### 1. `useState` con función que dependía del entorno
+```ts
+// ❌ Antes
+const [isBlocked, setIsBlocked] = useState(() => !checkIsPlanActive(store));
+```
+`checkIsPlanActive` retornaba valores distintos en servidor vs cliente, causando el mismatch.
+
+### 2. Filtros del store renderizando antes de inicializarse desde la URL
+El store Zustand arrancaba con `DEFAULT_FILTERS` en el servidor, pero en el cliente se actualizaba desde los query params de la URL. React detectaba el cambio y lanzaba el error.
+
+---
+
+## Fixes aplicados
+
+### `CatalogClient.tsx`
+
+```ts
+// ✅ Estado inicial siempre igual en servidor y cliente
+const [isBlocked, setIsBlocked] = useState(false);
+
+useEffect(() => {
+  if (!checkIsPlanActive(store)) setIsBlocked(true);
+}, [store]);
+
+// ✅ Esperar a que los filtros estén listos antes de renderizar
+const { filters, initialized } = useProductFilter();
+
+if (!initialized) return <ProductGridSkeleton headerHeight={headerHeight} />;
+```
+
+### `useProductFilter.ts`
+
+```ts
+// ✅ Exponer initialized en el return del hook
+return {
+  initialized,
+  filters,
+  // ...resto
+};
+```
+
+### `ProductGridSkeleton.tsx`
+
+```tsx
+// ✅ Skeleton que respeta la altura del header para no tapar el contenido
+interface Props {
+  headerHeight?: number;
+}
+
+export function ProductGridSkeleton({ headerHeight = 0 }: Props) {
+  return (
+    <main className="min-h-screen bg-catalog-primary pb-6">
+      <div style={{ height: headerHeight }} />
+      <div
+        className="bg-catalog-primary py-2 sticky z-20 h-full w-full flex items-center justify-center lg:hidden"
+        style={{ top: headerHeight }}
+      >
+        <Skeleton className="h-10 w-64 rounded-xl bg-white/70" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="flex flex-col space-y-3">
+            <Skeleton className="h-62.5 w-full rounded-xl bg-white/70" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[80%] bg-white/70" />
+              <Skeleton className="h-4 w-[40%] bg-white/70" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
+```
+
+---
+
+## Archivos modificados
+
+| Archivo | Cambio |
+|---|---|
+| `CatalogClient.tsx` | `useState(false)` + guard `!initialized` |
+| `useProductFilter.ts` | Exponer `initialized` en el return |
+| `ProductGridSkeleton.tsx` | Aceptar `headerHeight` prop y replicar estructura del layout real |
+
+
+
+
+
+falta arreglar el tamaño de las imagenes y el seo de los botones

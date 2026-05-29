@@ -36,11 +36,28 @@ export async function saveBannersAction(
       .delete()
       .in("image_url", imagesToDelete);
 
-    const paths = imagesToDelete.map((url) => {
-      const pathname = new URL(url).pathname;
-      return pathname.replace("/storage/v1/object/public/banners/", "");
+    const paths = imagesToDelete.map((url: string) => {
+      let path = url;
+
+      if (path.startsWith("http")) {
+        path = new URL(url).pathname.replace(
+          "/storage/v1/object/public/banners/",
+          "",
+        );
+      } else if (path.startsWith("banners/")) {
+        path = path.replace("banners/", "");
+      }
+      return path;
     });
-    await supabase.storage.from("banners").remove(paths);
+
+    const { error: storageError } = await supabase.storage
+      .from("banners")
+      .remove(paths);
+
+    if (storageError) {
+      console.error("saveBannersAction Storage ERROR:", storageError);
+      return { error: `Error al eliminar el banner: ${storageError.message}` };
+    }
   }
 
   // 2. Insertar nuevas URLs

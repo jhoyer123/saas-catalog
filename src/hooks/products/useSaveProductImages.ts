@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { saveProductImages } from "@/lib/actions/productActions"; // ajusta el path
+import { saveProductImages } from "@/lib/services/productServices"; // ajusta el path
 import { useSessionData } from "../auth/useSessionData";
 
 interface SaveProductImagesParams {
@@ -32,11 +32,6 @@ export const useSaveProductImages = () => {
       }
       return result;
     },
-
-    /*  onSuccess: (data) => {
-      if (data.error) return;
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    }, */
 
     onSuccess: async (_data, variables) => {
       const invalidations = [

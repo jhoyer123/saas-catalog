@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
 import { Banner } from "@/types/catalog/catalog.types";
 import { useState } from "react";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 const FALLBACK_BANNER = "/images/placeholder.webp"; //fallback genérico para banners
 
@@ -46,20 +46,21 @@ function BannerImage({
   priority?: boolean;
 }) {
   const { imgSrc, onError } = useBannerFallback(src);
+  const mobileSrc = getCatalogImageUrl(imgSrc, 768, 75);
+  const desktopSrc = imgSrc;
 
   return (
-    <Image
-      src={imgSrc}
-      alt={alt}
-      quality={75}
-      fill
+    <img
+      src={desktopSrc}
+      srcSet={`${mobileSrc} 768w, ${desktopSrc} 1440w`}
       sizes="(max-width: 768px) 100vw, 80vw"
-      className="object-cover pointer-events-none"
-      priority={priority}
-      fetchPriority={priority ? "high" : "auto"}
+      alt={alt}
       loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      decoding="async"
       draggable={false}
       onError={onError}
+      className="absolute inset-0 h-full w-full object-cover pointer-events-none"
     />
   );
 }

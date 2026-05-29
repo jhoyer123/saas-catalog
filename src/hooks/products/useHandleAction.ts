@@ -2,17 +2,14 @@ import {
   ProductInputClient,
   ProductInputClientUpdate,
 } from "@/lib/schemas/product";
-import {
-  revalidateProductCache,
-  type ToggleOfferParams,
-} from "@/lib/actions/productActions";
+import { revalidateProductCache } from "@/lib/actions/productActions";
+import { type ToggleOfferParams } from "@/lib/services/productServices";
 import { useToastPromise } from "../shared/useToastPromise";
 import { useCreateProduct } from "./useCreateProduct";
 import { useDeleteProduct } from "./useDeleteProduct";
 import { useUpdateProduct } from "./useUpdateProduct";
 import { useToggleOffer } from "./useHandleOffer";
 import { useState } from "react";
-
 import { useRouter } from "next/navigation";
 import { useToggleAvailableProduct } from "./useToogleAvailableProduct";
 import { uploadFile } from "@/lib/utils/storage";
@@ -59,43 +56,27 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           const { images, ...dataProducto } = data;
-          const startTime = performance.now(); // ⏱️ START
           //Crear producto
           const productRes = await create(dataProducto);
-          console.log(
-            `⏱️ create(): ${((performance.now() - startTime) / 1000).toFixed(2)}s`,
-          );
+          //Subir imágenes
           const uploadPromises = images.map((file) =>
             uploadFile("products", storeId, productRes.id!, file),
           );
-          const t2 = performance.now();
+          // Usando Promise.allSettled para garantizar que si 1 falla, rechazamos todo
           const uploadResults = await Promise.allSettled(uploadPromises);
-          console.log(
-            `⏱️ uploads: ${((performance.now() - t2) / 1000).toFixed(2)}s`,
-          );
-          const t3 = performance.now();
           // Validar que TODAS las subidas fueron exitosas
           const imageUrls = uploadResults.map((result, index) => {
             if (result.status === "fulfilled") {
+              //return result.value.replace(STORAGE_PUBLIC_URL, "");
               return result.value;
             }
             throw new Error(
               `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
             );
           });
-
           //Guardar URLs en tabla
           await saveProductImages({ productId: productRes.id!, imageUrls });
-          console.log(
-            `⏱️ saveProductImages(): ${((performance.now() - t3) / 1000).toFixed(2)}s`,
-          );
-          const endTime = performance.now(); // ⏱️ END
-          console.log(
-            `⏱️ Flujo de negocio: ${((endTime - startTime) / 1000).toFixed(2)}s`,
-          );
-
-          //router.push("/dashboard/products");
-          //revalidar cache
+          //revalidar cache de Next.js y cloudflare
           revalidateProductCache(storeSlug, null);
           onSuccess?.();
         });
@@ -110,55 +91,6 @@ export function useProductActions() {
       duration: 3000,
     });
   };
-  /* const createProduct = (
-    data: ProductInputClient,
-    storeId: string,
-    storeSlug: string,
-    onSuccess?: () => void,
-  ) => {
-    showPromise({
-      promise: async () => {
-        await withPending(async () => {
-          const { images, ...dataProducto } = data;
-
-          //Crear producto
-          const productRes = await create(dataProducto);
-
-          const uploadPromises = images.map((file) =>
-            uploadFile("products", storeId, productRes.id!, file),
-          );
-
-          const uploadResults = await Promise.allSettled(uploadPromises);
-
-          // Validar que TODAS las subidas fueron exitosas
-          const imageUrls = uploadResults.map((result, index) => {
-            if (result.status === "fulfilled") {
-              return result.value;
-            }
-            throw new Error(
-              `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
-            );
-          });
-
-          //Guardar URLs en tabla
-          await saveProductImages({ productId: productRes.id!, imageUrls });
-
-          router.push("/dashboard/products");
-          //revalidar cache
-          await revalidateProductCache(storeSlug, null);
-          onSuccess?.();
-        });
-      },
-      messages: {
-        loading: "Creando producto...",
-        success: "Producto creado exitosamente",
-        error: (err) => err.message,
-      },
-      richColors: true,
-      position: "top-right",
-      duration: 3000,
-    });
-  }; */
 
   /**
    * Action Update Product Executed with Toast Notifications
@@ -182,40 +114,32 @@ export function useProductActions() {
             ...dataProducto,
             thereAreNewImages: Boolean(images && images.length > 0),
           };
-
           //Actualizar producto (incluye eliminar imágenes viejas)
           await update({ id, slugProd, dataProducto: dataProductoToUpdate });
-
           //Subir imágenes nuevas si existen
           if (images && images.length > 0) {
-            // ==================== NUEVO: Subir imágenes en PARALELO ====================
-            // Usando Promise.allSettled para garantizar que si 1 falla, rechazamos todo
+            // Primero subimos las nuevas imágenes para obtener sus URLs
             const uploadPromises = images.map((file) =>
               uploadFile("products", storeId, id, file),
             );
-
+            // Usando Promise.allSettled para garantizar que si 1 falla, rechazamos todo
             const uploadResults = await Promise.allSettled(uploadPromises);
-
             // Validar que TODAS las subidas fueron exitosas
             const imageUrls = uploadResults.map((result, index) => {
               if (result.status === "fulfilled") {
+                //return result.value.replace(STORAGE_PUBLIC_URL, "");
                 return result.value;
               }
               throw new Error(
                 `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
               );
             });
-            // ================================================================================
-
             //Guardar URLs nuevas en tabla
             await saveProductImages({ productId: id, imageUrls, slugProd });
           }
-
           router.push("/dashboard/products");
-
           //revalidar cache
           revalidateProductCache(storeSlug, slugProd);
-
           onSuccess?.();
         });
       },
@@ -234,25 +158,6 @@ export function useProductActions() {
    * Action Delete Product Executed with Toast Notifications
    * @param id
    * @param slugProd
-   */
-  /*   const deleteProduct = (id: string, slugProd: string) => {
-    showPromise({
-      promise: () => remove({ id, slugProd }),
-      messages: {
-        loading: "Eliminando producto...",
-        success: "Producto eliminado",
-        error: (err) => err.message,
-      },
-      richColors: true,
-      position: "top-right",
-      duration: 3000,
-    });
-  }; */
-
-  /**
-   * Action Delete Product Executed with Toast Notifications
-   * @param id
-   * @param slugProd
    * @param storeSlug (Opcional) Para revalidar caché
    * @param onSuccess (Opcional) Callback de éxito
    */
@@ -266,12 +171,10 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           await remove({ id, slugProd });
-
           // Revalidar caché si se proporciona el slug de la tienda
           if (storeSlug) {
             revalidateProductCache(storeSlug, slugProd);
           }
-
           onSuccess?.();
         });
       },
@@ -302,10 +205,8 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           await offerProduct({ slugProd, params });
-
           //revalidar cache
           revalidateProductCache(storeSlug, slugProd);
-
           onSuccess?.();
         });
       },
@@ -340,10 +241,8 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           await toggleAvailableProduct({ id, slugProd, is_available });
-
           //revalidar cache
           revalidateProductCache(storeSlug, slugProd);
-
           onSuccess?.();
         });
       },

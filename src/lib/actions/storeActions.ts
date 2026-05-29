@@ -2,9 +2,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/supabaseServer";
-//import { uploadFile } from "@/lib/utils/storage";
 import { generateSlug } from "@/lib/utils/slug";
-import type { StoreAction, StoreForm } from "@/lib/schemas/store";
+import type { StoreAction } from "@/lib/schemas/store";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getTrialExpirationDate } from "../helpers/DataFormat";
 import { purgeCatalogCache } from "../cloudflare/purgeCache";

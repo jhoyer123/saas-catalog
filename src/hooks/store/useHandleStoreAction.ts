@@ -35,11 +35,9 @@ export function useHandleStoreActions() {
       promise: async () => {
         await withPending(async () => {
           const { logo, ...storeData } = data;
-
-          // 1. Crear tienda sin logo
+          // Crear tienda sin logo
           const newStore = await create(storeData as StoreAction);
-
-          // 2. Si hay logo, subirlo desde el cliente y actualizar
+          // Si hay logo, subirlo desde el cliente y actualizar
           if (logo instanceof File) {
             const logoUrl = await uploadFile(
               "stores",
@@ -50,7 +48,6 @@ export function useHandleStoreActions() {
             );
             await updateStoreLogo(newStore.id, logoUrl);
           }
-
           onSuccess?.();
           router.push("/dashboard/panel");
         });
@@ -91,10 +88,8 @@ export function useHandleStoreActions() {
             );
             await updateStoreLogo(id, logoUrl);
           }
-
           // revalidar caché
           await revalidateStoreCache(storeSlug);
-
           onSuccess?.();
         });
       },

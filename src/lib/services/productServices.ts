@@ -6,6 +6,66 @@ import { createClient } from "../supabase/supabaseClient";
 import { generateSlug } from "../utils/slug";
 import * as Sentry from "@sentry/nextjs";
 
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+// Helper para extraer public_id de una URL o ruta relativa de Cloudinary
+const getPublicId = (url: string): string => {
+  if (url.startsWith("http")) {
+    const pathname = new URL(url).pathname;
+    const withoutPrefix = pathname.replace(/^\/[^/]+\/[^/]+\/(?:v\d+\/)?/, "");
+    return withoutPrefix.replace(/\.[^/.]+$/, "");
+  }
+
+  return url.replace(/\.[^/.]+$/, "");
+};
+
+const deleteFromCloudinary = async (urls: string[]) => {
+  if (!urls.length) return;
+
+  if (!CLOUDINARY_CLOUD_NAME) {
+    throw new Error("Missing Cloudinary cloud name");
+  }
+
+  const public_ids = urls.map(getPublicId);
+
+  const signResponse = await fetch("/api/cloudinary-sign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ public_ids }),
+  });
+
+  if (!signResponse.ok) {
+    const payload = await signResponse.json().catch(() => ({}));
+    throw new Error(payload.error ?? "Error al obtener firma de Cloudinary");
+  }
+
+  const { signature, timestamp } = await signResponse.json();
+
+  const formData = new FormData();
+  formData.append("public_ids", public_ids.join(","));
+  formData.append("signature", signature);
+  formData.append("timestamp", String(timestamp));
+  formData.append(
+    "api_key",
+    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY ?? "",
+  );
+
+  const destroyResponse = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/destroy`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  if (!destroyResponse.ok) {
+    const payload = await destroyResponse.json().catch(() => ({}));
+    throw new Error(payload.error?.message ?? "Error al eliminar imágenes de Cloudinary");
+  }
+
+  return destroyResponse.json();
+};
+
 /**
  * action for create product
  * @param dataProducto
@@ -109,7 +169,7 @@ export const saveProductImages = async (
  * @param storeId
  * @returns
  */
-export const updateProduct = async (
+/* export const updateProduct = async (
   id: string,
   slugProd: string,
   dataProducto: ProductInputServiceUpdate,
@@ -182,8 +242,19 @@ export const updateProduct = async (
 
     //Eliminar archivos del bucket
     const paths = dataProducto.imageToDelete!.map((url: string) => {
-      const pathname = new URL(url).pathname;
-      return pathname.replace("/storage/v1/object/public/products/", "");
+      let path = url;
+      // Si es una URL completa, extrae la ruta interna
+      if (path.startsWith("http")) {
+        path = new URL(url).pathname.replace(
+          "/storage/v1/object/public/products/",
+          "",
+        );
+      }
+      // Si la ruta relativa incluye el nombre del bucket, quítalo
+      else if (path.startsWith("products/")) {
+        path = path.replace("products/", "");
+      }
+      return path;
     });
 
     const { error: storageError } = await supabase.storage
@@ -196,17 +267,80 @@ export const updateProduct = async (
     }
   }
 
-  //revalidar si no hay nuevas imagenes
-  /* if (!dataProducto.thereAreNewImages) {
-    revalidateTag(`products-${storeSlug}`, "max");
-    revalidatePath(`/public/${storeSlug}`);
-    await purgeCatalogCache(storeSlug);
-    if (slugProd) {
-      revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-      revalidatePath(`/public/${storeSlug}/${slugProd}`);
-      await purgeProductDetailCache(storeSlug, slugProd);
+  return data;
+}; */
+export const updateProduct = async (
+  id: string,
+  slugProd: string,
+  dataProducto: ProductInputServiceUpdate,
+  storeSlug: string,
+) => {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
+      name: dataProducto.name,
+      price: dataProducto.price,
+      slug: generateSlug(dataProducto.name),
+      description: dataProducto.description,
+      brand_id: dataProducto.brand_id ?? null,
+      category_id: dataProducto.category_id,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      if (error.message.includes("name")) {
+        console.error("updateProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este nombre" };
+      }
+      if (error.message.includes("sku")) {
+        console.error("updateProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este codigo" };
+      }
+      if (error.message.includes("slug")) {
+        console.error("updateProduct DB ERROR:", error);
+        return { error: "Ya existe un producto con este slug" };
+      }
     }
-  } */
+
+    if (error.code === "P0001") {
+      console.error("updateProduct DB ERROR:", error);
+      return { error: error.message };
+    }
+
+    console.error("updateProduct DB ERROR:", error);
+    return { error: "Error al actualizar el producto" };
+  }
+
+  const imageToDelete = dataProducto.imageToDelete ?? [];
+
+  if (imageToDelete.length > 0) {
+    const [dbResult, cloudinaryResult] = await Promise.allSettled([
+      supabase.from("product_images").delete().in("image_url", imageToDelete),
+      deleteFromCloudinary(imageToDelete),
+    ]);
+
+    if (
+      dbResult.status === "rejected" ||
+      (dbResult.status === "fulfilled" && dbResult.value.error)
+    ) {
+      const dbError =
+        dbResult.status === "rejected" ? dbResult.reason : dbResult.value.error;
+      console.error("updateProduct DB ERROR:", dbError);
+      return { error: "Error al eliminar las imágenes del producto" };
+    }
+
+    if (cloudinaryResult.status === "rejected") {
+      console.error("updateProduct Cloudinary ERROR:", cloudinaryResult.reason);
+      return { error: "Error al eliminar las imágenes del producto" };
+    }
+  }
+
   return data;
 };
 
@@ -222,46 +356,35 @@ export const deleteProductAction = async (
   storeId: string,
   storeSlug: string,
 ) => {
-  const supabase = await createClient();
+  const supabase = createClient();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
+  const { data: images } = await supabase
+    .from("product_images")
+    .select("image_url")
+    .eq("product_id", id);
 
-  // Obtener archivos antes de borrar la DB
-  const folderPath = `${storeId}/${id}`;
-  const { data: files } = await supabase.storage
-    .from("products")
-    .list(folderPath);
-
-  // Borrar en DB (transaccionado)
   const { error } = await supabase.rpc("delete_product", {
     p_product_id: id,
   });
 
   if (error) {
+    Sentry.captureException(error, { extra: { id, storeId } });
     console.error("deleteProductAction DB ERROR:", error);
     return { error: "Error al eliminar el producto" };
   }
 
-  // Borrar del storage
-  if (files && files.length > 0) {
-    const paths = files.map((f) => `${folderPath}/${f.name}`);
-    await supabase.storage.from("products").remove(paths);
+  if (images && images.length > 0) {
+    try {
+      await deleteFromCloudinary(images.map((img) => img.image_url));
+    } catch (err) {
+      Sentry.captureException(err, { extra: { id } });
+      console.error("deleteProductAction Cloudinary ERROR:", err);
+    }
   }
 
-  //revalidateTag(`products-${storeSlug}`, "max");
-  //revalidateTag(cacheTag("products", storeSlug), "max");
-  //revalidatePath(`/public/${storeSlug}`);
-  //await purgeCatalogCache(storeSlug);
-  //if (slugProd) {
-  //revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-  //revalidateTag(cacheTag(`product-${slugProd}`, storeSlug), "max");
-  //revalidatePath(`/public/${storeSlug}/${slugProd}`);
-  //await purgeProductDetailCache(storeSlug, slugProd);
-  //}
+  return { success: true };
 };
+
 
 /**
  * Activa o desactiva la oferta de un producto
@@ -306,15 +429,6 @@ export const toggleOfferAction = async (
     console.error("toggleOfferAction DB ERROR:", error);
     return { error: "Error al actualizar la oferta del producto" };
   }
-
-  /* revalidateTag(`products-${storeSlug}`, "max");
-  revalidatePath(`/public/${storeSlug}`);
-  await purgeCatalogCache(storeSlug);
-  if (slugProd) {
-    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-    revalidatePath(`/public/${storeSlug}/${slugProd}`);
-    await purgeProductDetailCache(storeSlug, slugProd);
-  } */
 };
 
 /**
@@ -341,16 +455,6 @@ export const toggleAvailableAction = async (
     console.error("toggleAvailableAction DB ERROR:", error);
     return { error: "Error al actualizar la disponibilidad del producto" };
   }
-
-  /* revalidateTag(`products-${storeSlug}`, "max");
-  revalidatePath(`/public/${storeSlug}`);
-  await purgeCatalogCache(storeSlug);
-
-  if (slugProd) {
-    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-    revalidatePath(`/public/${storeSlug}/${slugProd}`);
-    await purgeProductDetailCache(storeSlug, slugProd);
-  } */
 
   return { data };
 };
