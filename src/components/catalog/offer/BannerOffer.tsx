@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
 import { Banner } from "@/types/catalog/catalog.types";
 import { useState } from "react";
-import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 const FALLBACK_BANNER = "/images/placeholder.webp"; //fallback genérico para banners
 
@@ -47,26 +46,21 @@ function BannerImage({
   priority?: boolean;
 }) {
   const { imgSrc, onError } = useBannerFallback(src);
-  const mobileSrc = getCatalogImageUrl(imgSrc, 768, 75);
-  const desktopSrc = imgSrc;
 
   return (
-    <picture>
-      <source media="(max-width: 768px)" srcSet={mobileSrc} />
-      <Image
-        src={desktopSrc}
-        alt={alt}
-        fill
-        sizes="(max-width: 768px) 100vw, 80vw"
-        quality={75}
-        className="object-cover pointer-events-none"
-        priority={priority}
-        fetchPriority={priority ? "high" : "auto"}
-        loading={priority ? "eager" : "lazy"}
-        draggable={false}
-        onError={onError}
-      />
-    </picture>
+    <Image
+      src={imgSrc}
+      alt={alt}
+      quality={75}
+      fill
+      sizes="(max-width: 768px) 100vw, 80vw"
+      className="object-cover pointer-events-none"
+      priority={priority}
+      fetchPriority={priority ? "high" : "auto"}
+      loading={priority ? "eager" : "lazy"}
+      draggable={false}
+      onError={onError}
+    />
   );
 }
 
@@ -190,16 +184,6 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
   );
 };
 
-// When the client carousel mounts, remove the server-rendered LCP image to avoid duplication
-useEffect(() => {
-  const el = document.getElementById("hero-lcp");
-  if (el && el.parentElement) {
-    el.parentElement.removeChild(el);
-  }
-  const wrapper = document.getElementById("hero-lcp-wrapper");
-  if (wrapper && wrapper.parentElement) {
-    wrapper.parentElement.removeChild(wrapper);
-  }
-}, []);
+
 
 export default BannerOffer;
