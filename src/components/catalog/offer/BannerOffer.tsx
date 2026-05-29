@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
 import { Banner } from "@/types/catalog/catalog.types";
@@ -50,18 +51,22 @@ function BannerImage({
   const desktopSrc = imgSrc;
 
   return (
-    <img
-      src={desktopSrc}
-      srcSet={`${mobileSrc} 768w, ${desktopSrc} 1440w`}
-      sizes="(max-width: 768px) 100vw, 80vw"
-      alt={alt}
-      loading={priority ? "eager" : "lazy"}
-      fetchPriority={priority ? "high" : "auto"}
-      decoding="async"
-      draggable={false}
-      onError={onError}
-      className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-    />
+    <picture>
+      <source media="(max-width: 768px)" srcSet={mobileSrc} />
+      <Image
+        src={desktopSrc}
+        alt={alt}
+        fill
+        sizes="(max-width: 768px) 100vw, 80vw"
+        quality={75}
+        className="object-cover pointer-events-none"
+        priority={priority}
+        fetchPriority={priority ? "high" : "auto"}
+        loading={priority ? "eager" : "lazy"}
+        draggable={false}
+        onError={onError}
+      />
+    </picture>
   );
 }
 

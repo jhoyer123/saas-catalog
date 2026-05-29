@@ -27,13 +27,21 @@ export default async function StoreLayout({
   return (
     <>
       {/* Preconnects van aquí, Next.js los mueve al <head> automáticamente */}
-      <link
+      {/* <link
         rel="preconnect"
         href="https://supabase-images.jhoyervega4.workers.dev"
       />
       <link
         rel="dns-prefetch"
         href="https://supabase-images.jhoyervega4.workers.dev"
+      /> */}
+      <link
+        rel="preconnect"
+        href="https://cloudinary-proxy-service.jhoyervega4.workers.dev"
+      />
+      <link
+        rel="dns-prefetch"
+        href="https://cloudinary-proxy-service.jhoyervega4.workers.dev"
       />
       <style dangerouslySetInnerHTML={{ __html: css }} />
       {umamiId && (
