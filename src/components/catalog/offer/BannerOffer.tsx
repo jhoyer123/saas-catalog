@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useBannerCarousel } from "@/hooks/catalog/useBannerCarousel";
@@ -95,6 +95,18 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
     onPointerCancel,
   } = useBannerCarousel(safeBanners);
 
+  // When the client carousel mounts, remove the server-rendered LCP image to avoid duplication
+  useEffect(() => {
+    const el = document.getElementById("hero-lcp");
+    if (el && el.parentElement) {
+      el.parentElement.removeChild(el);
+    }
+    const wrapper = document.getElementById("hero-lcp-wrapper");
+    if (wrapper && wrapper.parentElement) {
+      wrapper.parentElement.removeChild(wrapper);
+    }
+  }, []);
+
   return (
     <div
       className="relative w-full overflow-hidden bg-gray-100 select-none md:rounded-lg"
@@ -177,5 +189,17 @@ const BannerOffer: React.FC<BannerOfferProps> = ({ banners }) => {
     </div>
   );
 };
+
+// When the client carousel mounts, remove the server-rendered LCP image to avoid duplication
+useEffect(() => {
+  const el = document.getElementById("hero-lcp");
+  if (el && el.parentElement) {
+    el.parentElement.removeChild(el);
+  }
+  const wrapper = document.getElementById("hero-lcp-wrapper");
+  if (wrapper && wrapper.parentElement) {
+    wrapper.parentElement.removeChild(wrapper);
+  }
+}, []);
 
 export default BannerOffer;

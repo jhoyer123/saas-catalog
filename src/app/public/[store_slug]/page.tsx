@@ -6,6 +6,7 @@ import {
   getPublicStore,
 } from "@/lib/actions/catalogActions";
 import CatalogClient from "@/components/catalog/CatalogClient";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 import {
   QueryClient,
   HydrationBoundary,
@@ -55,6 +56,21 @@ export default async function Page({ params }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      {/* Server-rendered LCP image: visible in initial HTML for LCP detection. */}
+      {banners && banners.length > 0 && (
+        <div id="hero-lcp-wrapper" style={{ width: "100%" }}>
+          <img
+            id="hero-lcp"
+            src={getCatalogImageUrl(banners[0].image_url)}
+            alt={"Banner"}
+            loading="eager"
+            fetchPriority="high"
+            width={1280}
+            height={720}
+            style={{ width: "100%", height: "auto", display: "block" }}
+          />
+        </div>
+      )}
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center bg-catalog-primary text-catalog-secondary text-md font-medium">
