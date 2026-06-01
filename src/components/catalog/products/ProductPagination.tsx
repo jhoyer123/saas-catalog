@@ -72,6 +72,7 @@ export function ProductPagination({
           size="sm"
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
+          aria-label="Ir a la página anterior"
         >
           <ChevronLeft />
         </Button>
@@ -111,6 +112,7 @@ export function ProductPagination({
           size="sm"
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
+          aria-label="Ir a la página siguiente"
         >
           <ChevronRight />
         </Button>

@@ -183,7 +183,7 @@ export default function CatalogClient({
       {hasBanners && (
         <div className="max-w-7xl w-full mx-auto py-1 lg:py-3 px-1">
           <div className="flex gap-3 items-center justify-center">
-            <aside className="hidden lg:block w-90 shrink-0">
+            <aside className="w-90 hidden lg:block shrink-0">
               <ProductFilterControls categories={categories} brands={brands} />
             </aside>
 

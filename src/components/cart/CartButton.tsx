@@ -1,10 +1,3 @@
-/**
- * CartButton — Botón que abre el carrito desde el header.
- *
- * Muestra un badge con la cantidad total de items.
- * Usa un efecto de hydration-safe para evitar mismatch de SSR.
- */
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -32,13 +25,13 @@ export function CartButton({ whatsappNumber }: CartButtonProps) {
   const displayCount = mounted ? count : 0;
 
   return (
-    <>
+    <div>
       <button
         onClick={() => setOpen(true)}
         aria-label="Abrir carrito de compras"
-        className="relative cursor-pointer text-catalog-secondary focus:outline-none focus:ring-2 focus:ring-catalog-primary rounded"
+        className="relative bg-catalog-primary cursor-pointer p-2 text-catalog-secondary focus:outline-none focus:ring-2 focus:ring-catalog-primary rounded"
       >
-        <ShoppingCart className="h-7 w-6.5 md:w-6.5 md:h-7" />
+        <ShoppingCart className="h-5 w-5 lg:h-5 lg:w-5" />
 
         {/* Badge de cantidad */}
         {displayCount > 0 && (
@@ -56,6 +49,6 @@ export function CartButton({ whatsappNumber }: CartButtonProps) {
         onOpenChange={setOpen}
         whatsappNumber={whatsappNumber}
       />
-    </>
+    </div>
   );
 }

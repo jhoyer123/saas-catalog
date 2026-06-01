@@ -6,6 +6,7 @@ import {
 import { StoreCatalogData } from "@/types/catalog/catalog.types";
 import Image from "next/image";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
+import { MapPin } from "lucide-react";
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   instagram: (
@@ -125,10 +126,10 @@ export default async function Footer({
                 <span className="text-[12px] font-medium font-inter tracking-[1px] uppercase text-catalog-secondary/70 truncate">
                   {branch.name}
                 </span>
-                <span className="text-xs  text-catalog-secondary/60 font-inter font-light leading-relaxed line-clamp-2 lg:text-sm">
+                <span className="text-xs text-catalog-secondary/60 font-inter font-light leading-relaxed line-clamp-2 lg:text-sm">
                   {branch.address}
                 </span>
-                <span className="text-xs  text-catalog-secondary/60 font-inter font-light leading-relaxed line-clamp-2 lg:text-sm">
+                <span className="text-xs text-catalog-secondary/60 font-inter font-light leading-relaxed line-clamp-2 lg:text-sm">
                   {branch.phone && `Tel: ${branch.phone}`}
                 </span>
                 {/* mapa */}
@@ -136,22 +137,12 @@ export default async function Footer({
                   <Link
                     href={`https://www.google.com/maps?q=${branch.lat},${branch.lng}`}
                     target="_blank"
-                    className="group mt-2 inline-flex items-center gap-2 text-xs text-catalog-secondary/55 hover:text-catalog-secondary transition-colors w-fit"
+                    className="group mt-2 inline-flex items-center gap-2 text-xs text-catalog-secondary/60 hover:text-catalog-secondary/70 transition-colors w-fit border border-catalog-secondary/40 rounded-full px-3 py-1 font-light lg:text-sm"
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      width={14}
-                      height={14}
-                      className="opacity-70 group-hover:opacity-100 transition-opacity"
-                    >
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-
-                    <span className="font-light tracking-wide">
+                    <span className="rounded-sm flex items-center justify-center transition-colors">
+                      <MapPin className="w-4 h-4" />
+                    </span>
+                    <span className="font-light font-inter leading-relaxed text-catalog-secondary/60 group-hover:text-catalog-secondary/70">
                       Ver ubicación
                     </span>
                   </Link>

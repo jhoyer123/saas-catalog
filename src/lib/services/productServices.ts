@@ -195,18 +195,6 @@ export const updateProduct = async (
       return { error: `Error al eliminar la imagen: ${storageError.message}` };
     }
   }
-
-  //revalidar si no hay nuevas imagenes
-  /* if (!dataProducto.thereAreNewImages) {
-    revalidateTag(`products-${storeSlug}`, "max");
-    revalidatePath(`/public/${storeSlug}`);
-    await purgeCatalogCache(storeSlug);
-    if (slugProd) {
-      revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-      revalidatePath(`/public/${storeSlug}/${slugProd}`);
-      await purgeProductDetailCache(storeSlug, slugProd);
-    }
-  } */
   return data;
 };
 
@@ -250,17 +238,6 @@ export const deleteProductAction = async (
     const paths = files.map((f) => `${folderPath}/${f.name}`);
     await supabase.storage.from("products").remove(paths);
   }
-
-  //revalidateTag(`products-${storeSlug}`, "max");
-  //revalidateTag(cacheTag("products", storeSlug), "max");
-  //revalidatePath(`/public/${storeSlug}`);
-  //await purgeCatalogCache(storeSlug);
-  //if (slugProd) {
-  //revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-  //revalidateTag(cacheTag(`product-${slugProd}`, storeSlug), "max");
-  //revalidatePath(`/public/${storeSlug}/${slugProd}`);
-  //await purgeProductDetailCache(storeSlug, slugProd);
-  //}
 };
 
 /**
@@ -306,15 +283,6 @@ export const toggleOfferAction = async (
     console.error("toggleOfferAction DB ERROR:", error);
     return { error: "Error al actualizar la oferta del producto" };
   }
-
-  /* revalidateTag(`products-${storeSlug}`, "max");
-  revalidatePath(`/public/${storeSlug}`);
-  await purgeCatalogCache(storeSlug);
-  if (slugProd) {
-    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-    revalidatePath(`/public/${storeSlug}/${slugProd}`);
-    await purgeProductDetailCache(storeSlug, slugProd);
-  } */
 };
 
 /**
@@ -341,16 +309,6 @@ export const toggleAvailableAction = async (
     console.error("toggleAvailableAction DB ERROR:", error);
     return { error: "Error al actualizar la disponibilidad del producto" };
   }
-
-  /* revalidateTag(`products-${storeSlug}`, "max");
-  revalidatePath(`/public/${storeSlug}`);
-  await purgeCatalogCache(storeSlug);
-
-  if (slugProd) {
-    revalidateTag(`product-${storeSlug}-${slugProd}`, "max");
-    revalidatePath(`/public/${storeSlug}/${slugProd}`);
-    await purgeProductDetailCache(storeSlug, slugProd);
-  } */
 
   return { data };
 };

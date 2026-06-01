@@ -49,7 +49,7 @@ export function ProductFilterControls({
   }, [filters.isOffer]);
 
   return (
-    <div className="bg-card rounded-2xl lg:border lg:border-border/50 p-4 lg:p-7 space-y-5 lg:shadow-sm">
+    <div className="bg-card rounded-md lg:border lg:border-border/50 p-4 lg:p-7 space-y-5 lg:shadow-sm">
       {/* Header */}
       <div className="items-center justify-between flex pb-1 border-b border-border/40">
         <h2 className="font-poppins text-sm lg:text-base hidden lg:flex tracking-widest uppercase text-muted-foreground font-medium">

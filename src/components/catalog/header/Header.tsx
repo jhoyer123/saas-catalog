@@ -15,9 +15,9 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
   return (
     <header
       id="catalog-header"
-      className="bg-catalog-primary/80 border-b w-full fixed top-0 left-0 right-0 z-20"
+      className="bg-catalog-primary/80 w-full fixed top-0 left-0 right-0 z-20"
     >
-      <div className="container mx-auto px-1.5 py-1 flex items-center justify-between md:px-6 lg:px-35">
+      <div className="container mx-auto px-1.5 py-0.5 flex items-center justify-between md:px-6 lg:px-35">
         <Link href={`/public/${store.slug}`}>
           <Image
             src={
@@ -28,8 +28,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
             alt="Logo de la Tienda"
             width={80}
             height={80}
-            //lassName="w-10 h-10 lg:w-12 lg:h-12 object-contain"
-            className="h-auto w-auto max-h-12 max-w-12 lg:max-h-13 lg:max-w-13  rounded-md object-contain"
+            className="h-auto w-auto max-h-12 max-w-12 lg:max-h-13 lg:max-w-13 object-contain"
           />
         </Link>
         <h1 className="text-lg font-semibold text-catalog-secondary text-center md:text-2xl">
