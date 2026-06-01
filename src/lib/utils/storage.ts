@@ -15,14 +15,6 @@ export const uploadFile = async (
   const supabase = await createClient();
 
   const ext = file.name.split(".").pop();
-  
-  // ==================== ANTIGUO (comentado - garantía de rollback) ====================
-  // //const path = `${userId}/${folder}/${Date.now()}.${ext}`;
-  // const path = fileName
-  //   ? `${userId}/${folder}/${fileName}.${ext}` // fijo → sobreescribe
-  //   : `${userId}/${folder}/${Date.now()}.${ext}`; // único → acumula
-  // ==================================================================================
-  
   // ==================== NUEVO: Date.now() + UUID para evitar colisiones ====================
   // Ahora usamos UUID para garantizar unicidad incluso si 2+ imágenes se suben en <1ms (paralelo)
   const path = fileName
@@ -44,21 +36,3 @@ export const uploadFile = async (
 
   return publicUrl;
 };
-
-/**
- * Delete a file from Supabase Storage given its public URL
- * @param bucket
- * @param url
- */
-/* export const deleteFile = async (
-  bucket: string,
-  url: string,
-): Promise<void> => {
-  const supabase = await createClient();
-
-  // extraer el path de la url publica
-  const path = url.split(`${bucket}/`)[1];
-
-  const { error } = await supabase.storage.from(bucket).remove([path]);
-  if (error) throw new Error(error.message);
-}; */
