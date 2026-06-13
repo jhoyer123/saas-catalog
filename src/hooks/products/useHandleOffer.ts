@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 //import { toggleOfferAction } from "@/lib/actions/productActions";
 import { toggleOfferAction } from "@/lib/services/productServices";
-import type { ToggleOfferParams } from "@/lib/actions/productActions";
+import type { ToggleOfferParams } from "@/lib/services/productServices";
 import { useSessionData } from "../auth/useSessionData";
 
 export const useToggleOffer = () => {
