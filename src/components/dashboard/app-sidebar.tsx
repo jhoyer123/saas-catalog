@@ -59,7 +59,7 @@ const navItems: NavItem[] = [
     requiresStore: true,
   },
   { name: "Mi Tienda", url: "/dashboard/store", icon: Store },
-  { name: "Configuración", url: "/dashboard/settings", icon: Settings },
+  //{ name: "Configuración", url: "/dashboard/settings", icon: Settings },
 ];
 
 const navSecondaryItems: NavItem[] = [

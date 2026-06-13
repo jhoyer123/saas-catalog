@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
-import "./globals.css";
+//import "./globals.css";
+import "@/app/globals.css";
+import "leaflet/dist/leaflet.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/query-provider";
 import GlobalErrorHandler from "@/components/error/GlobalErrorHandler";

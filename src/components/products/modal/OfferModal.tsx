@@ -12,19 +12,21 @@ import { Button } from "@/components/ui/button";
 import { Tag } from "lucide-react";
 import type { ProductCatalog } from "@/types/product.types";
 import { FormOffer } from "../form/FormOffer";
+import { ToggleOfferParams } from "@/lib/services/productServices";
 
 interface OfferModalProps {
   open: boolean;
   product: ProductCatalog;
   onClose: () => void;
+  onConfirmOffer: (params: ToggleOfferParams) => void;
 }
 
-function isExpired(offer_end: string | null | undefined): boolean {
-  if (!offer_end) return false;
-  return new Date(offer_end) < new Date();
-}
-
-export function OfferModal({ open, product, onClose }: OfferModalProps) {
+export function OfferModal({
+  open,
+  product,
+  onClose,
+  onConfirmOffer,
+}: OfferModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -42,7 +44,11 @@ export function OfferModal({ open, product, onClose }: OfferModalProps) {
         </DialogHeader>
 
         {/* El form maneja todo: toggle, campos, estados, validaciones */}
-        <FormOffer product={product} onClose={onClose} />
+        <FormOffer
+          product={product}
+          onClose={onClose}
+          onConfirmOffer={(params: ToggleOfferParams) => onConfirmOffer(params)}
+        />
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>

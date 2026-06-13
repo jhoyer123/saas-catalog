@@ -30,6 +30,7 @@ export function ProductsTable() {
     toggleAvailable,
     isPending: isProductPending,
   } = useProductActions();
+  
   //hook router
   const router = useRouter();
 
@@ -71,8 +72,13 @@ export function ProductsTable() {
       <ModalProduct
         modalState={modalState}
         onClose={closeModal}
-        onConfirmDelete={(product) => deleteProduct(product.id, product.slug)}
-        onConfirmOffer={() => toggleOffer}
+        onConfirmDelete={(product) =>
+          deleteProduct(product.id, product.slug, storeSlug)
+        }
+        //onConfirmOffer={() => toggleOffer}
+        onConfirmOffer={(product, params) =>
+          toggleOffer(product.slug, params, storeSlug)
+        }
       />
     </>
   );

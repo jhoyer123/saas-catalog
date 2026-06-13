@@ -60,8 +60,8 @@ export function useHandleActionsSettings() {
     name: string;
     address: string;
     phone: string;
-    lat?: number;
-    lng?: number;
+    lat?: number | null;
+    lng?: number | null;
   };
 
   const saveBranchesAction = (branches: Branch[]) => {

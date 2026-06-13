@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Pencil } from "lucide-react";
 import BannerForm from "../banner/BannerForm";
 import { Plan } from "@/types/plan.types";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 // ============================================
 // COMPONENTE
@@ -56,7 +57,7 @@ export const BannerPreview = ({
         <h2 className="text-sm font-medium text-gray-700">
           Banners{" "}
           <span className="text-gray-400 font-normal">
-            ({banners.length}/3)
+            ({banners.length}/{plan?.max_banners ?? "N/A"})
           </span>
         </h2>
         <button
@@ -86,7 +87,8 @@ export const BannerPreview = ({
               className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200"
             >
               <Image
-                src={url}
+                //src={url}
+                src={getCatalogImageUrl(url)}
                 alt={`Banner ${index + 1}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 1300px"

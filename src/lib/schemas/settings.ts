@@ -19,6 +19,8 @@ export const branchSchema = z.object({
   name: z.string().trim().min(1, "El nombre de la sucursal es requerido"),
   address: z.string().trim().min(1, "La dirección es requerida"),
   phone: z.string().trim().min(8, "Número inválido").max(20, "Número inválido"),
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
 });
 
 export const settingsSchema = z.object({

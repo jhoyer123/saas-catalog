@@ -2,6 +2,7 @@ import { DeleteModal } from "@/components/shared/DeleteAlert";
 import { OfferModal } from "./OfferModal";
 import type { ModalType } from "@/hooks/products/useModalsProduct";
 import type { ProductCatalog } from "@/types/product.types";
+import { ToggleOfferParams } from "@/lib/services/productServices";
 
 interface ModalState {
   type: ModalType | null;
@@ -13,10 +14,15 @@ interface Props {
   modalState: ModalState;
   onClose: () => void;
   onConfirmDelete: (product: ProductCatalog) => void;
-  onConfirmOffer: (product: ProductCatalog) => void;
+  onConfirmOffer: (product: ProductCatalog, params: ToggleOfferParams) => void;
 }
 
-const ModalProduct = ({ modalState, onClose, onConfirmDelete }: Props) => {
+const ModalProduct = ({
+  modalState,
+  onClose,
+  onConfirmDelete,
+  onConfirmOffer,
+}: Props) => {
   return (
     <>
       {/* Modal eliminar */}
@@ -47,6 +53,10 @@ const ModalProduct = ({ modalState, onClose, onConfirmDelete }: Props) => {
           open={modalState.open}
           product={modalState.product}
           onClose={onClose}
+          onConfirmOffer={(params) => {
+            onConfirmOffer(modalState.product!, params);
+            onClose();
+          }}
         />
       )}
     </>

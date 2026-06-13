@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { offerSchema, type OfferFormValues } from "@/lib/schemas/product";
 import type { ProductCatalog } from "@/types/product.types";
-import { useProductActions } from "@/hooks/products/useHandleAction";
 import { MessageFormOffer } from "./MessageFormOffer";
 import { useSessionData } from "@/hooks/auth/useSessionData";
+import { ToggleOfferParams } from "@/lib/services/productServices";
 
 interface FormOfferProps {
   product: ProductCatalog;
   onClose: () => void;
+  onConfirmOffer: (params: ToggleOfferParams) => void;
 }
 
 function toDatetimeLocal(iso: string | null | undefined): string {
@@ -23,9 +24,11 @@ function toDatetimeLocal(iso: string | null | undefined): string {
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
 
-export function FormOffer({ product, onClose }: FormOfferProps) {
-  const { toggleOffer } = useProductActions();
-
+export function FormOffer({
+  product,
+  onClose,
+  onConfirmOffer,
+}: FormOfferProps) {
   const {
     register,
     control,
@@ -67,24 +70,19 @@ export function FormOffer({ product, onClose }: FormOfferProps) {
       : null;
 
   const onSubmit = (data: OfferFormValues) => {
-    toggleOffer(
-      product.slug,
-      {
-        id: product.id,
-        is_offer: data.is_offer,
-        offer_price: data.is_offer ? data.offer_price! : null,
-        offer_start:
-          data.is_offer && data.offer_start
-            ? new Date(data.offer_start).toISOString()
-            : null,
-        offer_end:
-          data.is_offer && data.offer_end
-            ? new Date(data.offer_end).toISOString()
-            : null,
-      },
-      storeSlug!,
-      onClose,
-    );
+    onConfirmOffer({
+      id: product.id,
+      is_offer: data.is_offer,
+      offer_price: data.is_offer ? data.offer_price! : null,
+      offer_start:
+        data.is_offer && data.offer_start
+          ? new Date(data.offer_start).toISOString()
+          : null,
+      offer_end:
+        data.is_offer && data.offer_end
+          ? new Date(data.offer_end).toISOString()
+          : null,
+    });
   };
 
   return (

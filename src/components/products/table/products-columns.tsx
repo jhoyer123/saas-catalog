@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import type { ModalType } from "@/hooks/products/useModalsProduct";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 import { Switch } from "@/components/ui/switch";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 // HELPERS
 /**
@@ -63,7 +64,8 @@ export const createProductsColumns = ({
         return (
           <div className="relative h-11 w-11 overflow-hidden rounded-md border bg-muted shrink-0">
             <Image
-              src={images[0]}
+              //src={images[0]}
+              src={getCatalogImageUrl(images[0])}
               alt={name}
               fill
               sizes="44px"

@@ -27,11 +27,9 @@ export default function SettingsPage() {
   if (isBranchesLoading || isSocialLinksLoading) {
     return <SkeletonSettings />;
   }
-
-  return (
-    <section className="w-full p-4">
+  {
+    /* <section className="w-full p-4">
       <div className="mx-auto max-w-6xl w-full flex flex-col gap-10">
-        {/* title and description */}
         <div className="flex flex-col gap-2 w-full">
           <h2 className="text-xl font-bold font-poppins tracking-tight lg:text-2xl">
             Configuración del negocio
@@ -41,7 +39,6 @@ export default function SettingsPage() {
             sociales.
           </p>
         </div>
-        {/* section for branches */}
         <div className="flex flex-col gap-4 border rounded-lg border-input p-2 w-full bg-card font-inter md:p-6">
           <div className="flex flex-col gap-1 border-b pb-4">
             <h3 className="text-lg font-semibold font-poppins">Sucursales</h3>
@@ -58,7 +55,6 @@ export default function SettingsPage() {
             isPending={isPending}
           />
         </div>
-        {/* section for social links */}
         <div className="flex flex-col gap-4 border rounded-lg border-input p-2 w-full bg-card font-inter md:p-6">
           <div className="flex flex-col gap-1 border-b pb-4">
             <h3 className="text-lg font-semibold font-poppins">
@@ -83,6 +79,14 @@ export default function SettingsPage() {
           />
         </div>
       </div>
+    </section> */
+  }
+  return (
+    <section className="w-full p-4">
+      {/* anuncio */}
+      <span className="text-muted-foreground text-md lg:text-lg">
+        pagina no disponible
+      </span>
     </section>
   );
 }

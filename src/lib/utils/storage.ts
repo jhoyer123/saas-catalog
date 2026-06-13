@@ -1,5 +1,3 @@
-// src/lib/utils/storage.ts
-//import { createClient } from "@/lib/supabase/supabaseServer";
 import { createClient } from "@/lib/supabase/supabaseClient";
 
 // estructura: bucket/userId/carpeta/archivo
@@ -13,26 +11,19 @@ export const uploadFile = async (
   fileName?: string, // <-- opcional
 ): Promise<string> => {
   const supabase = await createClient();
-
   const ext = file.name.split(".").pop();
-  // ==================== NUEVO: Date.now() + UUID para evitar colisiones ====================
   // Ahora usamos UUID para garantizar unicidad incluso si 2+ imágenes se suben en <1ms (paralelo)
   const path = fileName
     ? `${userId}/${folder}/${fileName}.${ext}` // fijo → sobreescribe (para logos, etc)
     : `${userId}/${folder}/${Date.now()}-${crypto.randomUUID()}.${ext}`; // único + UUID
-  // =======================================================================================
-
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(path, file, { upsert: true });
-
   if (error) {
     throw new Error(error.message);
   }
-
   const {
     data: { publicUrl },
   } = supabase.storage.from(bucket).getPublicUrl(data.path);
-
   return publicUrl;
 };

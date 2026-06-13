@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { saveProductImages } from "@/lib/actions/productActions"; // ajusta el path
+//import { saveProductImages } from "@/lib/actions/productActions"; // ajusta el path
+import { saveProductImages } from "@/lib/services/productServices";
 import { useSessionData } from "../auth/useSessionData";
 
 interface SaveProductImagesParams {

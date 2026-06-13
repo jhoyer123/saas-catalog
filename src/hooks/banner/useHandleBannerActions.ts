@@ -3,6 +3,7 @@ import { useToastPromise } from "../shared/useToastPromise";
 import { useSaveBanners } from "./useSaveBanners";
 import { uploadFile } from "@/lib/utils/storage";
 import { useSessionData } from "../auth/useSessionData";
+import { STORAGE_PREV_VALUE } from "@/lib/constants";
 
 export function useHandleBannerActions() {
   const [isPending, setIsPending] = useState(false);
@@ -37,8 +38,10 @@ export function useHandleBannerActions() {
           // 1. Subir archivos desde el cliente
           const imageUrls: string[] = [];
           for (const file of newFiles) {
+            //const url = await uploadFile("banners", storeId, "banners", file);
+            //imageUrls.push(url);
             const url = await uploadFile("banners", storeId, "banners", file);
-            imageUrls.push(url);
+            imageUrls.push(url.replace(STORAGE_PREV_VALUE, ""));
           }
 
           // 2. Guardar URLs y eliminar en DB via action
