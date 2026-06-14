@@ -55,8 +55,8 @@ const BranchCard = ({
   });
 
   return (
-    <div className="flex h-full flex-col rounded-xl border bg-background p-4 shadow-sm sm:p-5">
-      <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start">
+    <div className="flex h-full flex-col rounded-xl border bg-background p-2 shadow-sm sm:p-5">
+      <div className="mb-4 flex flex-row items-center justify-center">
         <div className="min-w-0 flex-1">
           <h3 className="font-medium leading-tight">Sucursal {index + 1}</h3>
           <p className="text-sm text-muted-foreground">
@@ -70,10 +70,9 @@ const BranchCard = ({
           size="sm"
           onClick={() => remove(index)}
           disabled={disabled}
-          className="self-start text-destructive hover:text-destructive sm:self-auto"
+          className="text-destructive flex flex-col items-center justify-center bg-destructive/20 p-2 border border-input w-auto h-auto"
         >
           <Trash2 className="h-4 w-4" />
-          Quitar
         </Button>
       </div>
 
@@ -130,7 +129,7 @@ const BranchCard = ({
               Haz clic en el mapa para fijar la ubicación.
             </p>
           </div>
-          <p className="text-xs text-muted-foreground sm:text-right break-words">
+          <p className="text-xs text-muted-foreground sm:text-right wrap-break-word">
             {branch?.lat != null && branch?.lng != null
               ? `${branch.lat.toFixed(6)}, ${branch.lng.toFixed(6)}`
               : "Sin ubicación seleccionada"}

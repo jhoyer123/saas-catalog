@@ -1,12 +1,7 @@
 // src/hooks/store/useUpdateStore.ts
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationResult,
-} from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { updateStore } from "@/lib/actions/storeActions";
-import type { StoreAction, StoreForm } from "@/lib/schemas/store";
-import { useSessionData } from "../auth/useSessionData";
+import type { StoreAction } from "@/lib/schemas/store";
 
 interface UpdateStoreInput {
   id: string;
@@ -18,11 +13,6 @@ export const useUpdateStore = (): UseMutationResult<
   Error,
   UpdateStoreInput
 > => {
-  const queryClient = useQueryClient();
-  const { data } = useSessionData();
-  const userId = data?.profile?.id;
-  const slugStore = data?.store?.slug;
-
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: StoreAction }) => {
       const result = await updateStore(id, data);
@@ -30,9 +20,6 @@ export const useUpdateStore = (): UseMutationResult<
         throw new Error(result.error);
       }
       return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session-data"] });
     },
   });
 };

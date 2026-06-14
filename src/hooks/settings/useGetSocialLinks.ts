@@ -8,11 +8,9 @@ import { useSessionData } from "../auth/useSessionData";
 export const useGetSocialLinks = () => {
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
-  if (!storeId) {
-    throw new Error("No se pudo obtener la información de la tienda");
-  }
   return useQuery({
     queryKey: ["store-social-links"],
     queryFn: () => fetchSocialLinks(storeId!),
+    enabled: !!storeId,
   });
 };

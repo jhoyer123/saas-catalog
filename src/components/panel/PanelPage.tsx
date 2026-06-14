@@ -28,7 +28,7 @@ export default function PanelPage({
   const storeIsComplete = !!(
     store?.name &&
     store?.whatsapp_number &&
-    store?.logo_url &&
+    //store?.logo_url &&
     store?.is_active
   );
   // El catálogo solo se muestra si la tienda está completa y tiene al menos un producto
@@ -137,6 +137,7 @@ export default function PanelPage({
                 <button
                   onClick={handleCopy}
                   className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
+                  disabled={hasProducts ? false : true}
                 >
                   {copied ? (
                     <Check className="w-4 h-4 text-green-500" />

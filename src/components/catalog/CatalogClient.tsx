@@ -204,7 +204,7 @@ export default function CatalogClient({
         className="container w-full h-full max-w-7xl mx-auto px-1"
       >
         <div
-          className={`flex flex-col h-full ${hasBanners ? "py-0 gap-4" : "py-6 gap-3"}`}
+          className={`flex h-full ${hasBanners ? "py-0 gap-4 flex-col" : "py-6 gap-3 flex-row"}`}
         >
           {!hasBanners && (
             <aside
@@ -215,29 +215,29 @@ export default function CatalogClient({
             </aside>
           )}
 
-          <div className="w-full flex flex-col gap-1.5 md:gap-2 md:mt-4 lg:hidden">
-            <h2 className="px-2 text-[17px] md:text-md font-bold font-poppins text-catalog-secondary/70">
-              Categorías
-            </h2>
-            <CategoryPills categories={categories} />
-          </div>
-
-          <div className="flex flex-col items-start md:pt-3 md:flex-row md:items-center md:justify-between w-full px-1.5">
-            <h2 className="text-sm font-bold font-inter text-catalog-secondary/65 md:text-md lg:text-lg">
-              Catálogo de Productos
-            </h2>
-            <p className="text-sm font-inter text-catalog-secondary/60">
-              {total} productos encontrados
-            </p>
-          </div>
-
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col">
             {/* Loader mejorado */}
             {isFetching && !isLoading && (
               <div className="h-0.5 w-full overflow-hidden mb-2 bg-border rounded-full">
                 <div className="h-full w-2/5 bg-primary/50 rounded-full catalog-loading-bar" />
               </div>
             )}
+
+            <div className="w-full flex flex-col mb-4 gap-1.5 md:gap-2 md:mt-4 lg:hidden">
+              <h2 className="px-2 text-[17px] md:text-md font-bold font-poppins text-catalog-secondary/70">
+                Categorías
+              </h2>
+              <CategoryPills categories={categories} />
+            </div>
+
+            <div className="flex flex-col items-start mb-4 md:pt-3 md:flex-row md:items-center md:justify-between w-full px-1.5">
+              <h2 className="text-sm font-bold font-inter text-catalog-secondary/65 md:text-md lg:text-lg">
+                Catálogo de Productos
+              </h2>
+              <p className="text-sm font-inter text-catalog-secondary/60">
+                {total} productos encontrados
+              </p>
+            </div>
 
             <div
               className={`transition-opacity duration-200 ${

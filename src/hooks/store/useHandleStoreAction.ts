@@ -10,10 +10,12 @@ import {
 } from "@/lib/actions/storeActions";
 import type { StoreForm, StoreAction } from "@/lib/schemas/store";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function useHandleStoreActions() {
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { mutateAsync: create } = useCreateStore();
   const { mutateAsync: update } = useUpdateStore();
@@ -50,6 +52,9 @@ export function useHandleStoreActions() {
             );
             await updateStoreLogo(newStore.id, logoUrl);
           }
+
+          //revalidar cahce de react-query
+          queryClient.invalidateQueries({ queryKey: ["session-data"] });
 
           onSuccess?.();
           router.push("/dashboard/panel");
@@ -94,6 +99,9 @@ export function useHandleStoreActions() {
 
           // revalidar caché
           await revalidateStoreCache(storeSlug);
+
+          // revalidar cache de react-query
+          queryClient.invalidateQueries({ queryKey: ["session-data"] });
 
           onSuccess?.();
         });

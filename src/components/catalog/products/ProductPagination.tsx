@@ -63,7 +63,7 @@ export function ProductPagination({
   if (totalPages === 0) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-6 w-full max-w-7xl mt-5">
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-3 w-full max-w-7xl mt-5">
       {/* Controles de paginación */}
       <div className="flex items-center gap-2">
         {/* Botón anterior */}
