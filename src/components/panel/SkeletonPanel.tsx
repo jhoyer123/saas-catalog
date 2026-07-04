@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SkeletonPanel() {
   return (
-    <section className="mx-auto max-w-4xl w-full space-y-8 p-4">
+    <section className="mx-auto w-full space-y-8 p-4">
       {/* Header */}
       <div className="space-y-2">
         <Skeleton className="h-7 w-48" />

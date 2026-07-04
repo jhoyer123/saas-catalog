@@ -15,7 +15,7 @@ export default function StorePage() {
   if (!isSessionPending && !data) {
     return (
       <section className="w-full p-4">
-        <div className="mx-auto max-w-6xl w-full flex flex-col items-center justify-center min-h-100 gap-3">
+        <div className="mx-auto w-full flex flex-col items-center justify-center min-h-100 gap-3">
           <p className="text-sm text-muted-foreground">
             No se pudo cargar la información de tu tienda.
           </p>
@@ -32,7 +32,7 @@ export default function StorePage() {
 
   return (
     <section className="w-full p-4">
-      <div className="mx-auto max-w-6xl w-full flex flex-col gap-10">
+      <div className="mx-auto w-full flex flex-col gap-10">
         <div className="flex flex-col gap-2 w-full">
           <h2 className="text-xl font-bold font-poppins tracking-tight lg:text-2xl">
             Configuración de la tienda

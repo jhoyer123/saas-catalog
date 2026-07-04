@@ -64,7 +64,7 @@ export default function PanelPage({
   };
 
   return (
-    <section className="mx-auto max-w-4xl w-full space-y-8 p-4">
+    <section className="mx-auto w-full space-y-8 p-4">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Panel de control</h2>

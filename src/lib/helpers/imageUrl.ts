@@ -1,4 +1,3 @@
-// lib/utils/imageUrl.ts
 const SUPABASE_STORAGE =
   "https://ffippkblrlgsmzlhretb.supabase.co/storage/v1/object/public/";
 const CLOUDFLARE_WORKER = "https://supabase-images.jhoyervega4.workers.dev/";

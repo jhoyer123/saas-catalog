@@ -57,9 +57,9 @@ export default function Plans() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div>
       {/* Toggle moneda */}
-      <div className="flex justify-center mb-12">
+      <div className="flex justify-center mb-6 md:mb-12">
         <div className="flex bg-gray-100 rounded-full p-1.5">
           <button
             onClick={() => setCurrency("bs")}
@@ -85,11 +85,11 @@ export default function Plans() {
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 items-center justify-center gap-5 max-w-5xl mx-auto pb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-3 items-center justify-center gap-2 mx-auto">
         {plans?.map((plan) => (
           <div
             key={plan.id}
-            className={`relative bg-white rounded-2xl p-8 transition-all duration-200 hover:-translate-y-1 ${
+            className={`relative bg-white rounded-2xl p-4 md:p-8 transition-all duration-200 hover:-translate-y-1 ${
               plan.popular
                 ? "border-2 border-gray-900 shadow-xl"
                 : "border border-gray-200 hover:shadow-md"
