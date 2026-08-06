@@ -2,21 +2,19 @@
 
 import { Label } from "@/components/ui/label";
 import { Controller } from "react-hook-form";
-
 // Hook
 import { useProductForm } from "@/hooks/products/useProductForm";
-
 // Components
 import RichTextEditor from "@/components/products/form/RichTextEditor";
 import FormInput from "@/components/shared/InputForm";
-import FormSelect from "@/components/shared/SelectForm";
-import InputFile from "@/components/products/form/InputFile";
+import InputFile from "@/components/shared/InputFile";
 import { ProductDetail } from "@/types/product.types";
 import { CategorySimple } from "@/types/category.types";
 //import { useEffect } from "react";
 import { BrandOfForm } from "@/types/brand.types";
 import { Plan } from "@/types/plan.types";
 import { OverlayProcess } from "@/components/shared/OverlayProcess";
+import { FormCombobox } from "@/components/shared/FormCombobox";
 
 interface FormProductProps {
   mode: "create" | "update" | "view";
@@ -67,25 +65,25 @@ export default function FormProduct({
           <FormInput
             label="Nombre"
             name="name"
-            //register={register}
             control={control}
             errors={errors}
             inputProps={{
               type: "text",
               placeholder: "Ej: Laptop Gamer",
-              disabled: isViewMode,
             }}
             required={true}
+            readOnly={isViewMode}
           />
 
-          <FormSelect
-            label="Categoría"
+          <FormCombobox
+            label="Categoría del producto"
             name="category_id"
             control={control}
             options={categoryOptions}
-            placeholder="Zapatos, Electrónica..."
-            errors={errors}
-            disabled={isViewMode}
+            placeholder="Selecciona una categoría..."
+            searchPlaceholder="Buscar categoría..."
+            emptyMessage="Categoría no encontrada."
+            readOnly={isViewMode}
             required={true}
           />
         </div>
@@ -93,44 +91,35 @@ export default function FormProduct({
         {/* Fila 2: SKU + Marca + Precio */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="grid md:grid-cols-2 gap-6">
-            {/* <FormInput
-              label="Código"
-              name="sku"
-              register={register}
-              errors={errors}
-              inputProps={{
-                type: "text",
-                placeholder: "PROD-00123",
-                disabled: isViewMode,
-              }}
-            /> */}
             <FormInput
               label="Código"
               name="sku"
-              control={control} // Pasa el control extraído de useProductForm
+              control={control}
               errors={errors}
               inputProps={{
                 type: "text",
                 placeholder: "PROD-00123",
-                disabled: isViewMode,
               }}
+              readOnly={isViewMode}
             />
 
-            <FormSelect
-              label="Marca"
+            <FormCombobox
+              label="Marca del producto"
               name="brand_id"
               control={control}
               options={brandOptions}
-              placeholder="Nike, Samsung..."
-              errors={errors}
+              placeholder="Selecciona una marca..."
+              searchPlaceholder="Buscar marca..."
+              emptyMessage="Marca no encontrada."
               disabled={isViewMode}
+              readOnly={isViewMode}
+              required={true}
             />
           </div>
 
           <FormInput
             label="Precio"
             name="price"
-            //register={register}
             control={control}
             errors={errors}
             inputProps={{
@@ -138,9 +127,9 @@ export default function FormProduct({
               step: "0.01",
               min: 0,
               placeholder: "0.00",
-              disabled: isViewMode,
             }}
             required={true}
+            readOnly={isViewMode}
           />
         </div>
 

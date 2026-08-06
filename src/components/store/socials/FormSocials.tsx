@@ -4,12 +4,11 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Facebook, Instagram, Music2, X } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { socialSchema, type SocialLinksForm } from "@/lib/schemas/settings";
-import { OverlayProcess } from "../shared/OverlayProcess";
+import { OverlayProcess } from "../../shared/OverlayProcess";
 
 const socialFields = [
   {

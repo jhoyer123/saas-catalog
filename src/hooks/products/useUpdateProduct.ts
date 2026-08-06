@@ -1,33 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-//import { updateProduct } from "@/lib/actions/productActions";
 import { updateProduct } from "@/lib/services/productServices";
-import { useSessionData } from "../auth/useSessionData";
 import { ProductInputServiceUpdate } from "@/lib/schemas/product";
 import { ProductCatalog } from "@/types/product.types";
 
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
-  //get data session
-  const { data: sessionData } = useSessionData();
-  //const storeId = sessionData?.store?.id;
-  const slugStore = sessionData?.store?.slug;
+
   return useMutation({
     mutationFn: async ({
       id,
-      slugProd,
       dataProducto,
     }: {
       id: string;
-      slugProd: string;
       dataProducto: ProductInputServiceUpdate;
     }) => {
-      const result = await updateProduct(
-        id,
-        slugProd,
-        dataProducto,
-        //storeId!,
-        slugStore!,
-      );
+      const result = await updateProduct(id, dataProducto);
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }

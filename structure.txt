@@ -117,3 +117,48 @@ catalogo-whatsapp/
 ├── tsconfig.json
 ├── package.json
 └── README.md
+
+
+
+
+
+
+
+STORAGE
+/storage-root (Tu bucket en Cloudflare R2, S3, Supabase, etc.)
+│
+└── /stores/
+    └── /{storeId}/                          <-- Aislamiento total por cliente (Tenant)
+        │
+        ├── /branding/                       <-- ARCHIVOS ÚNICOS (Nombres fijos)
+        │   ├── logo.webp                    # El frontend usará cache busting: logo.webp?v=123
+        │   ├── favicon.webp
+        │   ├── cover.webp
+        │   └── og-image.webp
+        │
+        ├── /banners/                        <-- ARCHIVOS DINÁMICOS (Generados con UUID)
+        │   ├── {uuid_archivo_1}.webp        # Ej: 550e8400-e29b.webp
+        │   └── {uuid_archivo_2}.webp
+        │
+        ├── /categories/                     
+        │   ├── {uuid_archivo}.webp
+        │   └── ...
+        │
+        ├── /brands/                         
+        │   ├── {uuid_archivo}.webp
+        │   └── ...
+        │
+        ├── /option-values/                  <-- Texturas o patrones (Ej: foto de madera)
+        │   ├── {uuid_archivo}.webp
+        │   └── ...
+        │
+        └── /products/                       
+            ├── /{productId}/                <-- Carpeta agrupada por ID del producto
+            │   ├── {uuid_archivo_A}.webp    # Imagen 1 de la galería
+            │   ├── {uuid_archivo_B}.webp    # Imagen 2 de la galería
+            │   └── /variants/               <-- Fotos específicas de una variante
+            │       ├── {uuid_archivo_C}.webp
+            │       └── ...
+            │
+            └── /{otro_productId}/
+                └── ...

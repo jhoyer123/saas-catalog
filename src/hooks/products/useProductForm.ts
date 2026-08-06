@@ -60,39 +60,23 @@ export function useProductForm({
       brand_id: initialData?.brand_id ?? "",
       imageExisting: initialData?.images ?? [],
       imageToDelete: [],
+      images: undefined, // para crear, se suben nuevas imágenes
     },
   });
 
-  // Cuando initialData llega (o cambia), sincroniza el form
-  /*  useEffect(() => {
-    if (initialData && isUpdate) {
-      reset({
-        name: initialData.name ?? "",
-        sku: initialData.sku ?? "",
-        brand: initialData.brand ?? "",
-        price: initialData.price ?? 0,
-        description: initialData.description ?? "",
-        category_id: initialData.category_id ?? "",
-        imageExisting: initialData.images ?? [],
-        imageToDelete: [],
-      });
-    }
-  }, [initialData?.id]); */
-
-  //refinar las categorias para el select (memo para evitar recrear el array en cada render)
+  //refinar las datos para el select (memo para evitar recrear el array en cada render)
   const categoryOptions = useMemo(
     () =>
       (categories ?? []).map((cat) => ({
-        value: String(cat.id),
+        value: cat.id,
         label: cat.name,
       })),
     [categories],
   );
-
   const brandOptions = useMemo(
     () =>
       (brands ?? []).map((brand) => ({
-        value: String(brand.id),
+        value: brand.id,
         label: brand.name,
       })),
     [brands],
@@ -135,7 +119,7 @@ export function useProductForm({
               price: 0,
               images: undefined,
             });
-            console.log(getValues());
+            //console.log(getValues());
           },
         );
       }
@@ -155,6 +139,9 @@ export function useProductForm({
               category_id: "",
               description: "",
               price: 0,
+              images: undefined,
+              imageExisting: [],
+              imageToDelete: [],
             });
           },
         );

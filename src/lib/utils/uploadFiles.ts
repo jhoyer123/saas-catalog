@@ -1,4 +1,4 @@
-"use client";
+/* "use client";
 
 import { createClient } from "@/lib/supabase/supabaseClient";
 
@@ -27,3 +27,4 @@ export const uploadImages = async (
 
   return Promise.all(uploads);
 };
+ */

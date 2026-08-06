@@ -1,6 +1,7 @@
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import Image from "next/image";
 import HeaderSidebarSkeleton from "../dashboard/SkeletonHeaderSidebar";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 const HeaderSidebar = () => {
   const { data: sessionData, isPending } = useSessionData();
@@ -13,9 +14,12 @@ const HeaderSidebar = () => {
     <div className="w-full h-auto flex items-center justify-center pt-2 gap-2 pb-3 border-b">
       {/* Logo */}
       <div className="flex flex-col items-center justify-center gap-3 w-full">
-        <div className="w-auto h-auto max-h-20 max-w-20 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="w-auto h-auto max-h-20 max-w-20 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
           <Image
-            src={sessionData?.store?.logo_url || "/images/logoDefault.webp"}
+            src={
+              getCatalogImageUrl(sessionData?.store?.logo_url) ||
+              "/images/logoDefault.webp"
+            }
             alt="Logo"
             width={48}
             height={48}

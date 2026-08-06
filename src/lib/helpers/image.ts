@@ -1,4 +1,4 @@
-import { ImagePreview } from "@/components/products/form/InputFile";
+import { ImagePreview } from "@/components/shared/InputFile";
 
 /**
  * Convierte FileList a array de previews

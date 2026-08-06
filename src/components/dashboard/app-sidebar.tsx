@@ -5,6 +5,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { NavUser } from "../sidebar/nav-user";
 import HeaderSidebar from "../sidebar/HeaderSidebar";
@@ -16,12 +17,14 @@ import {
   Layers,
   LucideIcon,
   Package,
-  Settings,
+  SlidersHorizontal,
   Store,
+  X,
 } from "lucide-react";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import SkeletonSidebar from "./SkeletonSidebar";
 import { NavSecondary } from "../sidebar/nav-secondary";
+import { Button } from "../ui/button";
 
 /**
  * Definición de items del menú lateral.
@@ -40,6 +43,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: "Dashboard", url: "/dashboard/panel", icon: Frame },
+  {
+    name: "Atributos",
+    url: "/dashboard/options",
+    icon: SlidersHorizontal,
+    requiresStore: true,
+  },
   {
     name: "Categorias",
     url: "/dashboard/categories",
@@ -69,6 +78,8 @@ const navSecondaryItems: NavItem[] = [
 export function AppSidebar() {
   const { data: session, isPending } = useSessionData();
 
+  const { isMobile, setOpenMobile } = useSidebar();
+
   if (isPending) {
     return <SkeletonSidebar />;
   }
@@ -79,6 +90,15 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOpenMobile(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        )}
         <HeaderSidebar />
       </SidebarHeader>
       <SidebarContent>

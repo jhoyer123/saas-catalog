@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useToastPromise } from "../shared/useToastPromise";
 import { useSaveBanners } from "./useSaveBanners";
-import { uploadFile } from "@/lib/utils/storage";
 import { useSessionData } from "../auth/useSessionData";
-import { STORAGE_PREV_VALUE } from "@/lib/constants";
+import { uploadMultipleFiles } from "@/lib/utils/storage";
+import { revalidateBannersCacheAction } from "@/lib/actions/bannerActions";
 
 export function useHandleBannerActions() {
   const [isPending, setIsPending] = useState(false);
@@ -11,6 +11,7 @@ export function useHandleBannerActions() {
 
   const { data: session } = useSessionData();
   const storeId = session?.store?.id;
+  const slugStore = session?.store?.slug;
 
   const { mutateAsync: saveBannersDB } = useSaveBanners();
 
@@ -25,6 +26,12 @@ export function useHandleBannerActions() {
     }
   };
 
+  /**
+   * Guarda los banners en la base de datos.
+   * @param newFiles
+   * @param imagesToDelete
+   * @param onSuccess
+   */
   const saveBanners = (
     newFiles: File[],
     imagesToDelete: string[] = [],
@@ -35,17 +42,22 @@ export function useHandleBannerActions() {
         await withPending(async () => {
           if (!storeId) throw new Error("No se encontró el ID de la tienda");
 
-          // 1. Subir archivos desde el cliente
-          const imageUrls: string[] = [];
-          for (const file of newFiles) {
-            //const url = await uploadFile("banners", storeId, "banners", file);
-            //imageUrls.push(url);
-            const url = await uploadFile("banners", storeId, "banners", file);
-            imageUrls.push(url.replace(STORAGE_PREV_VALUE, ""));
-          }
+          // 1. Subir archivos desde el cliente.
+          const { successes } = await uploadMultipleFiles(
+            { bucket: "stores", folder: `${storeId}/banners` },
+            newFiles,
+          );
 
-          // 2. Guardar URLs y eliminar en DB via action
+          // Las URLs se guardan como paths relativos, tal cual los devuelve
+          // uploadMultipleFiles (sin transformar publicUrl).
+          const imageUrls = successes.map((s) => s.path);
+
+          // 2. Guardar paths y eliminar en DB via action.
+          // Recién acá, con todos los archivos subidos con éxito, tocamos la DB.
           await saveBannersDB({ imageUrls, imagesToDelete });
+
+          //revalidar cache y purgar cache de Cloudflare.
+          revalidateBannersCacheAction(slugStore!);
 
           onSuccess?.();
         });

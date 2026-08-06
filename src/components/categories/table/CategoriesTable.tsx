@@ -61,24 +61,6 @@ export function CategoriesTable() {
       duration: 3000,
     });
   };
-  /*   const handleDelete = (category: Category) => {
-    showPromise({
-      promise: async () => {
-        await removeCategory(category.id);
-        closeModal();
-      },
-      messages: {
-        loading: "Eliminando categoría...",
-        success: "Categoría eliminada",
-        error: (err) => err.message,
-      },
-      richColors: true,
-      position: "top-right",
-      duration: 3000,
-    });
-
-    revalidateCategoriesCache(sessionData?.store?.slug!);
-  }; */
 
   // Columnas memoizadas — se reconstruyen solo si cambia openModal
   const columns = useMemo(

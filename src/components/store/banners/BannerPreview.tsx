@@ -3,13 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Pencil } from "lucide-react";
-import BannerForm from "../banner/BannerForm";
+import BannerForm from "./BannerForm";
 import { Plan } from "@/types/plan.types";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
-
-// ============================================
-// COMPONENTE
-// ============================================
+import { Button } from "@/components/ui/button";
 
 export const BannerPreview = ({
   banners,
@@ -20,22 +17,20 @@ export const BannerPreview = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  // ============================================
   // RENDER - MODO EDICIÓN
-  // ============================================
 
   if (isEditing) {
     return (
       <div>
         <div className="flex mb-4 items-center justify-between border-b border-gray-200 pb-2">
           <h2 className="text-sm font-medium text-gray-700">Banners</h2>
-          <button
+          <Button
             type="button"
             onClick={() => setIsEditing(false)}
-            className="text-sm text-blue-500 hover:text-gray-700 underline"
+            variant="outline"
           >
             Cancelar
-          </button>
+          </Button>
         </div>
         <BannerForm
           existingBanners={banners}
@@ -46,9 +41,7 @@ export const BannerPreview = ({
     );
   }
 
-  // ============================================
   // RENDER - MODO VISUALIZACIÓN
-  // ============================================
 
   return (
     <div className="space-y-4">
@@ -60,14 +53,14 @@ export const BannerPreview = ({
             ({banners.length}/{plan?.max_banners ?? "N/A"})
           </span>
         </h2>
-        <button
+        <Button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          variant="outline"
         >
           <Pencil className="w-3.5 h-3.5" />
           Editar banners
-        </button>
+        </Button>
       </div>
 
       {/* Grid vertical */}
@@ -87,7 +80,6 @@ export const BannerPreview = ({
               className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200"
             >
               <Image
-                //src={url}
                 src={getCatalogImageUrl(url)}
                 alt={`Banner ${index + 1}`}
                 fill

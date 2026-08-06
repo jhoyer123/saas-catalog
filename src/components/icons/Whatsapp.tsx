@@ -1,4 +1,3 @@
-// src/components/icons/Whatsapp.tsx
 import { SVGProps } from "react";
 
 interface WhatsappProps extends SVGProps<SVGSVGElement> {

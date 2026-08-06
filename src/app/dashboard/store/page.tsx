@@ -12,7 +12,7 @@ export default function StorePage() {
     return <SketetonStoreConfig />;
   }
 
-  if (!isSessionPending && !data) {
+  if (!isSessionPending && !data?.store) {
     return (
       <section className="w-full p-4">
         <div className="mx-auto w-full flex flex-col items-center justify-center min-h-100 gap-3">

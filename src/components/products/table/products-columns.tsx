@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2, Eye, TagIcon } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import type { ModalType } from "@/hooks/products/useModalsProduct";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 import { Switch } from "@/components/ui/switch";
@@ -64,7 +63,6 @@ export const createProductsColumns = ({
         return (
           <div className="relative h-11 w-11 overflow-hidden rounded-md border bg-muted shrink-0">
             <Image
-              //src={images[0]}
               src={getCatalogImageUrl(images[0])}
               alt={name}
               fill

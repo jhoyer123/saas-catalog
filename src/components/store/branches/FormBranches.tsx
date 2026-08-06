@@ -16,8 +16,8 @@ import FormInput from "@/components/shared/InputForm";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { settingsSchema, type SettingsForm } from "@/lib/schemas/settings";
-import { OverlayProcess } from "../shared/OverlayProcess";
-import { BranchLocationPicker } from "./branch-map/BranchLocationPicker";
+import { OverlayProcess } from "../../shared/OverlayProcess";
+import { BranchLocationPicker } from "../../settings/branch-map/BranchLocationPicker";
 
 const emptyBranch = {
   name: "",
@@ -59,18 +59,14 @@ const BranchCard = ({
       <div className="mb-4 flex flex-row items-center justify-center">
         <div className="min-w-0 flex-1">
           <h3 className="font-medium leading-tight">Sucursal {index + 1}</h3>
-          <p className="text-sm text-muted-foreground">
-            Datos visibles en el catálogo.
-          </p>
         </div>
 
         <Button
           type="button"
-          variant="ghost"
-          size="sm"
+          variant="destructive"
+          size="icon"
           onClick={() => remove(index)}
           disabled={disabled}
-          className="text-destructive flex flex-col items-center justify-center bg-destructive/20 p-2 border border-input w-auto h-auto"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -219,7 +215,10 @@ export const FormBranches = ({
         onSubmit={handleSubmit(handleFormSubmit)}
         className="mx-auto w-full space-y-4"
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-3 md:flex-row-reverse md:items-end md:justify-between">
+          <Button type="submit" disabled={disabled || !isDirty}>
+            {disabled ? "Guardando..." : submitLabel}
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -232,7 +231,7 @@ export const FormBranches = ({
           </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {fields.map((field, index) => (
             <BranchCard
               key={field.id}
@@ -245,12 +244,6 @@ export const FormBranches = ({
               onLocationChange={updateBranchLocation}
             />
           ))}
-        </div>
-
-        <div className="flex justify-stretch sm:justify-end">
-          <Button type="submit" disabled={disabled || !isDirty}>
-            {disabled ? "Guardando..." : submitLabel}
-          </Button>
         </div>
       </form>
     </>

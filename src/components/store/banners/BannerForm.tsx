@@ -2,13 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import InputFile from "@/components/products/form/InputFile";
+import InputFile from "@/components/shared/InputFile";
 import { bannerSchema, type BannerFormValues } from "@/lib/schemas/banner";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { Plan } from "@/types/plan.types";
 import { useHandleBannerActions } from "@/hooks/banner/useHandleBannerActions";
-import { OverlayProcess } from "../shared/OverlayProcess";
+import { OverlayProcess } from "../../shared/OverlayProcess";
 
 interface BannerFormProps {
   existingBanners?: string[];
@@ -59,7 +59,7 @@ export default function BannerForm({
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
+        className="space-y-4 lg:space-y-8 w-full mx-auto"
       >
         <div className="flex items-end justify-end mb-10">
           <Button type="submit" disabled={isPending || !hasChanges}>

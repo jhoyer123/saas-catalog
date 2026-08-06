@@ -7,16 +7,10 @@ export function useDeleteProduct() {
   //get data session
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
-  const slugStore = sessionData?.store?.slug;
 
   return useMutation({
-    mutationFn: async ({ id, slugProd }: { id: string; slugProd: string }) => {
-      const result = await deleteProductAction(
-        id,
-        slugProd,
-        storeId!,
-        slugStore!,
-      );
+    mutationFn: async ({ id }: { id: string }) => {
+      const result = await deleteProductAction(id, storeId!);
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }

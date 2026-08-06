@@ -13,9 +13,12 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { useToggleAvailableProduct } from "./useToogleAvailableProduct";
-import { uploadFile } from "@/lib/utils/storage";
+import {
+  deleteFile,
+  deleteFolder,
+  uploadMultipleFiles,
+} from "@/lib/utils/storage";
 import { useSaveProductImages } from "./useSaveProductImages";
-import { STORAGE_PREV_VALUE } from "@/lib/constants";
 
 export function useProductActions() {
   const [isPending, setIsPending] = useState(false);
@@ -48,7 +51,7 @@ export function useProductActions() {
    * @param data
    * @param onSuccess
    */
-  const createProduct = (
+  /* const createProduct = (
     data: ProductInputClient,
     storeId: string,
     storeSlug: string,
@@ -60,6 +63,7 @@ export function useProductActions() {
           const { images, ...dataProducto } = data;
           //Crear producto
           const productRes = await create(dataProducto);
+          //AQUI HAY DUDAS
           //Subir imágenes en paralelo (si existen)
           const uploadPromises = images.map((file) =>
             uploadFile("products", storeId, productRes.id!, file),
@@ -75,9 +79,78 @@ export function useProductActions() {
               `Error al subir imagen ${index + 1}: ${result.reason?.message || "Error desconocido"}`,
             );
           });
+          //HASTA QUI LAS DUDAS 
           //Guardar URLs en tabla
           await saveProductImages({ productId: productRes.id!, imageUrls });
+
           //revalidar cache
+          revalidateProductCache(storeSlug, null);
+          onSuccess?.();
+        });
+      },
+      messages: {
+        loading: "Creando producto...",
+        success: "Producto creado exitosamente",
+        error: (err) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
+  }; */
+  const createProduct = (
+    data: ProductInputClient,
+    storeId: string,
+    storeSlug: string,
+    onSuccess?: () => void,
+  ) => {
+    showPromise({
+      promise: async () => {
+        await withPending(async () => {
+          const { images, ...dataProducto } = data;
+
+          // 1) Crear producto — si falla, se corta todo acá (sin cambios)
+          const productRes = await create(dataProducto);
+          const productFolder = `${storeId}/products/${productRes.id}`;
+
+          // 2) Subir imágenes — no importa si alguna falla, seguimos con las que sí subieron
+          const { successes: uploaded, errors: uploadErrors } =
+            await uploadMultipleFiles(
+              { bucket: "stores", folder: productFolder },
+              images,
+            );
+
+          if (uploadErrors.length > 0) {
+            console.error(
+              "Algunas imágenes no se pudieron subir:",
+              uploadErrors,
+            );
+          }
+
+          // Si ninguna imagen se subió, no tiene sentido llamar a saveProductImages
+          if (uploaded.length > 0) {
+            const imageUrls = uploaded.map((img) => img.path);
+
+            // 3) Guardar URLs en DB (un solo insert). Si falla, borramos la carpeta completa.
+            const { error: saveError } = await saveProductImages({
+              productId: productRes.id,
+              imageUrls,
+            });
+
+            if (saveError) {
+              await deleteFolder("stores", productFolder).catch(
+                (cleanupErr) => {
+                  console.error(
+                    "Fallo limpieza de storage tras error de DB:",
+                    cleanupErr,
+                  );
+                },
+              );
+              throw new Error(saveError);
+            }
+          }
+
+          // revalidar cache
           revalidateProductCache(storeSlug, null);
           onSuccess?.();
         });
@@ -99,7 +172,7 @@ export function useProductActions() {
    * @param data
    * @param onSuccess
    */
-  const updateProduct = (
+  /*  const updateProduct = (
     id: string,
     slugProd: string,
     data: ProductInputClientUpdate,
@@ -152,6 +225,74 @@ export function useProductActions() {
       position: "top-right",
       duration: 3000,
     });
+  }; */
+  const updateProduct = (
+    id: string,
+    slugProd: string,
+    data: ProductInputClientUpdate,
+    storeId: string,
+    storeSlug: string,
+    onSuccess?: () => void,
+  ) => {
+    showPromise({
+      promise: async () => {
+        await withPending(async () => {
+          const { images, ...dataProducto } = data;
+          const dataProductoToUpdate = {
+            ...dataProducto,
+            thereAreNewImages: Boolean(images && images.length > 0),
+          };
+          await update({ id, dataProducto: dataProductoToUpdate });
+          // Paso 2: si hay imágenes nuevas, subirlas
+          if (images && images?.length > 0) {
+            const productFolder = `${storeId}/products/${id}`;
+            const { successes, errors } = await uploadMultipleFiles(
+              { bucket: "stores", folder: productFolder },
+              images,
+            );
+
+            if (errors.length > 0) {
+              console.error(
+                "Algunas imágenes no se subieron (update):",
+                errors,
+              );
+            }
+
+            if (successes.length > 0) {
+              const imageUrls = successes.map((r) => r.path);
+
+              // Paso 3: guardar las nuevas URLs (insert, no reemplaza las existentes)
+              try {
+                await saveProductImages({ productId: id, imageUrls });
+              } catch (dbError) {
+                await deleteFile(
+                  "stores",
+                  successes.map((r) => r.path),
+                ).catch((cleanupErr) => {
+                  console.error(
+                    "Fallo limpieza tras error de DB (update):",
+                    cleanupErr,
+                  );
+                });
+                throw dbError;
+              }
+            }
+          }
+          // revalidar cache
+          router.push("/dashboard/products");
+          revalidateProductCache(storeSlug, slugProd);
+          onSuccess?.();
+        });
+      },
+      messages: {
+        loading: "Actualizando producto...",
+        success: "Producto actualizado exitosamente",
+        error: (err) => err.message,
+      },
+      richColors: true,
+      position: "top-right",
+      duration: 3000,
+    });
   };
 
   /**
@@ -171,7 +312,7 @@ export function useProductActions() {
       promise: async () => {
         await withPending(async () => {
           // Eliminar producto en la db
-          await remove({ id, slugProd });
+          await remove({ id });
           // Revalidar cache
           revalidateProductCache(storeSlug, slugProd);
           onSuccess?.();

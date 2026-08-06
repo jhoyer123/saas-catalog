@@ -13,6 +13,7 @@ import {
 import { BannerCard, ProductCard } from "@/components/image/ImageCardStore";
 import { ImageHint } from "@/components/shared/ImageHint";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
+import { cn } from "@/lib/utils";
 
 // TYPES
 export interface ImagePreview {
@@ -198,9 +199,8 @@ export default function InputFile({
     [previews, onChange],
   );
 
-  /**
-   * Elimina una imagen existente
-   */
+  // Elimina una imagen existente
+
   const handleRemoveExistingImage = useCallback(
     (index: number) => {
       const urlToRemove = existingImages[index];
@@ -223,24 +223,19 @@ export default function InputFile({
     [existingImages, deletedUrls, setValue],
   );
 
-  /**
-   * Abre el selector de archivos
-   */
+  // Abre el selector de archivos
+
   const handleOpenFileDialog = useCallback(() => {
     inputRef.current?.click();
   }, []);
 
-  // ============================================
   // COMPUTED
-  // ============================================
 
   const totalImages = previews.length + existingImages.length;
   const hasImages = totalImages > 0;
   const canAddMore = totalImages < maxFiles && !disabled;
 
-  // ============================================
   // RENDER
-  // ============================================
 
   return (
     <div className="space-y-3">
@@ -287,7 +282,14 @@ export default function InputFile({
       ) : (
         <>
           {/* Grid de previews */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div
+            className={cn(
+              "grid gap-3",
+              typeElement === "banner"
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-2 md:grid-cols-4",
+            )}
+          >
             {/* Imágenes existentes */}
             {existingImages.map((url, index) =>
               typeElement === "banner" ? (

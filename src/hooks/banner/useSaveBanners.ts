@@ -1,12 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { saveBannersAction } from "@/lib/actions/bannerActions";
+import { saveBannersAction } from "@/lib/services/bannerServices";
 import { useSessionData } from "../auth/useSessionData";
 
 export const useSaveBanners = () => {
   const queryClient = useQueryClient();
   const { data } = useSessionData();
   const storeId = data?.store?.id;
-  const slugStore = data?.store?.slug;
 
   return useMutation({
     mutationFn: async ({
@@ -21,7 +20,6 @@ export const useSaveBanners = () => {
         storeId,
         imageUrls,
         imagesToDelete,
-        slugStore!,
       );
       if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);

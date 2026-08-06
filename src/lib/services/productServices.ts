@@ -5,6 +5,7 @@ import {
 import { createClient } from "../supabase/supabaseClient";
 import { generateSlug } from "../utils/slug";
 import * as Sentry from "@sentry/nextjs";
+import { deleteFile, deleteFolder } from "../utils/storage";
 
 /**
  * action for create product
@@ -72,11 +73,8 @@ export const createProduct = async (
 export const saveProductImages = async (
   productId: string,
   imageUrls: string[],
-  storeSlug: string,
-  slugProd?: string, // 👈 opcional
 ) => {
   const supabase = await createClient();
-  // ==================== NUEVO: Batch INSERT (1 INSERT con múltiples filas) ====================
   // En lugar de N INSERTs secuenciales, hacemos 1 INSERT con todo
   // Esto reduce latencia de red de N round-trips a 1 round-trip
   const imageRecords = imageUrls.map((url) => ({
@@ -109,11 +107,9 @@ export const saveProductImages = async (
  * @param storeId
  * @returns
  */
-export const updateProduct = async (
+/* export const updateProduct = async (
   id: string,
-  slugProd: string,
   dataProducto: ProductInputServiceUpdate,
-  storeSlug: string,
 ) => {
   const supabase = await createClient();
   const {
@@ -183,11 +179,11 @@ export const updateProduct = async (
     //Eliminar archivos del bucket
     const paths = dataProducto.imageToDelete!.map((url: string) => {
       const pathname = new URL(url).pathname;
-      return pathname.replace("/storage/v1/object/public/products/", "");
+      return pathname.replace("/storage/v1/object/public/stores/", "");
     });
 
     const { error: storageError } = await supabase.storage
-      .from("products")
+      .from("stores")
       .remove(paths);
 
     if (storageError) {
@@ -195,6 +191,86 @@ export const updateProduct = async (
       return { error: `Error al eliminar la imagen: ${storageError.message}` };
     }
   }
+  return data;
+}; */
+export const updateProduct = async (
+  id: string,
+  dataProducto: ProductInputServiceUpdate,
+) => {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { error: "No autenticado" };
+
+  //Actualizar datos del producto
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
+      name: dataProducto.name,
+      price: dataProducto.price,
+      slug: generateSlug(dataProducto.name),
+      description: dataProducto.description,
+      brand_id: dataProducto.brand_id ?? null,
+      category_id: dataProducto.category_id,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      if (error.message.includes("name")) {
+        console.error("updateProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este nombre",
+        };
+      }
+      if (error.message.includes("sku")) {
+        console.error("updateProduct DB ERROR:", error);
+        return {
+          error: "Ya existe un producto con este codigo",
+        };
+      }
+
+      if (error.message.includes("slug")) {
+        console.error("updateProduct DB ERROR", error);
+        return {
+          error: "Ya existe un producto con este slug",
+        };
+      }
+    }
+    if (error.code === "P0001") {
+      console.error("updateProduct DB ERROR:", error);
+      return { error: error.message };
+    }
+    console.error("updateProduct DB ERROR:", error);
+    return { error: "Error al actualizar el producto" };
+  }
+
+  //Eliminar imágenes marcadas
+  if (dataProducto.imageToDelete?.length! > 0) {
+    //Eliminar registros en DB
+    // imageToDelete contiene paths relativos (los mismos que se guardan en image_url)
+    const { error: dbError } = await supabase
+      .from("product_images")
+      .delete()
+      .in("image_url", dataProducto.imageToDelete!);
+
+    if (dbError) {
+      console.error("updateProduct DB ERROR:", dbError);
+      return { error: "Error al eliminar las imágenes del producto" };
+    }
+
+    //Eliminar archivos del bucket
+    try {
+      await deleteFile("stores", dataProducto.imageToDelete!);
+    } catch (error) {
+      console.error("No se pudo eliminar la imagen antigua:", error);
+    }
+  }
+
   return data;
 };
 
@@ -204,12 +280,7 @@ export const updateProduct = async (
  * @param storeId
  * @param storeSlug
  */
-export const deleteProductAction = async (
-  id: string,
-  slugProd: string,
-  storeId: string,
-  storeSlug: string,
-) => {
+/* export const deleteProductAction = async (id: string, storeId: string) => {
   const supabase = await createClient();
 
   const {
@@ -218,7 +289,7 @@ export const deleteProductAction = async (
   if (!session) return { error: "No autenticado" };
 
   // Obtener archivos antes de borrar la DB
-  const folderPath = `${storeId}/${id}`;
+  const folderPath = `${storeId}/products/${id}`;
   const { data: files } = await supabase.storage
     .from("products")
     .list(folderPath);
@@ -238,6 +309,34 @@ export const deleteProductAction = async (
     const paths = files.map((f) => `${folderPath}/${f.name}`);
     await supabase.storage.from("products").remove(paths);
   }
+}; */
+export const deleteProductAction = async (id: string, storeId: string) => {
+  const supabase = await createClient();
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { error: "No autenticado" };
+
+  // Borrar en DB (transaccionado)
+  const { error } = await supabase.rpc("delete_product", {
+    p_product_id: id,
+  });
+
+  if (error) {
+    console.error("deleteProductAction DB ERROR:", error);
+    return { error: "Error al eliminar el producto" };
+  }
+
+  // Borrar del storage (incluye subcarpetas)
+  const folderPath = `${storeId}/products/${id}`;
+
+  try {
+    await deleteFolder("stores", folderPath);
+  } catch (storageError) {
+    console.error("deleteProductAction Storage ERROR:", storageError);
+    // No romper el flujo
+  }
 };
 
 /**
@@ -253,7 +352,6 @@ export interface ToggleOfferParams {
   offer_start: string | null;
   offer_end: string | null;
 }
-
 export const toggleOfferAction = async (
   slugProd: string,
   params: ToggleOfferParams,
