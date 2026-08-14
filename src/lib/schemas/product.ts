@@ -10,31 +10,35 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/webp",
 ];
 
-// ============================================
 // SCHEMA BASE
-// ============================================
+const productBaseSchema = z
+  .object({
+    name: z.string().min(1, "El nombre del producto es obligatorio"),
+    sku: z.string().optional(),
+    slug: z.string().optional(),
+    brand_id: z.string().optional(),
+    has_variants: z.boolean().default(false),
+    price: z.coerce
+      .number({ message: "El precio es obligatorio" })
+      .min(0, "El precio no puede ser negativo"),
+    description: z
+      .string({ message: "La descripción es obligatoria" })
+      .min(1, "La descripción es obligatoria"),
+    category_id: z
+      .string({ message: "La categoría es obligatoria" })
+      .min(1, "La categoría es obligatoria"),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.has_variants && data.price <= 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["price"],
+        message: "El precio debe ser mayor a 0",
+      });
+    }
+  });
 
-const productBaseSchema = z.object({
-  name: z.string().min(1, "El nombre del producto es obligatorio"),
-  sku: z.string().optional(),
-  slug: z.string().optional(),
-  //brand: z.string().optional(),
-  brand_id: z.string().optional(),
-  price: z.coerce
-    .number({ message: "El precio es obligatorio" })
-    .min(0.01, "El precio debe ser mayor a 0"),
-  description: z
-    .string({ message: "La descripción es obligatoria" })
-    .min(1, "La descripción es obligatoria"),
-  category_id: z
-    .string({ message: "La categoría es obligatoria" })
-    .min(1, "La categoría es obligatoria"),
-});
-
-// ============================================
 // HELPER PARA IMAGES
-// ============================================
-
 const createImageFileListSchema = (isRequired: boolean) => {
   // ✅ Solución para Next.js: FileList solo existe en el browser
   // Usamos z.any() y validamos manualmente
@@ -86,10 +90,7 @@ const createImageFileListSchema = (isRequired: boolean) => {
     );
 };
 
-// ============================================
 // SCHEMAS
-// ============================================
-
 export const productFormSchema = productBaseSchema.extend({
   images: createImageFileListSchema(true),
 });
@@ -125,27 +126,12 @@ export const productFormSchemaUpdate = productBaseSchema
     }
   });
 
-// ============================================
 // TYPES
-// ============================================
-
 export type ProductFormInput = z.infer<typeof productFormSchema>;
-
-/* export type ProductInputService = Omit<ProductFormInput, "images"> & {
-  images: File[];
-}; */
 export type ProductInputService = z.infer<typeof productBaseSchema>;
 
 export type ProductFormInputUpdate = z.infer<typeof productFormSchemaUpdate>;
 
-/* export type ProductInputServiceUpdate = Omit<
-  ProductFormInputUpdate,
-  "images"
-> & {
-  images?: File[];
-  imageExisting?: string[];
-  imageToDelete?: string[];
-}; */
 export type ProductInputServiceUpdate = z.infer<typeof productBaseSchema> & {
   thereAreNewImages: boolean; // para indicar si se subieron nuevas imágenes
   imageExisting?: string[];

@@ -16,7 +16,13 @@ import type {
   PaginationParams,
   PaginatedResponse,
 } from "@/types/pagination.types";
-import type { ProductCatalog, ProductDetail } from "@/types/product.types";
+import type {
+  ProductCatalog,
+  ProductDetail,
+  ProductImageDetail,
+  ProductOptionTypeDetail,
+  ProductVariantDetail,
+} from "@/types/product.types";
 import type { CategorySimple, Category } from "@/types/category.types";
 import type { BrandDashboard, BrandOfForm } from "@/types/brand.types";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
@@ -104,7 +110,7 @@ export const fetchProductsPaginated = async (
     .from("products")
     .select(
       `
-      id,slug,name,price,is_offer,offer_price,offer_start,offer_end,sku,is_available,category_id,brand_id,
+      id,slug,name,price,has_variants,is_offer,offer_price,offer_start,offer_end,sku,is_available,category_id,brand_id,
       category:categories(name),
       brand:brands(name),
       images:product_images(image_url)
@@ -162,6 +168,7 @@ export const fetchProductsPaginated = async (
       name: p.name,
       category_id: p.category_id,
       brand_id: p.brand_id ?? null,
+      has_variants: p.has_variants ?? false,
       sku: p.sku ?? null,
       price: p.price,
       is_available: p.is_available,
@@ -192,7 +199,10 @@ export const fetchProductById = async (id: string): Promise<ProductDetail> => {
     .from("products")
     .select(
       `
-    id,slug,category_id,brand_id,name,price,description,sku,images:product_images(image_url)
+    id,slug,category_id,brand_id,name,price,has_variants,description,sku,
+    images:product_images(id, image_url, variant_id, visual_signature),
+    product_option_types(option_type_id, is_visual),
+    product_variants(id, price, sku, offer_price, is_available, variant_option_values(option_type_id, option_value_id))
     `,
     )
     .eq("id", id)
@@ -200,17 +210,44 @@ export const fetchProductById = async (id: string): Promise<ProductDetail> => {
 
   if (error) throw new Error(error.message);
 
+  const imageDetails: ProductImageDetail[] =
+    data.images?.map((img: ProductImageDetail) => ({
+      id: img.id,
+      image_url: img.image_url,
+      variant_id: img.variant_id ?? null,
+      visual_signature: img.visual_signature ?? null,
+    })) ?? [];
+
   return {
     id: data.id,
     slug: data.slug,
     category_id: data.category_id,
     brand_id: data.brand_id ?? null,
+    has_variants: data.has_variants ?? false,
     name: data.name,
     sku: data.sku ?? null,
     price: data.price,
     description: data.description,
-    images:
-      data.images?.map((img: { image_url: string }) => img.image_url) ?? [],
+    images: imageDetails.map((img) => img.image_url),
+    image_details: imageDetails,
+    product_option_types:
+      data.product_option_types?.map((ot: ProductOptionTypeDetail) => ({
+        option_type_id: ot.option_type_id,
+        is_visual: ot.is_visual,
+      })) ?? [],
+    product_variants:
+      data.product_variants?.map((v: ProductVariantDetail) => ({
+        id: v.id,
+        price: v.price,
+        sku: v.sku ?? null,
+        offer_price: v.offer_price ?? null,
+        is_available: v.is_available,
+        variant_option_values:
+          v.variant_option_values?.map((ov: { option_type_id: string; option_value_id: string }) => ({
+            option_type_id: ov.option_type_id,
+            option_value_id: ov.option_value_id,
+          })) ?? [],
+      })) ?? [],
   };
 };
 

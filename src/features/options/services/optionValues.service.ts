@@ -4,7 +4,7 @@ import type { OptionValueForm } from "../schemas/optionValue.schema";
 import { normalizeColorHexes } from "../lib/helpers/formatters";
 
 const OPTION_VALUE_COLUMNS =
-  "id, option_type_id, value, color_hexes, image_url, numeric_value, sort_order, created_at, updated_at,unit";
+  "id, option_type_id, value, color_hexes, image_url, numeric_value, created_at, updated_at,unit";
 
 export const listOptionValues = async (
   typeId: string,
@@ -29,7 +29,6 @@ export const listOptionValues = async (
       : null,
     image_url: item.image_url,
     numeric_value: item.numeric_value,
-    sort_order: item.sort_order,
     created_at: item.created_at,
     updated_at: item.updated_at,
   }));
@@ -72,7 +71,6 @@ export const createOptionValue = async (
       : null,
     image_url: data.image_url,
     numeric_value: data.numeric_value,
-    sort_order: data.sort_order,
     created_at: data.created_at,
     updated_at: data.updated_at,
   };
@@ -115,7 +113,6 @@ export const updateOptionValue = async (
       : null,
     image_url: data.image_url,
     numeric_value: data.numeric_value,
-    sort_order: data.sort_order,
     created_at: data.created_at,
     updated_at: data.updated_at,
   };

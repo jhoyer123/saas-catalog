@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import InputFile from "@/components/shared/InputFile";
+import InputFile, { IMAGE_PRESETS } from "@/components/shared/InputFile";
 import { bannerSchema, type BannerFormValues } from "@/lib/schemas/banner";
 import { Button } from "@/components/ui/button";
 import React from "react";
@@ -35,22 +35,35 @@ export default function BannerForm({
     },
   });
 
-  const images = watch("images");
+  const images = watch("images") ?? [];
+  const imageExisting = watch("imageExisting") ?? [];
   const imageToDelete = watch("imageToDelete");
 
   // SUBMIT
   const { saveBanners, isPending } = useHandleBannerActions();
 
   const onSubmit = (data: BannerFormValues) => {
-    const newFiles = data.images ? Array.from(data.images) : [];
-    saveBanners(newFiles, data.imageToDelete || [], () =>
+    saveBanners(data.images ?? [], data.imageToDelete || [], () =>
       setIsEditing?.(false),
     );
   };
 
   const hasChanges =
-    (images && images.length > 0) ||
-    (imageToDelete && imageToDelete.length > 0);
+    images.length > 0 || (imageToDelete && imageToDelete.length > 0);
+
+  const handleRemoveExisting = (url: string) => {
+    setValue(
+      "imageExisting",
+      imageExisting.filter((u) => u !== url),
+      { shouldDirty: true },
+    );
+    const currentDeleted = imageToDelete ?? [];
+    if (!currentDeleted.includes(url)) {
+      setValue("imageToDelete", [...currentDeleted, url], {
+        shouldDirty: true,
+      });
+    }
+  };
 
   return (
     <>
@@ -68,14 +81,14 @@ export default function BannerForm({
         </div>
         <div className="space-y-2">
           <InputFile
-            value={images}
-            onChange={(files) => setValue("images", files)}
+            preset={IMAGE_PRESETS.banner}
+            files={images}
+            onFilesChange={(files) => setValue("images", files)}
             error={errors.images?.message as string | undefined}
             maxFiles={plan?.max_banners || 3}
             maxSizeMB={25}
-            imgExisting={existingBanners}
-            setValue={setValue}
-            typeElement="banner"
+            existingUrls={imageExisting}
+            onRemoveExisting={handleRemoveExisting}
           />
         </div>
       </form>

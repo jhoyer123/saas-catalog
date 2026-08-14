@@ -1,14 +1,14 @@
-import { ImagePreview } from "@/components/shared/InputFile";
+//import { ImagePreview } from "@/components/shared/InputFile";
 
 /**
  * Convierte FileList a array de previews
  */
-export function createPreviewsFromFileList(fileList: FileList): ImagePreview[] {
+/* export function createPreviewsFromFileList(fileList: FileList): ImagePreview[] {
   return Array.from(fileList).map((file) => ({
     file,
     url: URL.createObjectURL(file),
   }));
-}
+} */
 
 /**
  * Convierte array de Files a FileList
@@ -96,7 +96,7 @@ export async function processImage(
     targetWidth = 800,
     targetHeight = 800,
     backgroundColor = "#ffffff",
-    quality = 0.85,
+    quality = 0.9,
     maxSizeBytes = 120 * 1024, // 120kb por defecto para productos
   } = options;
 

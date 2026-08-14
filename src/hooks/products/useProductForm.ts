@@ -13,6 +13,7 @@ import {
 import { useProductActions } from "./useHandleAction";
 import { ProductDetail } from "@/types/product.types";
 import { useSessionData } from "../auth/useSessionData";
+import type { ProductVariantDraft } from "@/features/product/product-variants/types/types";
 
 type FormMode = "create" | "update" | "view";
 
@@ -21,6 +22,7 @@ interface UseProductFormProps {
   initialData?: ProductDetail;
   categories: { id: string; name: string }[];
   brands: { id: string; name: string }[];
+  variantDraft?: ProductVariantDraft;
 }
 
 export function useProductForm({
@@ -28,6 +30,7 @@ export function useProductForm({
   initialData,
   categories,
   brands,
+  variantDraft,
 }: UseProductFormProps) {
   const isCreate = mode === "create";
   const isUpdate = mode === "update";
@@ -37,14 +40,13 @@ export function useProductForm({
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
   const storeSlug = sessionData?.store?.slug;
-
   const {
     register,
     control,
     handleSubmit,
     formState: { errors, isDirty },
     setValue,
-    getValues,
+    watch,
     reset,
   } = useForm({
     resolver: zodResolver(
@@ -55,9 +57,10 @@ export function useProductForm({
       name: initialData?.name ?? "",
       sku: initialData?.sku ?? "",
       price: initialData?.price ?? 0,
+      has_variants: initialData?.has_variants ?? false,
       description: initialData?.description ?? "",
       category_id: initialData?.category_id ?? "",
-      brand_id: initialData?.brand_id ?? "",
+      brand_id: initialData?.brand_id ?? undefined,
       imageExisting: initialData?.images ?? [],
       imageToDelete: [],
       images: undefined, // para crear, se suben nuevas imágenes
@@ -91,6 +94,12 @@ export function useProductForm({
   const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
   ) => {
+    if (!storeId || !storeSlug) {
+      throw new Error(
+        "No se encontró la tienda activa para guardar el producto.",
+      );
+    }
+
     const transformed = isUpdate
       ? {
           ...data,
@@ -107,19 +116,20 @@ export function useProductForm({
       if (isCreate) {
         createProduct(
           transformed as ProductInputClient,
-          storeId!,
-          storeSlug!,
+          storeId,
+          storeSlug,
+          variantDraft,
           () => {
             reset({
               name: "",
               brand_id: "",
               sku: "",
               category_id: "",
+              has_variants: false,
               description: "",
               price: 0,
               images: undefined,
             });
-            //console.log(getValues());
           },
         );
       }
@@ -129,14 +139,15 @@ export function useProductForm({
           initialData?.id!,
           initialData?.slug!,
           transformed as ProductInputClientUpdate,
-          storeId!,
-          storeSlug!,
+          storeId,
+          storeSlug,
           () => {
             reset({
               name: "",
               brand_id: "",
               sku: "",
               category_id: "",
+              has_variants: false,
               description: "",
               price: 0,
               images: undefined,
@@ -158,6 +169,7 @@ export function useProductForm({
     errors: errors,
     isDirty: isDirty,
     setValue: setValue,
+    watch: watch,
     reset: reset,
     isViewMode: isView,
     initialData,

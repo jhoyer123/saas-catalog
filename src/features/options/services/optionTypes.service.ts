@@ -7,6 +7,7 @@ interface RawOptionType {
   name: string;
   input_type: string;
   is_visual_default: boolean;
+  is_default_on_create: boolean;
   sort_order: number;
   created_at: string;
   value_count: Array<{ count: number }>;
@@ -25,6 +26,7 @@ export const listOptionTypes = async (
       name,
       input_type,
       is_visual_default,
+      is_default_on_create,
       sort_order,
       created_at,
       value_count:store_option_values(count)
@@ -39,6 +41,7 @@ export const listOptionTypes = async (
     name: item.name,
     input_type: item.input_type as InputType,
     is_visual_default: item.is_visual_default,
+    is_default_on_create: item.is_default_on_create,
     sort_order: item.sort_order,
     created_at: item.created_at,
     value_count: item.value_count?.[0]?.count ?? 0,
@@ -61,6 +64,7 @@ export const createOptionType = async (
     name: dataInput.name,
     input_type: dataInput.input_type,
     is_visual_default: dataInput.is_visual_default,
+    is_default_on_create: dataInput.is_default_on_create,
   });
 
   if (error) {
@@ -89,6 +93,7 @@ export const updateOptionType = async (
     name: dataInput.name,
     input_type: dataInput.input_type,
     is_visual_default: dataInput.is_visual_default,
+    is_default_on_create: dataInput.is_default_on_create,
   };
 
   const { data, error } = await supabase

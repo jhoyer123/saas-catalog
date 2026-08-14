@@ -67,7 +67,9 @@ const FormInput = <T extends FieldValues>({
       />
 
       {errors?.[name] && (
-        <p className="text-sm text-red-500">{String(errors[name]?.message)}</p>
+        <p className="text-sm text-red-500 font-medium">
+          {String(errors[name]?.message)}
+        </p>
       )}
     </div>
   );

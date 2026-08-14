@@ -9,6 +9,7 @@ export const optionTypeSchema = z.object({
     message: "Selecciona un tipo de entrada",
   }),
   is_visual_default: z.boolean(),
+  is_default_on_create: z.boolean(),
 });
 
 export type OptionTypeForm = z.infer<typeof optionTypeSchema>;

@@ -6,6 +6,7 @@ import { createClient } from "../supabase/supabaseClient";
 import { generateSlug } from "../utils/slug";
 import * as Sentry from "@sentry/nextjs";
 import { deleteFile, deleteFolder } from "../utils/storage";
+import type { ProductVariantDraft } from "@/features/product/product-variants/types/types";
 
 /**
  * action for create product
@@ -16,6 +17,7 @@ import { deleteFile, deleteFolder } from "../utils/storage";
 export const createProduct = async (
   dataProducto: ProductInputService,
   storeId: string,
+  variantDraft?: ProductVariantDraft,
 ) => {
   const supabase = await createClient();
 
@@ -24,6 +26,35 @@ export const createProduct = async (
   } = await supabase.auth.getSession();
   if (!session) return { error: "No autenticado" };
 
+  if (dataProducto.has_variants) {
+    if (!variantDraft || variantDraft.optionTypes.length === 0 || variantDraft.variants.length === 0) {
+      return { error: "Configura al menos un atributo, valor y variante antes de guardar." };
+    }
+
+    const { data: rpcData, error: rpcError } = await supabase.rpc("create_product_with_variants", {
+      p_payload: {
+        product: {
+          store_id: storeId,
+          name: dataProducto.name,
+          slug: generateSlug(dataProducto.name),
+          sku: dataProducto.sku ?? null,
+          price: dataProducto.price,
+          description: dataProducto.description,
+          category_id: dataProducto.category_id,
+          brand_id: dataProducto.brand_id ?? null,
+          has_variants: true,
+        },
+        option_types: variantDraft.optionTypes.map((optionType) => ({ option_type_id: optionType.optionTypeId, is_visual: optionType.isVisual })),
+        variants: variantDraft.variants.map((variant) => ({ sku: variant.sku, price: variant.price, offer_price: variant.offerPrice, stock: variant.stock, is_available: variant.isAvailable, option_value_ids: variant.optionValueIds })),
+      },
+    });
+
+    if (rpcError) return { error: rpcError.message };
+    const result = (rpcData ?? []) as { product_id: string }[];
+    if (!result[0]?.product_id) return { error: "El RPC no devolvió el producto creado." };
+    return { id: result[0].product_id };
+  }
+
   const { data, error } = await supabase
     .from("products")
     .insert({
@@ -31,6 +62,7 @@ export const createProduct = async (
       name: dataProducto.name,
       slug: generateSlug(dataProducto.name),
       price: dataProducto.price,
+      has_variants: dataProducto.has_variants ?? false,
       description: dataProducto.description,
       brand_id: dataProducto.brand_id ?? null,
       category_id: dataProducto.category_id,
@@ -124,6 +156,7 @@ export const saveProductImages = async (
       sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
       name: dataProducto.name,
       price: dataProducto.price,
+      has_variants: dataProducto.has_variants ?? false,
       slug: generateSlug(dataProducto.name),
       description: dataProducto.description,
       brand_id: dataProducto.brand_id ?? null,

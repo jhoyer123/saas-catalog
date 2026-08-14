@@ -63,6 +63,7 @@ export function OptionTypeFormDialog({ modalState, onClose }: Props) {
       name: optionType?.name ?? "",
       input_type: optionType?.input_type ?? "text",
       is_visual_default: optionType?.is_visual_default ?? false,
+      is_default_on_create: optionType?.is_default_on_create ?? false,
     },
   });
 
@@ -155,7 +156,8 @@ export function OptionTypeFormDialog({ modalState, onClose }: Props) {
                   onValueChange={field.onChange}
                   disabled={isEditing && hasValues}
                 >
-                  <SelectTrigger>
+                  {/* Agregado w-full al Trigger para que ocupe todo el ancho */}
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona un tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -181,7 +183,39 @@ export function OptionTypeFormDialog({ modalState, onClose }: Props) {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Ajuste de padding (p-3 a p-4) para móviles */}
+          <div className="flex items-start gap-3 rounded-lg border p-3 sm:p-4 mt-4">
+            <Controller
+              name="is_default_on_create"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isPending}
+                    id="is_default_on_create"
+                    className="mt-0.5 sm:mt-1 shrink-0"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <Label
+                      htmlFor="is_default_on_create"
+                      className="cursor-pointer text-sm sm:text-base font-medium leading-tight"
+                    >
+                      Agregar automáticamente a nuevos productos
+                    </Label>
+                    <p className="text-xs sm:text-[0.8rem] text-muted-foreground leading-relaxed">
+                      Ideal para atributos frecuentes (ej. Talla, Material).
+                      Aparecerá listo para usarse cada vez que crees un producto
+                      con variantes.
+                    </p>
+                  </div>
+                </>
+              )}
+            />
+          </div>
+
+          <div className="flex items-start gap-3 rounded-lg border p-3 sm:p-4 mt-4">
             <Controller
               name="is_visual_default"
               control={control}
@@ -192,10 +226,21 @@ export function OptionTypeFormDialog({ modalState, onClose }: Props) {
                     onCheckedChange={field.onChange}
                     disabled={isPending}
                     id="is_visual_default"
+                    className="mt-0.5 sm:mt-1 shrink-0"
                   />
-                  <Label htmlFor="is_visual_default" className="cursor-pointer">
-                    Usar como visual por defecto
-                  </Label>
+                  <div className="flex flex-col gap-1">
+                    <Label
+                      htmlFor="is_visual_default"
+                      className="cursor-pointer text-sm sm:text-base font-medium leading-tight"
+                    >
+                      Este atributo cambia las fotos del producto
+                    </Label>
+                    <p className="text-xs sm:text-[0.8rem] text-muted-foreground leading-relaxed">
+                      Recomendado para "Color" o "Modelo". Al activarlo, la
+                      galería de imágenes del catálogo mostrará solo las fotos
+                      de la opción elegida.
+                    </p>
+                  </div>
                 </>
               )}
             />

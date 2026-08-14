@@ -7,8 +7,9 @@ import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useGetBrandsNoPage } from "@/hooks/brand/useGetBrandsNoPage";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import { useGetProductById } from "@/hooks/products/useGetProductById";
+import { useOptionTypesForProduct } from "@/features/product/product-variants/hooks/useOptionTypesAndValues";
 import Link from "next/link";
-import { use, useState } from "react";
+import { use } from "react";
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   // Obtener el ID del producto desde los parámetros de la URL y cargar los datos necesarios
@@ -17,21 +18,22 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { data: categories, isLoading: isLoadingCategories } =
     useGetCategoryNoPage();
   const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
+  const { data: storeOptionTypes, isLoading: isLoadingStoreOptionTypes } =
+    useOptionTypesForProduct();
 
   //data plan for form
   const { data: DataPlan, isLoading: isLoadingPlan } = useSessionData();
-
-  // Solo se habilita el boton si cambian los datos
-  const [isDirty, setIsDirty] = useState(false);
 
   if (
     isLoadingProduct ||
     isLoadingCategories ||
     isLoadingBrands ||
     isLoadingPlan ||
+    isLoadingStoreOptionTypes ||
     !product ||
     !categories ||
     !brands ||
+    !storeOptionTypes ||
     !DataPlan?.plan
   ) {
     return <SkeletonForm />;
@@ -53,12 +55,12 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           </div>
         </div>
         <Form
-          mode="update"
+          mode="edit"
           initialData={product}
           categories={categories ?? []}
           brands={brands ?? []}
           plan={DataPlan.plan}
-          onDirtyChange={setIsDirty}
+          storeOptionTypes={storeOptionTypes ?? []}
         />
       </div>
     </div>

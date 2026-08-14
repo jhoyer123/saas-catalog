@@ -5,6 +5,7 @@ export interface OptionTypeRow {
   name: string;
   input_type: InputType;
   is_visual_default: boolean;
+  is_default_on_create: boolean;
   sort_order: number;
   created_at: string;
   value_count: number;
@@ -30,7 +31,6 @@ export interface OptionValueRow {
   color_hexes: string[] | null;
   image_url: string | null;
   numeric_value: number | null;
-  sort_order: number;
   created_at: string;
   updated_at: string;
 }

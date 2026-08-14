@@ -1,10 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Upload, X, Plus, Info } from "lucide-react";
-import type { UseFormSetValue } from "react-hook-form";
+import React, { useMemo, useRef, useEffect } from "react";
+import { Upload, Plus } from "lucide-react";
 import { toast } from "sonner";
 //helpers
 import {
-  createPreviewsFromFileList,
   createFileListFromArray,
   validateFile,
   processImage,
@@ -15,259 +13,208 @@ import { ImageHint } from "@/components/shared/ImageHint";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 import { cn } from "@/lib/utils";
 
-// TYPES
-export interface ImagePreview {
-  file: File;
-  url: string;
+// ============================================
+// PRESETS: toda la config específica de "tipo de imagen"
+// vive acá, no adentro del componente.
+// ============================================
+
+export interface ImagePreset {
+  /** Usado solo para elegir la card visual (Banner vs Product) y el hint */
+  variant: "banner" | "product";
+  processConfig?: {
+    targetWidth: number;
+    targetHeight: number;
+    quality?: number;
+    maxSizeBytes?: number;
+  };
+  dimensionCheck?: { minWidth: number; minHeight: number };
+  gridClassName: string;
+  cardAspect: "square" | "video";
 }
 
+export const IMAGE_PRESETS: Record<string, ImagePreset> = {
+  banner: {
+    variant: "banner",
+    processConfig: {
+      targetWidth: 1280,
+      targetHeight: 730,
+      quality: 0.88,
+      maxSizeBytes: 180 * 1024,
+    },
+    dimensionCheck: { minWidth: 1280, minHeight: 730 },
+    gridClassName: "grid-cols-1 md:grid-cols-2",
+    cardAspect: "video",
+  },
+  product: {
+    variant: "product",
+    gridClassName: "grid-cols-2 md:grid-cols-4",
+    cardAspect: "square",
+  },
+  logo: {
+    variant: "product",
+    processConfig: { targetWidth: 512, targetHeight: 512, quality: 0.9 },
+    gridClassName: "grid-cols-1 md:grid-cols-2",
+    cardAspect: "square",
+  },
+};
+
+// ============================================
+// TYPES
+// ============================================
+
 interface InputFileProps {
-  value?: FileList | null;
-  onChange: (files: FileList | null) => void;
-  onBlur?: () => void;
-  error?: string;
+  /** Archivos nuevos (controlado por el padre, ej. RHF field o hook custom) */
+  files: File[];
+  onFilesChange: (files: File[]) => void;
+
+  /** Imágenes ya existentes en storage (controlado por el padre) */
+  existingUrls?: string[];
+  onRemoveExisting?: (url: string) => void;
+
   maxFiles?: number;
   maxSizeMB?: number;
   disabled?: boolean;
-  imgExisting?: string[];
-  setValue?: UseFormSetValue<any>; // TODO: Podríamos tiparlo mejor con generics
-  typeElement?: "banner" | "product";
+  error?: string;
+
+  preset: ImagePreset;
 }
 
 // ============================================
-// COMPONENTE PRINCIPAL
+// COMPONENTE
 // ============================================
 
 export default function InputFile({
-  value,
-  onChange,
-  onBlur,
-  error,
+  files = [], // MODIFICADO: default defensivo. Si el padre manda undefined
+  // (ej. un campo de RHF sin defaultValue todavía) esto no debe explotar.
+  onFilesChange,
+  existingUrls = [],
+  onRemoveExisting,
   maxFiles = 5,
   maxSizeMB = 5,
   disabled = false,
-  imgExisting = [],
-  setValue,
-  typeElement = "product",
+  error,
+  preset,
 }: InputFileProps) {
-  // ============================================
-  // STATE
-  // ============================================
-
-  const [existingImages, setExistingImages] = useState<string[]>(imgExisting);
-  const [deletedUrls, setDeletedUrls] = useState<string[]>([]);
-  const [previews, setPreviews] = useState<ImagePreview[]>([]);
-
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ============================================
-  // EFFECTS
+  // PREVIEWS: puramente derivado de `files`, no es estado propio.
   // ============================================
 
-  // Sincronizar previews cuando cambia el value externo
-  useEffect(() => {
-    if (value && value.length > 0) {
-      const newPreviews = createPreviewsFromFileList(value);
-      setPreviews(newPreviews);
-    } else {
-      // Limpiar URLs anteriores
-      previews.forEach((preview) => URL.revokeObjectURL(preview.url));
-      setPreviews([]);
-    }
-  }, [value]);
+  const previewUrls = useMemo(
+    () => files.map((file) => URL.createObjectURL(file)),
+    [files],
+  );
 
-  // Cleanup al desmontar
+  // Revocar URLs viejas cuando cambian los files o al desmontar
   useEffect(() => {
     return () => {
-      previews.forEach((preview) => URL.revokeObjectURL(preview.url));
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [previews]);
+  }, [previewUrls]);
 
   // ============================================
   // HANDLERS
   // ============================================
 
-  /**
-   * Maneja selección de nuevos archivos
-   */
-  const handleFileSelect = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newFiles = e.target.files;
-      if (!newFiles || newFiles.length === 0) return;
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = e.target.files;
+    if (!newFiles || newFiles.length === 0) return;
 
-      // Obtener archivos actuales
-      const currentFiles = previews.map((p) => p.file);
+    const validNewFiles: File[] = [];
+    const errors: string[] = [];
 
-      // Validar cada archivo nuevo
-      const validNewFiles: File[] = [];
-      const errors: string[] = [];
+    for (const file of Array.from(newFiles)) {
+      const validationError = validateFile(file, maxSizeMB);
+      if (validationError) {
+        errors.push(validationError);
+        continue;
+      }
 
-      for (const file of Array.from(newFiles)) {
-        /* const error = validateFile(file, maxSizeMB);
-        if (error) {
-          errors.push(error);
-        } else {
-          const processed =
-            typeElement === "banner"
-              ? await processImage(file, {
-                  targetWidth: 1440,
-                  targetHeight: 500,
-                  quality: 0.88,
-                  maxSizeBytes: 300 * 1024, // 300kb para banners
-                })
-              : await processImage(file);
-          validNewFiles.push(processed);
-        } */
-        const error = validateFile(file, maxSizeMB);
-        if (error) {
-          errors.push(error);
+      if (preset.dimensionCheck) {
+        const dimError = await validateImageDimensions(
+          file,
+          preset.dimensionCheck.minWidth,
+          preset.dimensionCheck.minHeight,
+        );
+        if (dimError) {
+          errors.push(dimError);
           continue;
         }
-        if (typeElement === "banner") {
-          const dimError = await validateImageDimensions(file, 1280, 730);
-          if (dimError) {
-            errors.push(dimError);
-            continue;
-          }
-          const processed = await processImage(file, {
-            //1440x500
-            targetWidth: 1280,
-            targetHeight: 730,
-            quality: 0.88,
-            maxSizeBytes: 180 * 1024, // 180kb para banners
-          });
-          validNewFiles.push(processed);
-        }
-
-        if (typeElement === "product") {
-          const processed = await processImage(file);
-          validNewFiles.push(processed);
-        }
       }
 
-      // Mostrar errores
-      if (errors.length > 0) {
-        toast.error(errors.join("\n"), {
-          position: "top-center",
-          duration: 5000,
-        });
-      }
+      const processed = preset.processConfig
+        ? await processImage(file, preset.processConfig)
+        : await processImage(file);
 
-      // Combinar archivos
-      const combinedFiles = [...currentFiles, ...validNewFiles];
+      validNewFiles.push(processed);
+    }
 
-      // Validar límite total
-      if (combinedFiles.length + existingImages.length > maxFiles) {
-        //alert(`Solo puedes subir un máximo de ${maxFiles} imágenes`);
-        toast.error(`Solo puedes subir un máximo de ${maxFiles} imágenes`, {
-          position: "top-center",
-          duration: 5000,
-        });
-        return;
-      }
+    if (errors.length > 0) {
+      toast.error(errors.join("\n"), {
+        position: "top-center",
+        duration: 5000,
+      });
+    }
 
-      // Notificar cambio
-      onChange(createFileListFromArray(combinedFiles));
+    const combined = [...files, ...validNewFiles];
 
-      // Resetear input
-      if (inputRef.current) {
-        inputRef.current.value = "";
-      }
-    },
-    [previews, existingImages, maxFiles, maxSizeMB, onChange],
-  );
+    if (combined.length + existingUrls.length > maxFiles) {
+      toast.error(`Solo puedes subir un máximo de ${maxFiles} imágenes`, {
+        position: "top-center",
+        duration: 5000,
+      });
+      return;
+    }
 
-  /**
-   * Elimina una imagen nueva
-   */
-  const handleRemoveImage = useCallback(
-    (indexToRemove: number) => {
-      const currentFiles = previews.map((p) => p.file);
-      const newFiles = currentFiles.filter(
-        (_, index) => index !== indexToRemove,
-      );
+    onFilesChange(combined);
 
-      // Revocar URL
-      URL.revokeObjectURL(previews[indexToRemove].url);
+    if (inputRef.current) inputRef.current.value = "";
+  };
 
-      if (newFiles.length === 0) {
-        onChange(null);
-      } else {
-        onChange(createFileListFromArray(newFiles));
-      }
-    },
-    [previews, onChange],
-  );
+  const handleRemoveNew = (index: number) => {
+    onFilesChange(files.filter((_, i) => i !== index));
+  };
 
-  // Elimina una imagen existente
+  const handleOpenFileDialog = () => inputRef.current?.click();
 
-  const handleRemoveExistingImage = useCallback(
-    (index: number) => {
-      const urlToRemove = existingImages[index];
-
-      const updatedExisting = existingImages.filter((_, i) => i !== index);
-      const updatedDeleted = Array.from(new Set([...deletedUrls, urlToRemove]));
-
-      setExistingImages(updatedExisting);
-      setDeletedUrls(updatedDeleted);
-
-      // Actualizar el formulario padre
-      if (setValue) {
-        setValue("imageExisting", updatedExisting);
-        setValue("imageToDelete", updatedDeleted, {
-          shouldDirty: true,
-          shouldTouch: true,
-        });
-      }
-    },
-    [existingImages, deletedUrls, setValue],
-  );
-
-  // Abre el selector de archivos
-
-  const handleOpenFileDialog = useCallback(() => {
-    inputRef.current?.click();
-  }, []);
-
+  // ============================================
   // COMPUTED
+  // ============================================
 
-  const totalImages = previews.length + existingImages.length;
+  const totalImages = files.length + existingUrls.length;
   const hasImages = totalImages > 0;
   const canAddMore = totalImages < maxFiles && !disabled;
+  const Card = preset.variant === "banner" ? BannerCard : ProductCard;
 
+  // ============================================
   // RENDER
+  // ============================================
 
   return (
     <div className="space-y-3">
-      <ImageHint typeElement={typeElement} disabled={disabled} />
+      <ImageHint typeElement={preset.variant} disabled={disabled} />
 
-      {/* Input oculto */}
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
         multiple
         onChange={handleFileSelect}
-        onBlur={onBlur}
         className="hidden"
         disabled={disabled}
       />
 
-      {/* Zona de drop inicial */}
       {!hasImages ? (
         <div
           onClick={handleOpenFileDialog}
-          className={`
-            border-2 border-dashed rounded-lg p-8
-            flex flex-col items-center justify-center gap-3
-            cursor-pointer transition-colors
-            ${
-              disabled
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:border-blue-500 hover:bg-blue-50"
-            }
-            ${error ? "border-red-500" : "border-gray-300"}
-          `}
+          className={cn(
+            "border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors",
+            disabled
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:border-blue-500 hover:bg-blue-50",
+            error ? "border-red-500" : "border-gray-300",
+          )}
         >
           <Upload className="w-12 h-12 text-gray-400" />
           <div className="text-center">
@@ -281,59 +228,35 @@ export default function InputFile({
         </div>
       ) : (
         <>
-          {/* Grid de previews */}
-          <div
-            className={cn(
-              "grid gap-3",
-              typeElement === "banner"
-                ? "grid-cols-1 md:grid-cols-2"
-                : "grid-cols-2 md:grid-cols-4",
-            )}
-          >
-            {/* Imágenes existentes */}
-            {existingImages.map((url, index) =>
-              typeElement === "banner" ? (
-                <BannerCard
-                  key={`existing-${index}`}
-                  url={getCatalogImageUrl(url)}
-                  onRemove={() => handleRemoveExistingImage(index)}
-                  disabled={disabled}
-                />
-              ) : (
-                <ProductCard
-                  key={`existing-${index}`}
-                  url={getCatalogImageUrl(url)}
-                  onRemove={() => handleRemoveExistingImage(index)}
-                  disabled={disabled}
-                />
-              ),
-            )}
+          <div className={cn("grid gap-3", preset.gridClassName)}>
+            {existingUrls.map((url, index) => (
+              <Card
+                key={`existing-${url}`}
+                url={getCatalogImageUrl(url)}
+                onRemove={() => onRemoveExisting?.(url)}
+                disabled={disabled}
+              />
+            ))}
 
-            {/* Imágenes nuevas */}
-            {previews.map((preview, index) =>
-              typeElement === "banner" ? (
-                <BannerCard
-                  key={`new-${index}`}
-                  url={preview.url}
-                  onRemove={() => handleRemoveImage(index)}
-                  disabled={disabled}
-                />
-              ) : (
-                <ProductCard
-                  key={`new-${index}`}
-                  url={preview.url}
-                  onRemove={() => handleRemoveImage(index)}
-                  disabled={disabled}
-                />
-              ),
-            )}
+            {files.map((_, index) => (
+              <Card
+                key={`new-${index}`}
+                url={previewUrls[index]}
+                onRemove={() => handleRemoveNew(index)}
+                disabled={disabled}
+              />
+            ))}
 
-            {/* Botón para añadir más */}
             {canAddMore && (
               <button
                 type="button"
                 onClick={handleOpenFileDialog}
-                className={`${typeElement === "banner" ? "aspect-video" : "aspect-square"} rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-blue-500`}
+                className={cn(
+                  preset.cardAspect === "video"
+                    ? "aspect-video"
+                    : "aspect-square",
+                  "rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-500 hover:text-blue-500",
+                )}
               >
                 <Plus className="w-8 h-8" />
                 <span className="text-xs font-medium">Añadir más</span>
@@ -341,7 +264,6 @@ export default function InputFile({
             )}
           </div>
 
-          {/* Contador */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">
               {totalImages} de {maxFiles} imágenes
@@ -350,7 +272,6 @@ export default function InputFile({
         </>
       )}
 
-      {/* Error message */}
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );

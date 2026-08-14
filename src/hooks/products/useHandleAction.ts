@@ -19,6 +19,7 @@ import {
   uploadMultipleFiles,
 } from "@/lib/utils/storage";
 import { useSaveProductImages } from "./useSaveProductImages";
+import type { ProductVariantDraft } from "@/features/product/product-variants/types/types";
 
 export function useProductActions() {
   const [isPending, setIsPending] = useState(false);
@@ -55,6 +56,7 @@ export function useProductActions() {
     data: ProductInputClient,
     storeId: string,
     storeSlug: string,
+    variantDraft?: ProductVariantDraft,
     onSuccess?: () => void,
   ) => {
     showPromise({
@@ -62,7 +64,7 @@ export function useProductActions() {
         await withPending(async () => {
           const { images, ...dataProducto } = data;
           //Crear producto
-          const productRes = await create(dataProducto);
+          const productRes = await create({ dataProducto, variantDraft });
           //AQUI HAY DUDAS
           //Subir imágenes en paralelo (si existen)
           const uploadPromises = images.map((file) =>
@@ -102,6 +104,7 @@ export function useProductActions() {
     data: ProductInputClient,
     storeId: string,
     storeSlug: string,
+    variantDraft?: ProductVariantDraft,
     onSuccess?: () => void,
   ) => {
     showPromise({
@@ -110,7 +113,7 @@ export function useProductActions() {
           const { images, ...dataProducto } = data;
 
           // 1) Crear producto — si falla, se corta todo acá (sin cambios)
-          const productRes = await create(dataProducto);
+          const productRes = await create({ dataProducto, variantDraft });
           const productFolder = `${storeId}/products/${productRes.id}`;
 
           // 2) Subir imágenes — no importa si alguna falla, seguimos con las que sí subieron
@@ -152,12 +155,23 @@ export function useProductActions() {
 
           // revalidar cache
           revalidateProductCache(storeSlug, null);
+
+          // Replace route to edit page and open the tab that matches the product mode
+          try {
+            const targetTab = data.has_variants ? "variantes" : "general";
+            router.replace(
+              `/dashboard/products/${productRes.id}/edit?tab=${targetTab}`,
+            );
+          } catch (err) {
+            // fallback: do nothing if navigation fails
+          }
+
           onSuccess?.();
         });
       },
       messages: {
         loading: "Creando producto...",
-        success: "Producto creado exitosamente",
+        success: "Producto creado — ahora podés agregar sus variantes",
         error: (err) => err.message,
       },
       richColors: true,

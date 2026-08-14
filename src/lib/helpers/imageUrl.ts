@@ -8,6 +8,7 @@ const CLOUDFLARE_WORKER = "https://supabase-images.jhoyervega4.workers.dev/"; */
 //esto de la de la base de datos de test
 const SUPABASE_STORAGE =
   "https://sgyhnurfolicvvtkoyun.supabase.co/storage/v1/object/public/";
+
 const CLOUDFLARE_WORKER = "https://test-supabase.jhoyervega4.workers.dev/";
 
 //esto no se toca es la funcion global que obtiene la imagen

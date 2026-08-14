@@ -210,7 +210,7 @@ async function getPublicProductBySlugRaw(
     .from("products")
     .select(
       `
-      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id, category_id,images:product_images(image_url)
+      id, name, price, description, has_variants, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id, category_id,images:product_images(image_url)
       `,
     )
     .eq("slug", slug)
@@ -223,6 +223,7 @@ async function getPublicProductBySlugRaw(
     name: data.name,
     price: data.price,
     description: data.description,
+    has_variants: data.has_variants ?? false,
     brand_id: data.brand_id ?? null,
     category_id: data.category_id,
     is_offer: data.is_offer ?? false,

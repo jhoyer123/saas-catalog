@@ -7,20 +7,22 @@ import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import Link from "next/link";
 import SkeletonForm from "../[id]/view/loading";
 import { useSessionData } from "@/hooks/auth/useSessionData";
+import { useOptionTypesForProduct } from "@/features/product/product-variants/hooks/useOptionTypesAndValues";
 
 export default function Page() {
-  //get categories for select in form
+  const { data: DataPlan, isLoading: isLoadingPlan } = useSessionData();
   const { data: categories, isLoading: isLoadingCategories } =
     useGetCategoryNoPage();
   const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
-
-  //data plan for form
-  const { data: DataPlan, isLoading: isLoadingPlan } = useSessionData();
+  const { data: storeOptionTypes, isLoading: isLoadingStoreOptionTypes } =
+    useOptionTypesForProduct();
 
   if (
     isLoadingCategories ||
     isLoadingBrands ||
     isLoadingPlan ||
+    isLoadingStoreOptionTypes ||
+    !storeOptionTypes ||
     !categories ||
     !brands ||
     !DataPlan?.plan
@@ -49,6 +51,7 @@ export default function Page() {
           categories={categories || []}
           brands={brands || []}
           plan={DataPlan.plan}
+          storeOptionTypes={storeOptionTypes || []}
         />
       </div>
     </div>

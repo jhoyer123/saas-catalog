@@ -3,9 +3,11 @@
 import Form from "@/components/products/form/Form";
 import SkeletonForm from "@/components/shared/SkeletonForm";
 import { Button } from "@/components/ui/button";
+import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useGetBrandsNoPage } from "@/hooks/brand/useGetBrandsNoPage";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import { useGetProductById } from "@/hooks/products/useGetProductById";
+import { useOptionTypesForProduct } from "@/features/product/product-variants/hooks/useOptionTypesAndValues";
 import Link from "next/link";
 import { use } from "react";
 
@@ -16,13 +18,21 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { data: categories, isLoading: isLoadingCategories } =
     useGetCategoryNoPage();
   const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
+  const { data: storeOptionTypes, isLoading: isLoadingStoreOptionTypes } =
+    useOptionTypesForProduct();
+  const { data: DataPlan, isLoading: isLoadingPlan } = useSessionData();
+
   if (
     isLoadingProduct ||
     isLoadingCategories ||
     isLoadingBrands ||
+    isLoadingStoreOptionTypes ||
+    isLoadingPlan ||
     !product ||
     !categories ||
-    !brands
+    !brands ||
+    !storeOptionTypes ||
+    !DataPlan?.plan
   ) {
     return <SkeletonForm />;
   }
@@ -41,6 +51,8 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
           initialData={product}
           categories={categories ?? []}
           brands={brands ?? []}
+          plan={DataPlan.plan}
+          storeOptionTypes={storeOptionTypes ?? []}
         />
       </div>
     </div>
