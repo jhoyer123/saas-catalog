@@ -6,5 +6,5 @@ export function getCatalogImageUrl(url: string | null | undefined): string {
   if (!url) return "/images/placeholder.webp";
   if (url.startsWith("http"))
     return url.replace(SUPABASE_STORAGE, CLOUDFLARE_WORKER);
-  return CLOUDFLARE_WORKER + "/" + url;
+  return CLOUDFLARE_WORKER + url;
 }
