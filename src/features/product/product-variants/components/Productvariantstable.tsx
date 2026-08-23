@@ -5,7 +5,6 @@ import { RotateCcw, Trash2 } from "lucide-react";
 import type { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -16,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import FormInput from "@/components/shared/InputForm";
 import type { StoreOptionType } from "@/features/product/product-variants/services/optionsForVariants.service";
 import type {
   ProductFormInput,
@@ -147,41 +147,46 @@ export function ProductVariantsTable({
                   </div>
                 </TableCell>
 
+                {/* Precio — obligatorio, muestra error si se intenta enviar vacío */}
                 <TableCell>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    disabled={rowDisabled}
-                    {...form.register(`variants.${index}.price`, {
-                      valueAsNumber: true,
-                    })}
+                  <FormInput
+                    name={`variants.${index}.price`}
+                    control={form.control}
+                    inputProps={{
+                      type: "number",
+                      step: "0.01",
+                      disabled: rowDisabled,
+                    }}
                   />
                   {isSubmitted &&
                     form.formState.errors.variants?.[index]?.price && (
                       <p className="mt-1 text-xs text-red-500">
-                        {
-                          form.formState.errors.variants[index]?.price
-                            ?.message as string
-                        }
+                        {form.formState.errors.variants[index]?.price?.message}
                       </p>
                     )}
                 </TableCell>
 
+                {/* Precio oferta — completamente opcional, nunca obligatorio */}
                 <TableCell>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    disabled={rowDisabled}
-                    {...form.register(`variants.${index}.offer_price`, {
-                      valueAsNumber: true,
-                    })}
+                  <FormInput
+                    name={`variants.${index}.offer_price`}
+                    control={form.control}
+                    inputProps={{
+                      type: "number",
+                      step: "0.01",
+                      disabled: rowDisabled,
+                    }}
                   />
                 </TableCell>
 
+                {/* SKU — opcional */}
                 <TableCell>
-                  <Input
-                    disabled={rowDisabled}
-                    {...form.register(`variants.${index}.sku`)}
+                  <FormInput
+                    name={`variants.${index}.sku`}
+                    control={form.control}
+                    inputProps={{
+                      disabled: rowDisabled,
+                    }}
                   />
                 </TableCell>
 

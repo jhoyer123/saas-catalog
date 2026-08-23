@@ -96,13 +96,21 @@ export function useVariantAutoSync({
       }
     });
 
-    // 3) prune de galerías cuya firma visual ya no está entre los combos válidos
-    const activeSigs = new Set(
-      combos
-        .map((c) => visualSignature(c, visualTypeIds))
-        .filter((s): s is string => s !== null),
-    );
-    imagesApi.pruneOrphaned(activeSigs);
+    // 3) prune de galerías cuya firma visual ya no está entre los combos válidos.
+    //    IMPORTANTE: solo se podan si hay combos activos. Cuando combos.length === 0
+    //    significa que estamos en un estado intermedio (ej. se acaba de agregar un
+    //    atributo pero todavía no tiene valores tildados). En ese estado,
+    //    activeSigs quedaría vacío y pruneOrphaned borraría TODAS las galerías —
+    //    que es un falso positivo. El regroup en onVisualConfigurationChange ya se
+    //    encarga de reorganizar firmas cuando cambia is_visual.
+    if (combos.length > 0) {
+      const activeSigs = new Set(
+        combos
+          .map((c) => visualSignature(c, visualTypeIds))
+          .filter((s): s is string => s !== null),
+      );
+      imagesApi.pruneOrphaned(activeSigs);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [depsKey]);
 

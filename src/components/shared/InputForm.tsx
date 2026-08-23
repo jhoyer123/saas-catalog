@@ -11,7 +11,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 interface InputProps<T extends FieldValues> {
-  label: string;
+  label?: string; // Opcional: si no se pasa, no se renderiza el Label (útil en celdas de tabla)
   required?: boolean;
   name: Path<T>;
   control: Control<T>; // Reemplazamos register por control
@@ -31,10 +31,12 @@ const FormInput = <T extends FieldValues>({
 }: InputProps<T>) => {
   return (
     <div className="grid gap-2 w-full">
-      <Label htmlFor={name}>
-        {label}
-        {required && <span className="text-red-500">*</span>}
-      </Label>
+      {label && (
+        <Label htmlFor={name}>
+          {label}
+          {required && <span className="text-red-500">*</span>}
+        </Label>
+      )}
 
       <Controller
         name={name}

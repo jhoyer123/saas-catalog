@@ -40,7 +40,7 @@ export function ProductMediaSection<TFieldValues extends FieldValues>({
   return (
     <SectionCard
       title="Contenido y medios"
-      description="Descripción editorial e imágenes base del producto."
+      description="Descripción e imágenes base del producto."
     >
       <div className="grid gap-6">
         <div className="grid gap-2">

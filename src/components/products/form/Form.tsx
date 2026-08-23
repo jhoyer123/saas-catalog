@@ -235,6 +235,7 @@ export default function FormProduct({
           return;
         }
       }
+      data = { ...data, slug: generateSlug(data.name) }
       console.log(data);
       console.log(imagesApiRef.current?.state);
       // persistencia: producto + variantes + imágenes (create o edit)
@@ -373,9 +374,9 @@ export default function FormProduct({
             {!hasVariants ? (
               <section className="rounded-2xl border bg-background p-5 shadow-sm">
                 <div className="mb-4">
-                  <h2 className="text-lg font-semibold">Precio principal</h2>
+                  <h2 className="text-lg font-semibold">Precio del Producto</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Se usa cuando el producto no tiene variantes.
+                    Ingresa el precio del producto aqui solo si no tiene variantes.
                   </p>
                 </div>
                 <div className="max-w-md">
@@ -424,6 +425,11 @@ export default function FormProduct({
                       : undefined
                   }
                   onVisualConfigurationChange={(nextVisualTypeIds) => {
+                    // Las firmas visuales cambiaron (toggle is_visual, o agregar/quitar
+                    // un attr visual). Las imágenes existentes se reagrupan bajo las
+                    // nuevas firmas — no se pierden. Los newFiles sí se descartan porque
+                    // aún no tienen variantId y no se pueden reasignar con certeza.
+                    const currentVariants = form.getValues("variants") ?? [];
                     if (
                       imagesApi.state.general.newFiles.length ||
                       Object.values(imagesApi.state.bySignature).some(
@@ -435,8 +441,13 @@ export default function FormProduct({
                       );
                     }
                     imagesApi.resetNewFiles();
+                    imagesApi.regroup(currentVariants, nextVisualTypeIds);
                     setVisualTypeIds(nextVisualTypeIds);
-                    autoSync.resetVariants(selectedTypeIds, valuesByType);
+                    // NOTA: NO se llama a autoSync.resetVariants aquí.
+                    // Si este callback llegó desde addAttribute/removeAttribute,
+                    // onAttributeStructureChange ya hizo (o hará) el reset de variantes.
+                    // Si llegó desde un toggle is_visual puro, la matriz de combinaciones
+                    // no cambió — solo cambian las firmas visuales para las imágenes.
                   }}
                 />
 

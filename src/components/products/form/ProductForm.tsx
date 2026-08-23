@@ -101,7 +101,7 @@ export function ProductForm({
         id="product-form"
         onSubmit={handleValidSubmit}
         noValidate
-        className="mx-auto grid w-full gap-6"
+        className="mx-auto grid w-full gap-4"
       >
         {children(helpers)}
       </form>

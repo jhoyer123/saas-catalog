@@ -37,7 +37,7 @@ const RichTextEditor = ({ value, onChange, disabled }: Props) => {
     content: value,
     editorProps: {
       attributes: {
-        class: "min-h-[156px] border rounded-md bg-slate-50 py-2 px-3",
+        class: "min-h-[240px] max-h-[240px] overflow-y-auto border rounded-md py-2 px-3",
       },
     },
     immediatelyRender: false,
