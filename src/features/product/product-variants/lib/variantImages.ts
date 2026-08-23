@@ -24,6 +24,34 @@ export function updateGallery(
 }
 
 /**
+ * Discards local uploads after the visual-attribute configuration changes.
+ * Existing images and pending deletions are retained because they are already
+ * persisted and must not be modified by this client-side reset.
+ */
+export function clearNewVariantImages(state: ImagesState): ImagesState {
+  return {
+    ...state,
+    general: { ...state.general, newFiles: [] },
+    bySignature: Object.fromEntries(
+      Object.entries(state.bySignature).map(([signature, gallery]) => [
+        signature,
+        { ...gallery, newFiles: [] },
+      ]),
+    ),
+  };
+}
+
+/** Clears every client-side gallery when variant mode is restarted. */
+export function resetVariantImages(state: ImagesState): ImagesState {
+  return {
+    general: emptyGallery(),
+    bySignature: {},
+    orphaned: [],
+    deletedIds: state.deletedIds,
+  };
+}
+
+/**
  * Elimina galerías cuya firma ya no está activa (el valor que la generaba se
  * destildó del todo). Sus imágenes existentes se marcan para borrar: a
  * diferencia de una ambigüedad de regroup, acá no hay a dónde reasignarlas

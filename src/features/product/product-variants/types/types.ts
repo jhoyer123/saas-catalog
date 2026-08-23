@@ -41,7 +41,7 @@ export type ImagesState = {
 
   // NUEVO: imágenes que perdieron su firma (variante borrada, o el regroup no
   // pudo asignarlas sin ambigüedad). Antes esto cualquiera de estos dos casos
-  // caía silenciosamente en `general`, mezclando "sin atributo visual"
+  // caía silenciosamente /*  */en `general`, mezclando "sin atributo visual"
   // (legítimo) con "sin dueño" (bug). Ahora quedan acá, separadas, para que
   // se puedan mostrar aparte y el usuario decida (o se descarten a propósito).
   orphaned: ImageEntry[];

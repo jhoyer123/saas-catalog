@@ -155,6 +155,12 @@ export default function FormProduct({
         initialData as unknown as ProductWithRelations,
       ),
   );
+  const [visualTypeIds, setVisualTypeIds] = useState<string[]>(
+    () =>
+      initialData?.product_option_types
+        .filter((optionType) => optionType.is_visual)
+        .map((optionType) => optionType.option_type_id) ?? [],
+  );
 
   const isModCreate = mode === "create";
   const isModView = mode === "view";
@@ -170,8 +176,8 @@ export default function FormProduct({
       isModCreate
         ? []
         : (initialData?.image_details ?? [])
-            .filter((img) => !img.variant_id)
-            .map((img) => img.image_url),
+          .filter((img) => !img.variant_id)
+          .map((img) => img.image_url),
     [initialData, isModCreate],
   );
 
@@ -229,9 +235,10 @@ export default function FormProduct({
           return;
         }
       }
-
+      console.log(data);
+      console.log(imagesApiRef.current?.state);
       // persistencia: producto + variantes + imágenes (create o edit)
-      const result = await saveProductWithFormData({
+      /* const result = await saveProductWithFormData({
         mode: isModEdit ? "edit" : "create",
         data,
         imagesState: imagesApiRef.current?.state ?? {
@@ -246,9 +253,10 @@ export default function FormProduct({
           .filter((ot) => ot.is_visual)
           .map((ot) => ot.option_type_id),
         hadVariantRows: (initialData?.product_variants?.length ?? 0) > 0,
-      });
+      });  */
 
-      if (!result.ok) {
+
+      /* if (!result.ok) {
         toast.error(result.error);
         return;
       }
@@ -277,7 +285,7 @@ export default function FormProduct({
         router.replace(`/dashboard/products/${result.id}/edit?tab=${targetTab}`);
       } else {
         router.refresh();
-      }
+      } */
     } catch (e) {
       console.error(e);
       toast.error("Ocurrió un error inesperado al guardar el producto.");
@@ -300,18 +308,12 @@ export default function FormProduct({
     >
       {({ form, variantsField, optionTypesField, isReadOnly }) => {
         const hasVariants = form.watch("has_variants") as boolean;
-        // los types/atributos seleccionados solo sus ids
+        // todos los types/atributos seleccionados para el producto, solo sus ids
         const selectedTypeIds = optionTypesField.fields.map(
           (f) => f.option_type_id,
         );
 
-        const optionTypesWatched = form.watch("option_types") ?? [];
-        // los types/atributos seleccionados que son visuales (para agrupar imágenes)
-        const visualTypeIds = optionTypesWatched
-          .filter((ot) => ot.is_visual)
-          .map((ot) => ot.option_type_id);
-
-        // se instancia en cada render del children (patrón ya documentado)
+        // estas son las imagenes de las variantes
         const imagesApi = useVariantImages(
           buildInitialImagesState(
             initialData as unknown as ProductWithRelations,
@@ -340,6 +342,14 @@ export default function FormProduct({
               isViewMode={isModView}
               isCreateMode={isModCreate}
               hasVariants={hasVariants}
+              onHasVariantsChange={() => {
+                variantsField.replace([]);
+                optionTypesField.replace([]);
+                setValuesByType({});
+                setVisualTypeIds([]);
+                imagesApi.reset();
+                setOpenSigKey(null);
+              }}
             />
 
             <ProductIdentitySection<ProductFormInput>
@@ -395,7 +405,25 @@ export default function FormProduct({
                   canEditAttributes={canEditAttributes}
                   valuesByType={valuesByType}
                   onValuesByTypeChange={setValuesByType}
-                  onVisualToggle={() => {
+                  onAttributeStructureChange={(
+                    nextSelectedTypeIds,
+                    nextValuesByType,
+                  ) =>
+                    autoSync.resetVariants(
+                      nextSelectedTypeIds,
+                      nextValuesByType,
+                    )
+                  }
+                  onVariantValuesChange={
+                    isModCreate
+                      ? (nextSelectedTypeIds, nextValuesByType) =>
+                        autoSync.resetVariants(
+                          nextSelectedTypeIds,
+                          nextValuesByType,
+                        )
+                      : undefined
+                  }
+                  onVisualConfigurationChange={(nextVisualTypeIds) => {
                     if (
                       imagesApi.state.general.newFiles.length ||
                       Object.values(imagesApi.state.bySignature).some(
@@ -403,11 +431,12 @@ export default function FormProduct({
                       )
                     ) {
                       toast.warning(
-                        "Cambiaste qué atributo define la imagen. Las imágenes nuevas sin guardar se descartaron, volvé a subirlas en el grupo correcto.",
+                        "Cambiaste qué atributo define la imagen. Las imágenes nuevas sin guardar se descartaron; volvé a subirlas con las nuevas combinaciones.",
                       );
                     }
-                    const currentVariants = form.getValues("variants") ?? [];
-                    imagesApi.regroup(currentVariants, visualTypeIds); // usa el NUEVO visualTypeIds ya actualizado
+                    imagesApi.resetNewFiles();
+                    setVisualTypeIds(nextVisualTypeIds);
+                    autoSync.resetVariants(selectedTypeIds, valuesByType);
                   }}
                 />
 
@@ -419,6 +448,7 @@ export default function FormProduct({
                   imagesApi={imagesApi}
                   onOpenImagePicker={(sigKey) => setOpenSigKey(sigKey)}
                   selectedTypeIds={selectedTypeIds}
+                  visualTypeIds={visualTypeIds}
                   valuesByType={valuesByType}
                   onToggleRemoved={autoSync.toggleRemoved}
                 />

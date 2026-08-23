@@ -39,6 +39,7 @@ interface ProductVariantsTableProps {
   imagesApi: ReturnType<typeof useVariantImages>;
   onOpenImagePicker: (signatureKey: string) => void;
   selectedTypeIds: string[];
+  visualTypeIds: string[];
   valuesByType: Record<string, string[]>;
   onToggleRemoved?: (index: number, removed: boolean) => void;
 }
@@ -51,15 +52,10 @@ export function ProductVariantsTable({
   imagesApi,
   onOpenImagePicker,
   selectedTypeIds,
+  visualTypeIds,
   valuesByType,
   onToggleRemoved,
 }: ProductVariantsTableProps) {
-  const visualTypeIds =
-    form
-      .watch("option_types")
-      ?.filter((ot) => ot.is_visual)
-      .map((ot) => ot.option_type_id) ?? [];
-
   const isSubmitted = form.formState.isSubmitted;
 
   // firmas de combinación que siguen siendo válidas con la selección actual de

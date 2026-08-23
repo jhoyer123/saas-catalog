@@ -43,7 +43,18 @@ interface ProductVariantAttributesSectionProps {
   canEditAttributes: boolean;
   valuesByType: Record<string, string[]>;
   onValuesByTypeChange: (next: Record<string, string[]>) => void;
-  onVisualToggle?: () => void;
+  /** Rebuilds the complete matrix after adding or removing an attribute. */
+  onAttributeStructureChange?: (
+    nextSelectedTypeIds: string[],
+    nextValuesByType: Record<string, string[]>,
+  ) => void;
+  /** Rebuilds the complete matrix after selecting or deselecting a value. */
+  onVariantValuesChange?: (
+    nextSelectedTypeIds: string[],
+    nextValuesByType: Record<string, string[]>,
+  ) => void;
+  /** Invoked with the complete next set of image-defining attributes. */
+  onVisualConfigurationChange?: (nextVisualTypeIds: string[]) => void;
 }
 
 export function ProductVariantAttributesSection({
@@ -54,7 +65,9 @@ export function ProductVariantAttributesSection({
   canEditAttributes,
   valuesByType,
   onValuesByTypeChange,
-  onVisualToggle,
+  onAttributeStructureChange,
+  onVariantValuesChange,
+  onVisualConfigurationChange,
 }: ProductVariantAttributesSectionProps) {
   const [attrPopoverOpen, setAttrPopoverOpen] = useState(false);
   const didAutoSelect = useRef(false);
@@ -67,6 +80,12 @@ export function ProductVariantAttributesSection({
     (t) => !selectedTypeIds.includes(t.id),
   );
 
+  function getVisualTypeIds(): string[] {
+    return (form.getValues("option_types") ?? [])
+      .filter((optionType) => optionType.is_visual)
+      .map((optionType) => optionType.option_type_id);
+  }
+
   // autoseleccionar atributos con is_default_on_create, una sola vez, solo
   // cuando se puede editar la estructura de atributos
   useEffect(() => {
@@ -75,6 +94,14 @@ export function ProductVariantAttributesSection({
     didAutoSelect.current = true;
 
     const defaults = storeOptionTypes.filter((t) => t.is_default_on_create);
+    const addedDefaultTypeIds = defaults
+      .filter(
+        (type) =>
+          !optionTypesField.fields.some(
+            (field) => field.option_type_id === type.id,
+          ),
+      )
+      .map((type) => type.id);
     defaults.forEach((type) => {
       const alreadyAdded = optionTypesField.fields.some(
         (f) => f.option_type_id === type.id,
@@ -86,10 +113,35 @@ export function ProductVariantAttributesSection({
         });
       }
     });
+    const addedVisualDefaultTypeIds = defaults
+      .filter(
+        (type) =>
+          type.is_visual_default && addedDefaultTypeIds.includes(type.id),
+      )
+      .map((type) => type.id);
+    if (addedVisualDefaultTypeIds.length > 0) {
+      onVisualConfigurationChange?.([
+        ...getVisualTypeIds(),
+        ...addedVisualDefaultTypeIds,
+      ]);
+    }
+    if (addedDefaultTypeIds.length > 0) {
+      onAttributeStructureChange?.(
+        [...selectedTypeIds, ...addedDefaultTypeIds],
+        valuesByType,
+      );
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canEditAttributes, storeOptionTypes]);
 
   function addAttribute(type: StoreOptionType) {
+    if (type.is_visual_default) {
+      onVisualConfigurationChange?.([...getVisualTypeIds(), type.id]);
+    }
+    onAttributeStructureChange?.(
+      [...selectedTypeIds, type.id],
+      { ...valuesByType, [type.id]: valuesByType[type.id] ?? [] },
+    );
     optionTypesField.append({
       option_type_id: type.id,
       is_visual: type.is_visual_default,
@@ -101,11 +153,22 @@ export function ProductVariantAttributesSection({
     const idx = optionTypesField.fields.findIndex(
       (f) => f.option_type_id === typeId,
     );
+    const removedWasVisual =
+      idx >= 0 && form.getValues(`option_types.${idx}.is_visual`) === true;
     if (idx >= 0) optionTypesField.remove(idx);
+    if (removedWasVisual) {
+      onVisualConfigurationChange?.(
+        getVisualTypeIds().filter((visualTypeId) => visualTypeId !== typeId),
+      );
+    }
 
     const next = { ...valuesByType };
     delete next[typeId];
     onValuesByTypeChange(next);
+    onAttributeStructureChange?.(
+      selectedTypeIds.filter((selectedTypeId) => selectedTypeId !== typeId),
+      next,
+    );
   }
 
   function toggleValue(typeId: string, valueId: string) {
@@ -113,7 +176,9 @@ export function ProductVariantAttributesSection({
     const next = current.includes(valueId)
       ? current.filter((v) => v !== valueId)
       : [...current, valueId];
-    onValuesByTypeChange({ ...valuesByType, [typeId]: next });
+    const nextValuesByType = { ...valuesByType, [typeId]: next };
+    onValuesByTypeChange(nextValuesByType);
+    onVariantValuesChange?.(selectedTypeIds, nextValuesByType);
   }
 
   return (
@@ -201,11 +266,16 @@ export function ProductVariantAttributesSection({
                     <Checkbox
                       checked={form.watch(`option_types.${otIndex}.is_visual`)}
                       onCheckedChange={(checked) => {
+                        const nextVisualTypeIds = getVisualTypeIds().filter(
+                          (visualTypeId) => visualTypeId !== type.id,
+                        );
+                        if (checked) nextVisualTypeIds.push(type.id);
                         form.setValue(
                           `option_types.${otIndex}.is_visual`,
                           Boolean(checked),
+                          { shouldDirty: true },
                         );
-                        onVisualToggle?.();
+                        onVisualConfigurationChange?.(nextVisualTypeIds);
                       }}
                       disabled={!canEditAttributes}
                     />

@@ -10,44 +10,34 @@ interface VariantToggleSectionProps<TFieldValues extends FieldValues> {
   isViewMode: boolean;
   isCreateMode: boolean;
   hasVariants: boolean;
+  onHasVariantsChange?: (hasVariants: boolean) => void;
 }
 
 export function VariantToggleSection<TFieldValues extends FieldValues>({
   control,
   isViewMode,
+  onHasVariantsChange,
 }: VariantToggleSectionProps<TFieldValues>) {
   return (
     <SectionCard
-      title="Opciones múltiples"
-      description="Activa este bloque si el producto se venderá por variantes."
+      title="Variantes"
+      description="Activa esta opción si el producto tiene diferentes versiones."
     >
-      <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
-        <div>
-          <Label>¿Este producto tiene opciones múltiples?</Label>
-          <p className="text-sm text-muted-foreground">
-            Tallas, colores, combinaciones o cualquier atributo que cambie SKU,
-            precio o stock.
-          </p>
-        </div>
-        <Controller
-          name={"has_variants" as Path<TFieldValues>}
-          control={control}
-          render={({ field }) => (
-            <Switch
-              checked={field.value === true}
-              onCheckedChange={field.onChange}
-              disabled={isViewMode}
-            />
-          )}
-        />
-      </div>
-
-      {false ? (
-        <div className="mt-4 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-700">
-          El producto ya quedará preparado para variantes. Después de guardarlo
-          entrarás a edición para completar atributos, combinaciones e imágenes.
-        </div>
-      ) : null}
+      <Controller
+        name={"has_variants" as Path<TFieldValues>}
+        control={control}
+        render={({ field }) => (
+          <Switch
+            checked={field.value === true}
+            onCheckedChange={(checked) => {
+              const hasVariants = Boolean(checked);
+              field.onChange(hasVariants);
+              onHasVariantsChange?.(hasVariants);
+            }}
+            disabled={isViewMode}
+          />
+        )}
+      />
     </SectionCard>
   );
 }

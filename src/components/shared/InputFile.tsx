@@ -1,9 +1,8 @@
-import React, { useMemo, useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Upload, Plus } from "lucide-react";
 import { toast } from "sonner";
 //helpers
 import {
-  createFileListFromArray,
   validateFile,
   processImage,
   validateImageDimensions,
@@ -50,6 +49,11 @@ export const IMAGE_PRESETS: Record<string, ImagePreset> = {
     gridClassName: "grid-cols-2 md:grid-cols-4",
     cardAspect: "square",
   },
+  variant: {
+    variant: "product",
+    gridClassName: "grid-cols-1 md:grid-cols-2",
+    cardAspect: "square",
+  },
   logo: {
     variant: "product",
     processConfig: { targetWidth: 512, targetHeight: 512, quality: 0.9 },
@@ -84,34 +88,48 @@ interface InputFileProps {
 // ============================================
 
 export default function InputFile({
-  files = [], // MODIFICADO: default defensivo. Si el padre manda undefined
-  // (ej. un campo de RHF sin defaultValue todavía) esto no debe explotar.
+  files = [],
   onFilesChange,
   existingUrls = [],
   onRemoveExisting,
-  maxFiles = 5,
-  maxSizeMB = 5,
+  maxFiles = 1,
+  maxSizeMB = 15,
   disabled = false,
   error,
   preset,
 }: InputFileProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   // ============================================
   // PREVIEWS: puramente derivado de `files`, no es estado propio.
   // ============================================
-
-  const previewUrls = useMemo(
+  /* const previewUrls = useMemo(
     () => files.map((file) => URL.createObjectURL(file)),
     [files],
   );
-
   // Revocar URLs viejas cuando cambian los files o al desmontar
   useEffect(() => {
     return () => {
       previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [previewUrls]);
+  }, [previewUrls]); */
+  // ============================================
+  // PREVIEWS: Generación y limpieza segura de Blob URLs
+  // ============================================
+  useEffect(() => {
+    if (!files.length) {
+      setPreviewUrls([]);
+      return;
+    }
+
+    const objectUrls = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls(objectUrls);
+
+    // Limpia la memoria solo cuando el array de archivos cambia o el componente se desmonta
+    return () => {
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [files]);
 
   // ============================================
   // HANDLERS
@@ -229,7 +247,7 @@ export default function InputFile({
       ) : (
         <>
           <div className={cn("grid gap-3", preset.gridClassName)}>
-            {existingUrls.map((url, index) => (
+            {existingUrls.map((url) => (
               <Card
                 key={`existing-${url}`}
                 url={getCatalogImageUrl(url)}

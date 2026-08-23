@@ -49,13 +49,11 @@ const productBaseSchema = z.object({
   option_types: z.array(productOptionTypeSchema).default([]),
   variants: z.array(variantSchema).default([]),
 
-  // NUEVO: imagen(es) general del producto. Obligatoria solo si !has_variants (ver superRefine).
+  // imagen(es) general del producto. Obligatoria solo si !has_variants (ver superRefine).
   product_images: z.array(z.instanceof(File)).default([]),
   product_existing_images: z.array(z.string()).default([]),
 
-  // NUEVO: urls existentes (de producto y/o de galerías de variantes) marcadas
-  // para borrar en el back al guardar. En el submit se combina lo que junta
-  // ProductMediaSection acá con imagesApi.state.deletedIds (ver FormProduct).
+  // campo interno para trackear qué imágenes existentes se quieren borrar en edit. No se manda al backend, solo sirve para el form.
   imageToDelete: z.array(z.string()).default([]),
 });
 

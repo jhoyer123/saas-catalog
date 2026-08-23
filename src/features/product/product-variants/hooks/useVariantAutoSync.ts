@@ -128,8 +128,32 @@ export function useVariantAutoSync({
     });
   }
 
+  /**
+   * Rebuilds the variant matrix after an attribute is removed. Keeping the old
+   * rows is unsafe because each one contains a value of the removed attribute.
+   */
+  function resetVariants(
+    nextSelectedTypeIds: string[],
+    nextValuesByType: Record<string, string[]>,
+  ) {
+    const combos = generateCombinations(nextSelectedTypeIds, nextValuesByType);
+    setManualRemovedSigs(new Set());
+    variantsField.replace(
+      combos.map((option_values) => ({
+        _localId: crypto.randomUUID(),
+        price: 0,
+        sku: "",
+        offer_price: null,
+        is_available: true,
+        _removed: false,
+        option_values,
+      })),
+    );
+  }
+
   return {
     toggleRemoved,
+    resetVariants,
     manualRemovedSigs,
   };
 }

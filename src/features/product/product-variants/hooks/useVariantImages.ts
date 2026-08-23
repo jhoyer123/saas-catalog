@@ -7,6 +7,8 @@ import {
 } from "../types/types";
 import {
   updateGallery,
+  clearNewVariantImages,
+  resetVariantImages,
   pruneOrphanedGalleries,
   regroupBySignature,
 } from "../lib/variantImages";
@@ -66,6 +68,14 @@ export function useVariantImages(initial?: Partial<ImagesState>) {
     );
   }, []);
 
+  const resetNewFiles = useCallback(() => {
+    setState(clearNewVariantImages);
+  }, []);
+
+  const reset = useCallback(() => {
+    setState(resetVariantImages);
+  }, []);
+
   const regroup = useCallback(
     (variants: { id?: string; option_values: ComboValue[] }[], visualTypeIds: string[]) => {
       setState((s) => regroupBySignature(s, variants, visualTypeIds));
@@ -80,6 +90,8 @@ export function useVariantImages(initial?: Partial<ImagesState>) {
     removeExisting,
     pruneOrphaned,
     setNewFiles,
+    resetNewFiles,
+    reset,
     regroup,
     NO_VISUAL_KEY,
   };

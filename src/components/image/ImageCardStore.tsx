@@ -11,10 +11,12 @@ interface ImageCardProps {
 }
 
 export function ProductCard({ url, onRemove, disabled }: ImageCardProps) {
+  if (!url) return null;
   return (
     <div className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-colors">
       <Image
         src={url}
+        unoptimized
         alt="Preview"
         fill
         sizes="(max-width: 768px) 50vw, 25vw"
@@ -47,10 +49,12 @@ interface BannerCardProps {
 }
 
 export function BannerCard({ url, onRemove, disabled }: BannerCardProps) {
+  if (!url) return null;
   return (
     <div className="relative group aspect-video rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-colors">
       <Image
         src={url}
+        unoptimized
         alt="Banner preview"
         fill
         sizes="(max-width: 768px) 100vw, 75vw"

@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -26,19 +27,21 @@ export function VariantGalleryDialog({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Imágenes de la combinación</DialogTitle>
+          <DialogTitle>Imágenes de la variante</DialogTitle>
+          <DialogDescription>
+            Gestión e inserción de imágenes para la variante seleccionada.
+          </DialogDescription>
         </DialogHeader>
-        {/* MODIFICADO: InputFile ya no usa value/onChange con FileList ni
-            imgExisting -- ahora es files/onFilesChange (File[] directo,
-            sin pasar por createFileListFromArray) + existingUrls + preset. */}
+
         <InputFile
-          preset={IMAGE_PRESETS.product}
+          preset={IMAGE_PRESETS.variant}
           files={gallery.newFiles}
           onFilesChange={onFilesChange}
           existingUrls={gallery.existing.map((e) => e.url)}
           maxFiles={maxImages}
+          maxSizeMB={25}
           onRemoveExisting={(url) => {
             const entry = gallery.existing.find((e) => e.url === url);
             if (entry) onRemoveExisting(entry);

@@ -1,5 +1,5 @@
 import { ImageIcon } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
   visualSignature,
   type ComboValue,
@@ -25,6 +25,8 @@ export function VariantImageCell({
   generalGallery: GalleryState;
   onOpenImagePicker: (sigKey: string) => void;
 }) {
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+
   const sig = visualSignature(optionValues, visualTypeIds);
   const sigKey = sig ?? NO_VISUAL_KEY;
   const gallery = sig
@@ -35,31 +37,26 @@ export function VariantImageCell({
   const firstNewFile =
     gallery.existing.length === 0 ? gallery.newFiles[0] : undefined;
 
-  // objectURL solo se recalcula si cambia el File en sí (por referencia)
-  const localPreviewUrl = useMemo(
-    () => (firstNewFile ? URL.createObjectURL(firstNewFile) : null),
-    [firstNewFile],
-  );
-
+  // Generación y limpieza síncrona en el ciclo de vida del efecto
   useEffect(() => {
+    if (!firstNewFile) {
+      setLocalPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(firstNewFile);
+    setLocalPreviewUrl(objectUrl);
+
     return () => {
-      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+      URL.revokeObjectURL(objectUrl);
     };
-  }, [localPreviewUrl]);
+  }, [firstNewFile]);
 
   const thumbUrl = firstExistingUrl
     ? getCatalogImageUrl(firstExistingUrl)
     : localPreviewUrl;
 
   const total = gallery.existing.length + gallery.newFiles.length;
-  // MODIFICADO: antes era `sig !== null && total === 0`, así que cuando NO
-  // hay ningún atributo visual (sig siempre null para todas las variantes),
-  // el punto rojo de "falta imagen" nunca se mostraba -- pero
-  // FormProduct.handleSubmit SÍ exige imagen para ese grupo compartido
-  // (general) cuando has_variants es true. Resultado: el usuario no veía
-  // ninguna advertencia en la tabla y recién se enteraba al tocar "Guardar",
-  // sin pista de dónde corregirlo. Ahora el aviso es consistente con lo que
-  // realmente se valida en el submit.
   const needsImage = total === 0;
 
   return (
