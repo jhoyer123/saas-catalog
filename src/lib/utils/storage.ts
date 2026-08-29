@@ -141,3 +141,53 @@ export const deleteFolder = async (
     throw new Error(`Error eliminando carpeta "${prefix}": ${error.message}`);
   }
 };
+
+/**
+ * Sube imágenes de un producto, agrupadas por firma.
+ * Útil para subir imágenes generales y variantes de un producto.
+ */
+type UploadInputBySignature = Record<string, { newFiles: File[] }>;
+
+export async function uploadProductImagesGrouped(params: {
+  storeId: string;
+  productId: string;
+  general: { newFiles: File[] };
+  bySignature: UploadInputBySignature;
+}) {
+  const { storeId, productId, general, bySignature } = params;
+  const base = `${storeId}/products/${productId}`;
+
+  // Subimos general
+  const generalUpload = await uploadMultipleFiles(
+    { bucket: "stores", folder: `${base}/general` },
+    general.newFiles,
+  );
+
+  // Subimos variantes
+  const bySignatureUpload: Record<
+    string,
+    { successes: string[]; errors: any[] } // <--- Aquí cambiamos para que successes sea un array de strings (paths)
+  > = {};
+
+  for (const [sig, group] of Object.entries(bySignature)) {
+    if (!group.newFiles.length) continue;
+
+    const sigUpload = await uploadMultipleFiles(
+      { bucket: "stores", folder: `${base}/variants/${sig}` },
+      group.newFiles,
+    );
+
+    bySignatureUpload[sig] = {
+      successes: sigUpload.successes.map((s) => s.path), // <--- Extraemos solo el path relativo
+      errors: sigUpload.errors,
+    };
+  }
+
+  return {
+    general: {
+      successes: generalUpload.successes.map((s) => s.path), // <--- Extraemos solo el path relativo
+      errors: generalUpload.errors,
+    },
+    bySignature: bySignatureUpload,
+  };
+}

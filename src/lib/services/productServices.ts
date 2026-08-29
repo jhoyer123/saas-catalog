@@ -1,12 +1,9 @@
-import {
-  ProductInputService,
-  ProductInputServiceUpdate,
-} from "../schemas/product";
+import { ProductInputServiceUpdate } from "../schemas/product";
 import { createClient } from "../supabase/supabaseClient";
 import { generateSlug } from "../utils/slug";
 import * as Sentry from "@sentry/nextjs";
 import { deleteFile, deleteFolder } from "../utils/storage";
-import type { ProductVariantDraft } from "@/features/product/product-variants/types/types";
+import type { ProductFormOutput } from "@/lib/schemas/productSchema";
 
 /**
  * action for create product
@@ -14,7 +11,7 @@ import type { ProductVariantDraft } from "@/features/product/product-variants/ty
  * @param storeId
  * @returns
  */
-export const createProduct = async (
+/* export const createProduct = async (
   dataProducto: ProductInputService,
   storeId: string,
   variantDraft?: ProductVariantDraft,
@@ -100,7 +97,41 @@ export const createProduct = async (
   }
 
   return data;
+}; */
+export type SaveProductImagesPayload = {
+  general: string[];
+  bySignature: Record<string, string[]>;
 };
+
+export type SaveProductPayload = Omit<
+  ProductFormOutput,
+  "product_images" | "product_existing_images" | "imageToDelete" | "variants"
+> & {
+  variants: Omit<ProductFormOutput["variants"][number], "_removed">[];
+  images: SaveProductImagesPayload;
+  imageToDelete: string[];
+};
+
+export type SaveProductResult = {
+  product_id: string;
+  variant_id_map: Record<string, string>;
+  deleted_image_urls: string[];
+};
+
+export async function saveProductFull(params: {
+  storeId: string;
+  productId: string;
+  payload: SaveProductPayload;
+}): Promise<SaveProductResult> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("save_product_full", {
+    p_store_id: params.storeId,
+    p_product_id: params.productId,
+    p_payload: params.payload,
+  });
+  if (error) throw new Error(error.message);
+  return data as SaveProductResult;
+}
 
 export const saveProductImages = async (
   productId: string,
@@ -139,93 +170,6 @@ export const saveProductImages = async (
  * @param storeId
  * @returns
  */
-/* export const updateProduct = async (
-  id: string,
-  dataProducto: ProductInputServiceUpdate,
-) => {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
-
-  //Actualizar datos del producto
-  const { data, error } = await supabase
-    .from("products")
-    .update({
-      sku: dataProducto.sku?.trim() ? dataProducto.sku.trim() : null,
-      name: dataProducto.name,
-      price: dataProducto.price,
-      has_variants: dataProducto.has_variants ?? false,
-      slug: generateSlug(dataProducto.name),
-      description: dataProducto.description,
-      brand_id: dataProducto.brand_id ?? null,
-      category_id: dataProducto.category_id,
-    })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) {
-    if (error.code === "23505") {
-      if (error.message.includes("name")) {
-        console.error("updateProduct DB ERROR:", error);
-        return {
-          error: "Ya existe un producto con este nombre",
-        };
-      }
-      if (error.message.includes("sku")) {
-        console.error("updateProduct DB ERROR:", error);
-        return {
-          error: "Ya existe un producto con este codigo",
-        };
-      }
-
-      if (error.message.includes("slug")) {
-        console.error("updateProduct DB ERROR", error);
-        return {
-          error: "Ya existe un producto con este slug",
-        };
-      }
-    }
-    if (error.code === "P0001") {
-      console.error("updateProduct DB ERROR:", error);
-      return { error: error.message };
-    }
-    console.error("updateProduct DB ERROR:", error);
-    return { error: "Error al actualizar el producto" };
-  }
-
-  //Eliminar imágenes marcadas
-  if (dataProducto.imageToDelete?.length! > 0) {
-    //Eliminar registros en DB
-    const { error: dbError } = await supabase
-      .from("product_images")
-      .delete()
-      .in("image_url", dataProducto.imageToDelete!);
-
-    if (dbError) {
-      console.error("updateProduct DB ERROR:", dbError);
-      return { error: "Error al eliminar las imágenes del producto" };
-    }
-
-    //Eliminar archivos del bucket
-    const paths = dataProducto.imageToDelete!.map((url: string) => {
-      const pathname = new URL(url).pathname;
-      return pathname.replace("/storage/v1/object/public/stores/", "");
-    });
-
-    const { error: storageError } = await supabase.storage
-      .from("stores")
-      .remove(paths);
-
-    if (storageError) {
-      console.error("updateProduct Storage ERROR:", storageError);
-      return { error: `Error al eliminar la imagen: ${storageError.message}` };
-    }
-  }
-  return data;
-}; */
 export const updateProduct = async (
   id: string,
   dataProducto: ProductInputServiceUpdate,
@@ -313,64 +257,21 @@ export const updateProduct = async (
  * @param storeId
  * @param storeSlug
  */
-/* export const deleteProductAction = async (id: string, storeId: string) => {
+export async function deleteProduct(productId: string, storeId: string) {
   const supabase = await createClient();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
+  //borrar del storage (incluye subcarpetas)
+  deleteFolder("stores", `${storeId}/products/${productId}`);
 
-  // Obtener archivos antes de borrar la DB
-  const folderPath = `${storeId}/products/${id}`;
-  const { data: files } = await supabase.storage
+  //Borrar el producto → cascada hace el resto en DB
+  const { error } = await supabase
     .from("products")
-    .list(folderPath);
+    .delete()
+    .eq("id", productId)
+    .eq("store_id", storeId); // defensa extra, RLS ya debería cubrirlo
 
-  // Borrar en DB (transaccionado)
-  const { error } = await supabase.rpc("delete_product", {
-    p_product_id: id,
-  });
-
-  if (error) {
-    console.error("deleteProductAction DB ERROR:", error);
-    return { error: "Error al eliminar el producto" };
-  }
-
-  // Borrar del storage
-  if (files && files.length > 0) {
-    const paths = files.map((f) => `${folderPath}/${f.name}`);
-    await supabase.storage.from("products").remove(paths);
-  }
-}; */
-export const deleteProductAction = async (id: string, storeId: string) => {
-  const supabase = await createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
-
-  // Borrar en DB (transaccionado)
-  const { error } = await supabase.rpc("delete_product", {
-    p_product_id: id,
-  });
-
-  if (error) {
-    console.error("deleteProductAction DB ERROR:", error);
-    return { error: "Error al eliminar el producto" };
-  }
-
-  // Borrar del storage (incluye subcarpetas)
-  const folderPath = `${storeId}/products/${id}`;
-
-  try {
-    await deleteFolder("stores", folderPath);
-  } catch (storageError) {
-    console.error("deleteProductAction Storage ERROR:", storageError);
-    // No romper el flujo
-  }
-};
+  if (error) throw error;
+}
 
 /**
  * Activa o desactiva la oferta de un producto

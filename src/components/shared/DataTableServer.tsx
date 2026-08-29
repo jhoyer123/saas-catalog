@@ -94,8 +94,6 @@ export function DataTableServer<TData>({
   columns,
   fetchData,
   queryKey,
-  searchKey,
-  searchPlaceholder = "Buscar...",
   defaultSortBy = "created_at",
   toolbar,
 }: DataTableServerProps<TData>) {
@@ -144,7 +142,7 @@ export function DataTableServer<TData>({
         sortBy,
         sortOrder,
       }),
-    staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
+    staleTime: Infinity,
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
   //console.log(response);
@@ -178,24 +176,12 @@ export function DataTableServer<TData>({
   return (
     <div className="space-y-4">
       {/* TOOLBAR (búsqueda, filtros, botones, etc.) */}
-      {toolbar
-        ? toolbar({
-            searchInput: search,
-            setSearchInput: handleSearch,
-            isLoading,
-          })
-        : searchKey && (
-            // Fallback: input simple para compatibilidad con uso anterior
-            <div className="flex items-center">
-              <Input
-                placeholder={searchPlaceholder}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="max-w-sm"
-                disabled={isLoading}
-              />
-            </div>
-          )}
+      {toolbar &&
+        toolbar({
+          searchInput: search,
+          setSearchInput: handleSearch,
+          isLoading,
+        })}
 
       {/* TABLA */}
       <div className="rounded-md border">

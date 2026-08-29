@@ -3,34 +3,52 @@ import { Input as ShadInput } from "@/components/ui/input";
 import {
   Controller,
   type Control,
+  type FieldErrors,
   type FieldValues,
   type Path,
-  type FieldErrors,
 } from "react-hook-form";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 interface InputProps<T extends FieldValues> {
-  label?: string; // Opcional: si no se pasa, no se renderiza el Label (útil en celdas de tabla)
+  /** Texto del label. Si no se proporciona, no se renderiza. */
+  label?: string;
+
+  /** Indica si el campo es obligatorio. */
   required?: boolean;
+
+  /** Nombre del campo dentro del formulario. */
   name: Path<T>;
-  control: Control<T>; // Reemplazamos register por control
+
+  /** Control de React Hook Form. */
+  control: Control<T>;
+
+  /** Errores del formulario. */
   errors?: FieldErrors<T>;
+
+  /** Props adicionales para el input nativo. */
   inputProps?: ComponentProps<"input">;
-  readOnly?: boolean; // Agregado para modo solo lectura
+
+  /** Activa el modo de solo lectura. */
+  readOnly?: boolean;
+
+  /** Texto mostrado cuando el campo está vacío y es de solo lectura. */
+  emptyOptionLabel?: string;
 }
 
 const FormInput = <T extends FieldValues>({
   label,
   name,
   control,
-  errors,
   inputProps,
   required = false,
-  readOnly = false, // Valor predeterminado para readOnly
+  readOnly = false,
+  emptyOptionLabel = "Sin opción",
 }: InputProps<T>) => {
+  const isNumber = inputProps?.type === "number";
+
   return (
-    <div className="grid gap-2 w-full">
+    <div className="grid w-full gap-2">
       {label && (
         <Label htmlFor={name}>
           {label}
@@ -41,38 +59,69 @@ const FormInput = <T extends FieldValues>({
       <Controller
         name={name}
         control={control}
-        render={({ field: { onChange, onBlur, value, ref } }) => (
-          <ShadInput
-            readOnly={readOnly}
-            id={name}
-            ref={ref}
-            autoComplete="off"
-            {...inputProps}
-            // Esto fuerza al input a ser un componente controlado
-            value={value ?? ""}
-            onBlur={onBlur}
-            onChange={(e) => {
-              // Manejo estricto para type="number" sin depender de valueAsNumber
-              if (inputProps?.type === "number") {
-                const val = e.target.value;
-                onChange(val === "" ? "" : Number(val));
-              } else {
-                onChange(e.target.value);
-              }
-            }}
-            className={cn(
-              "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
-              inputProps?.className,
+        render={({
+          field: { onChange, onBlur, value, ref },
+          fieldState: { error },
+        }) => (
+          <>
+            {readOnly && isNumber ? (
+              <ShadInput
+                id={name}
+                ref={ref}
+                autoComplete="off"
+                type="text"
+                readOnly
+                value={value ? value : emptyOptionLabel}
+                className={cn(
+                  "read-only:cursor-default",
+                  "read-only:opacity-100",
+                  value === undefined ||
+                    value === null ||
+                    value === "" ||
+                    value === 0
+                    ? "text-muted-foreground"
+                    : undefined,
+                  inputProps?.className,
+                )}
+              />
+            ) : (
+              <ShadInput
+                id={name}
+                ref={ref}
+                autoComplete="off"
+                readOnly={readOnly}
+                {...inputProps}
+                value={value ? value : readOnly ? emptyOptionLabel : ""}
+                onBlur={onBlur}
+                onChange={(e) => {
+                  // Manejo estricto para type="number"
+                  // sin depender de valueAsNumber.
+                  if (isNumber) {
+                    const val = e.target.value;
+
+                    onChange(val === "" ? "" : Number(val));
+                    return;
+                  }
+
+                  onChange(e.target.value);
+                }}
+                className={cn(
+                  "[&::-webkit-outer-spin-button]:appearance-none",
+                  "[&::-webkit-inner-spin-button]:appearance-none",
+                  inputProps?.className,
+                  readOnly && !value && "text-muted-foreground",
+                )}
+              />
             )}
-          />
+
+            {error && (
+              <p className="text-sm font-medium text-red-500">
+                {String(error.message)}
+              </p>
+            )}
+          </>
         )}
       />
-
-      {errors?.[name] && (
-        <p className="text-sm text-red-500 font-medium">
-          {String(errors[name]?.message)}
-        </p>
-      )}
     </div>
   );
 };

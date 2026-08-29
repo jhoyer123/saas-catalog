@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteProductAction } from "@/lib/services/productServices";
+//import { deleteProductAction } from "@/lib/services/productServices";
+import { deleteProduct } from "@/lib/services/productServices";
 import { useSessionData } from "../auth/useSessionData";
 
 export function useDeleteProduct() {
@@ -10,11 +11,11 @@ export function useDeleteProduct() {
 
   return useMutation({
     mutationFn: async ({ id }: { id: string }) => {
-      const result = await deleteProductAction(id, storeId!);
-      if (result && typeof result === "object" && "error" in result) {
+      const result = await deleteProduct(id, storeId!);
+      /* if (result && typeof result === "object" && "error" in result) {
         throw new Error(result.error);
       }
-      return result;
+      return result; */
     },
     onSuccess: (_data, _id, _context) => {
       return Promise.all([

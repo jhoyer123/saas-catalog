@@ -16,12 +16,19 @@ interface VariantToggleSectionProps<TFieldValues extends FieldValues> {
 export function VariantToggleSection<TFieldValues extends FieldValues>({
   control,
   isViewMode,
+  hasVariants,
   onHasVariantsChange,
 }: VariantToggleSectionProps<TFieldValues>) {
   return (
     <SectionCard
       title="Variantes"
-      description="Activa esta opción si el producto tiene diferentes versiones."
+      description={
+        isViewMode
+          ? hasVariants
+            ? "Este producto tiene variantes."
+            : "Este producto no tiene variantes."
+          : "Activa esta opción si el producto tiene diferentes versiones."
+      }
     >
       <Controller
         name={"has_variants" as Path<TFieldValues>}

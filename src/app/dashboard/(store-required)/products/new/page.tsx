@@ -8,6 +8,7 @@ import Link from "next/link";
 import SkeletonForm from "../[id]/view/loading";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useOptionTypesForProduct } from "@/features/product/product-variants/hooks/useOptionTypesAndValues";
+import { useHandleProduct } from "@/hooks/products/useHandleProduct";
 
 export default function Page() {
   const { data: DataPlan, isLoading: isLoadingPlan } = useSessionData();
@@ -16,6 +17,8 @@ export default function Page() {
   const { data: brands, isLoading: isLoadingBrands } = useGetBrandsNoPage();
   const { data: storeOptionTypes, isLoading: isLoadingStoreOptionTypes } =
     useOptionTypesForProduct();
+
+  const { isPending } = useHandleProduct();
 
   if (
     isLoadingCategories ||
@@ -32,16 +35,27 @@ export default function Page() {
 
   return (
     <div className="h-full w-full p-4">
-      <div className="w-full mx-auto flex flex-col gap-4">
-        <div className="flex flex-col gap-4 items-center justify-between lg:flex-row">
-          <h1 className="font-poppins text-xl md:text-2xl">
-            Crear nuevo producto
-          </h1>
+      <div className="mx-auto flex w-full flex-col gap-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight">
+              Crear producto
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Completa la información y las características del producto para
+              agregarlo a tu catálogo.
+            </p>
+          </div>
           <div className="flex gap-5">
-            <Button variant="secondary" asChild>
-              <Link href="/dashboard/products">Cancelar y volver</Link>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/products">Cancelar y volver a productos</Link>
             </Button>
-            <Button variant="default" type="submit" form="product-form">
+            <Button
+              variant="default"
+              type="submit"
+              form="product-form"
+              disabled={isPending}
+            >
               Crear producto
             </Button>
           </div>

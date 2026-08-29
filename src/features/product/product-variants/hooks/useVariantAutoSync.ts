@@ -18,6 +18,7 @@ type VariantValue = NonNullable<ProductFormInput["variants"]>[number];
 interface Params {
   form: UseFormReturn<ProductFormInput, unknown, ProductFormOutput>;
   variantsField: UseFieldArrayReturn<ProductFormInput, "variants", "_fieldId">;
+  markNewVariantsAsRemoved: boolean;
   selectedTypeIds: string[];
   visualTypeIds: string[]; // option_type_id de los marcados is_visual
   imagesApi: ReturnType<typeof useVariantImages>;
@@ -35,6 +36,7 @@ interface Params {
 export function useVariantAutoSync({
   form,
   variantsField,
+  markNewVariantsAsRemoved,
   selectedTypeIds,
   valuesByType,
   visualTypeIds,
@@ -73,7 +75,7 @@ export function useVariantAutoSync({
         sku: "",
         offer_price: null,
         is_available: true,
-        _removed: false,
+        _removed: markNewVariantsAsRemoved,
         option_values: combo,
       });
     });
@@ -90,6 +92,7 @@ export function useVariantAutoSync({
       } else if (
         validSignatures.has(sig) &&
         isRemoved &&
+        (!markNewVariantsAsRemoved || v.id !== undefined) &&
         !manualRemovedRef.current.has(sig)
       ) {
         variantsField.update(idx, { ...v, _removed: false });

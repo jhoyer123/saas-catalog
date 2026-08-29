@@ -7,20 +7,43 @@ const optionValuePairSchema = z.object({
 });
 
 // ── VARIANTE ───────────────────────────────────────────────
-export const variantSchema = z.object({
-  _localId: z.string(), // uuid generado en cliente, para linkear imágenes antes de tener id real
-  id: z.string().optional(), // presente solo en edit (variante existente)
-  price: z.coerce
+export const variantSchema = z
+  .object({
+    _localId: z.string(), // uuid generado en cliente, para linkear imágenes antes de tener id real
+    id: z.string().optional(), // presente solo en edit (variante existente)
+    /* price: z.coerce
     .number({ message: "El precio es obligatorio" })
-    .min(0.01, "El precio debe ser mayor a 0"),
-  sku: z.string().optional(),
-  offer_price: z.coerce.number().optional().nullable(),
-  is_available: z.boolean().default(true),
-  option_values: z
-    .array(optionValuePairSchema)
-    .min(1, "La variante debe tener al menos un atributo seleccionado"),
-  _removed: z.boolean().default(false).optional(),
-});
+    .min(0.01, "El precio debe ser mayor a 0"), */
+    price: z.coerce.number().optional(),
+    sku: z.string().optional(),
+    offer_price: z.coerce.number().optional().nullable(),
+    is_available: z.boolean().default(true),
+    option_values: z
+      .array(optionValuePairSchema)
+      .min(1, "La variante debe tener al menos un atributo seleccionado"),
+    _removed: z.boolean().default(false).optional(),
+  })
+  .superRefine((val, ctx) => {
+    // Si la variante FUE REMOVIDA, saltamos todas sus validaciones internas
+    if (!val._removed) {
+      // Validamos precio
+      if (val.price === undefined || isNaN(val.price) || val.price < 0.01) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["price"],
+          message: "El precio debe ser mayor a 0",
+        });
+      }
+      // Validamos option_values
+      if (!val.option_values || val.option_values.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["option_values"],
+          message: "La variante debe tener al menos un atributo seleccionado",
+        });
+      }
+    }
+  });
 
 // ── ATRIBUTOS DEL PRODUCTO (option_types elegidos) ─────────
 const productOptionTypeSchema = z.object({
@@ -43,7 +66,21 @@ const productBaseSchema = z.object({
   slug: z.string().optional(),
   brand_id: z.string().optional(),
   category_id: z.string().min(1, "La categoría es obligatoria"),
-  description: z.string().min(1, "La descripción es obligatoria"),
+  //description: z.string().min(1, "La descripción es obligatoria"),
+  description: z
+    .string({ error: "La descripción es obligatoria" })
+    .min(1, "La descripción es obligatoria")
+    .refine(
+      (val) => {
+        const textOnly = val
+          .replace(/<[^>]*>?/gm, "")
+          .replace(/&nbsp;/g, "")
+          .trim();
+
+        return textOnly.length > 0;
+      },
+      { error: "La descripción es obligatoria" },
+    ),
   has_variants: z.boolean().default(false),
   price: z.coerce.number().min(0).nullable().optional(), // null permitido si has_variants
   option_types: z.array(productOptionTypeSchema).default([]),
@@ -59,6 +96,17 @@ const productBaseSchema = z.object({
 
 // ── SCHEMA FINAL (usado en create, edit y view) ─────────────
 export const productFormSchema = productBaseSchema.superRefine((data, ctx) => {
+  // La imagen general es obligatoria (mínimo 1).
+  const totalProductImages =
+    data.product_images.length + data.product_existing_images.length;
+  if (totalProductImages === 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["product_images"],
+      message: "Debes subir al menos 1 imagen del producto",
+    });
+  }
+
   if (!data.has_variants) {
     if (data.price === null || data.price === undefined || data.price <= 0) {
       ctx.addIssue({
@@ -67,31 +115,52 @@ export const productFormSchema = productBaseSchema.superRefine((data, ctx) => {
         message: "El precio debe ser mayor a 0",
       });
     }
-
-    // NUEVO: sin variantes, la imagen general es obligatoria (mínimo 1).
-    const totalProductImages =
-      data.product_images.length + data.product_existing_images.length;
-    if (totalProductImages === 0) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["product_images"],
-        message: "Debes subir al menos 1 imagen del producto",
-      });
-    }
-
     return;
   }
 
-  // has_variants === true ?
+  // ==== A PARTIR DE AQUÍ: LÓGICA PARA PRODUCTOS CON VARIANTES ====
+
+  // Filtramos para obtener SOLO las variantes que NO están removidas
+  const activeVariants = data.variants.filter((v) => !v._removed);
+
+  // condiciones para productos con variantes
   if (data.option_types.length === 0) {
     ctx.addIssue({
       code: "custom",
       path: ["option_types"],
-      message: "Debe definir al menos un atributo (ej: Talla, Color)",
+      message:
+        "Aún no agregaste atributos. Agregá al menos uno (ej: Talla o Color) para poder crear variantes.",
     });
   }
 
+  // Controlamos que haya al menos 1 variante "activa"
+  if (activeVariants.length === 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["variants"],
+      message: "Debe haber al menos una variante activa",
+    });
+    // Hacemos return prematuro porque las siguientes validaciones fallarían sin variantes activas
+    return;
+  }
+
+  //cada atributo seleccionado debe tener al menos un valor elegido en alguna variante
+  data.option_types.forEach((ot) => {
+    const hasValue = data.variants.some((v) =>
+      v.option_values.some((ov) => ov.option_type_id === ot.option_type_id),
+    );
+    if (!hasValue) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["option_types"],
+        message: `Debes seleccionar al menos un valor en cada atributo.`,
+      });
+    }
+  });
+
+  // cada variante debe tener al menos un atributo seleccionado (ver variantSchema)
   if (data.variants.length === 0) {
+    console.log("superRefine: no hay variantes", data.variants.length);
     ctx.addIssue({
       code: "custom",
       path: ["variants"],
@@ -135,12 +204,6 @@ export const productFormSchema = productBaseSchema.superRefine((data, ctx) => {
       message: "Ya existe una variante con esta misma combinación de atributos",
     });
   }
-
-  // NOTA: acá antes había una validación de "cada firma visual necesita >=1
-  // imagen" contra `variant_galleries`. Se sacó del schema junto con ese
-  // campo — ver la nota arriba de productBaseSchema. Esa validación ahora
-  // vive en FormProduct.handleSubmit, después de este superRefine, leyendo
-  // imagesApi.state (que es donde realmente vive esa data).
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;

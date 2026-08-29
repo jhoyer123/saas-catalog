@@ -101,19 +101,6 @@ export default function InputFile({
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   // ============================================
-  // PREVIEWS: puramente derivado de `files`, no es estado propio.
-  // ============================================
-  /* const previewUrls = useMemo(
-    () => files.map((file) => URL.createObjectURL(file)),
-    [files],
-  );
-  // Revocar URLs viejas cuando cambian los files o al desmontar
-  useEffect(() => {
-    return () => {
-      previewUrls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [previewUrls]); */
-  // ============================================
   // PREVIEWS: Generación y limpieza segura de Blob URLs
   // ============================================
   useEffect(() => {
@@ -290,7 +277,7 @@ export default function InputFile({
         </>
       )}
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-red-500 font-semibold">{error}</p>}
     </div>
   );
 }

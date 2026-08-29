@@ -10,7 +10,7 @@ import {
   type ProductInputClient,
   type ProductInputClientUpdate,
 } from "@/lib/schemas/product";
-import { useProductActions } from "./useHandleAction";
+import { useProductActions } from "./useHandleProduct";
 import { ProductDetail } from "@/types/product.types";
 import { useSessionData } from "../auth/useSessionData";
 import type { ProductVariantDraft } from "@/features/product/product-variants/types/types";

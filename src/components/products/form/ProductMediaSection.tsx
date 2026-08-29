@@ -15,13 +15,18 @@ import RichTextEditor from "@/components/products/form/RichTextEditor";
 import InputFile, { IMAGE_PRESETS } from "@/components/shared/InputFile";
 import SectionCard from "./SectionCard";
 
+interface ExistingImage {
+  id: string;
+  image_url: string;
+}
+
 interface ProductMediaSectionProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
   errors: FieldErrors<FieldValues>;
   setValue: UseFormSetValue<TFieldValues>;
   getValues: UseFormGetValues<TFieldValues>;
   maxImages: number;
-  existingImages?: string[];
+  existingImages?: ExistingImage[];
   isViewMode: boolean;
 }
 
@@ -35,8 +40,9 @@ export function ProductMediaSection<TFieldValues extends FieldValues>({
   isViewMode,
 }: ProductMediaSectionProps<TFieldValues>) {
   // Image existing state is managed locally to reflect immediate UI changes when an image is removed, while the form state is updated accordingly to keep track of images to delete.
-  const [currentExisting, setCurrentExisting] =
-    useState<string[]>(existingImages ?? []);
+  const [currentExisting, setCurrentExisting] = useState<ExistingImage[]>(
+    existingImages ?? [],
+  );
   return (
     <SectionCard
       title="Contenido y medios"
@@ -77,13 +83,20 @@ export function ProductMediaSection<TFieldValues extends FieldValues>({
                 preset={IMAGE_PRESETS.product}
                 files={(field.value as File[]) ?? []}
                 onFilesChange={(newFiles) => field.onChange(newFiles)}
-                existingUrls={currentExisting}
+                existingUrls={currentExisting.map((image) => image.image_url)}
                 onRemoveExisting={(url) => {
-                  const updated = currentExisting.filter((u) => u !== url);
+                  const imageToRemove = currentExisting.find(
+                    (image) => image.image_url === url,
+                  );
+                  const updated = currentExisting.filter(
+                    (image) => image.image_url !== url,
+                  );
                   setCurrentExisting(updated);
                   setValue(
                     "product_existing_images" as Path<TFieldValues>,
-                    updated as TFieldValues[Path<TFieldValues>],
+                    updated.map(
+                      (image) => image.image_url,
+                    ) as TFieldValues[Path<TFieldValues>],
                     { shouldDirty: true },
                   );
                   const currentDeleted =
@@ -91,10 +104,16 @@ export function ProductMediaSection<TFieldValues extends FieldValues>({
                       | string[]
                       | undefined) ?? [];
 
-                  if (!currentDeleted.includes(url)) {
+                  if (
+                    imageToRemove &&
+                    !currentDeleted.includes(imageToRemove.id)
+                  ) {
                     setValue(
                       "imageToDelete" as Path<TFieldValues>,
-                      [...currentDeleted, url] as TFieldValues[Path<TFieldValues>],
+                      [
+                        ...currentDeleted,
+                        imageToRemove.id,
+                      ] as TFieldValues[Path<TFieldValues>],
                       { shouldDirty: true, shouldTouch: true },
                     );
                   }
@@ -102,9 +121,7 @@ export function ProductMediaSection<TFieldValues extends FieldValues>({
                 maxFiles={maxImages}
                 maxSizeMB={25}
                 disabled={isViewMode}
-                error={
-                  errors.product_images?.message as string | undefined
-                }
+                error={errors.product_images?.message as string | undefined}
               />
             )}
           />

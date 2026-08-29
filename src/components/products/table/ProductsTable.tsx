@@ -9,7 +9,7 @@ import { fetchProductsPaginated } from "@/lib/services/dashboard";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useModalsProduct } from "@/hooks/products/useModalsProduct";
 import ModalProduct from "@/components/products/modal/ModalProduct";
-import { useProductActions } from "@/hooks/products/useHandleAction";
+import { useHandleProduct } from "@/hooks/products/useHandleProduct";
 import { DebouncedInput } from "@/components/shared/DebouncedInput";
 import SkeletonTable from "@/components/shared/SkeletonTable";
 import { useRouter } from "next/navigation";
@@ -29,8 +29,8 @@ export function ProductsTable() {
     toggleOffer,
     toggleAvailable,
     isPending: isProductPending,
-  } = useProductActions();
-  
+  } = useHandleProduct();
+
   //hook router
   const router = useRouter();
 
@@ -64,8 +64,6 @@ export function ProductsTable() {
           />
         )}
         queryKey="products"
-        searchKey="name"
-        searchPlaceholder="Buscar productos..."
         defaultSortBy="created_at"
       />
 

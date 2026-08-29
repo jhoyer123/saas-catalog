@@ -46,15 +46,17 @@ export function ProductIdentitySection<TFieldValues extends FieldValues>({
           emptyMessage="Categoría no encontrada."
           readOnly={isViewMode}
           required
+          emptyOptionLabel="Sin categoria"
         />
 
         <FormInput
-          label="Código"
+          label="Código SKU"
           name={"sku" as Path<TFieldValues>}
           control={control}
           errors={errors}
           inputProps={{ type: "text", placeholder: "PROD-00123" }}
           readOnly={isViewMode}
+          emptyOptionLabel="Sin código"
         />
 
         <FormCombobox
@@ -69,6 +71,7 @@ export function ProductIdentitySection<TFieldValues extends FieldValues>({
           readOnly={isViewMode}
           allowClear={true}
           clearLabel="Sin marca"
+          emptyOptionLabel="Sin marca"
         />
       </div>
     </SectionCard>

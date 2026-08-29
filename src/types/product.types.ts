@@ -8,8 +8,8 @@ export interface ProductCatalog {
   price: number;
   has_variants: boolean;
   is_offer: boolean;
-  category_id: string;
-  brand_id?: string | null;
+  //category_id: string;
+  //brand_id?: string | null;
   offer_price?: number | null; // si hay oferta tiene precio, si no null
   offer_start?: string | null; // fecha de inicio de la oferta (opcional)
   offer_end?: string | null; // fecha de fin de la oferta (opcional)
@@ -27,7 +27,6 @@ export interface ProductCatalog {
 export interface ProductImageDetail {
   id: string;
   image_url: string;
-  variant_id: string | null;
   visual_signature: string | null;
 }
 
@@ -69,6 +68,7 @@ export interface ProductDetail {
   sku?: string | null; // no todos los productos tienen SKU
   images: string[]; // array de URLs de imágenes
   /** Filas completas de product_images (para galerías por firma visual). */
+  general_image_details: ProductImageDetail[];
   image_details: ProductImageDetail[];
   product_option_types: ProductOptionTypeDetail[];
   product_variants: ProductVariantDetail[];

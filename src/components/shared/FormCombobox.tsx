@@ -6,6 +6,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Command,
   CommandEmpty,
@@ -40,6 +41,7 @@ interface FormComboboxProps<TFieldValues extends FieldValues> {
   className?: string;
   allowClear?: boolean;
   clearLabel?: string;
+  emptyOptionLabel?: string;
 }
 
 export function FormCombobox<TFieldValues extends FieldValues>({
@@ -56,8 +58,8 @@ export function FormCombobox<TFieldValues extends FieldValues>({
   className,
   allowClear = false,
   clearLabel = "Limpiar",
+  emptyOptionLabel = "Sin opción",
 }: FormComboboxProps<TFieldValues>) {
-  // 1. Estado para controlar si el Popover está abierto o cerrado
   const [open, setOpen] = useState(false);
 
   return (
@@ -74,78 +76,94 @@ export function FormCombobox<TFieldValues extends FieldValues>({
               {required && <span className="text-red-500">*</span>}
             </Label>
 
-            {/* 2. Vinculamos el estado al Popover */}
-            <Popover modal={true} open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  disabled={disabled || field.disabled || readOnly}
-                  className={cn(
-                    "w-full justify-between font-normal",
-                    !field.value && "text-muted-foreground",
-                  )}
+            {readOnly ? (
+              <Input
+                id={name}
+                value={selectedOption?.label ?? emptyOptionLabel}
+                placeholder={placeholder}
+                readOnly
+                className={cn(
+                  "w-full font-normal",
+                  !selectedOption && "text-muted-foreground",
+                )}
+              />
+            ) : (
+              <Popover modal={true} open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    disabled={disabled || field.disabled}
+                    className={cn(
+                      "w-full justify-between font-normal",
+                      !field.value && "text-muted-foreground",
+                    )}
+                  >
+                    {selectedOption ? selectedOption.label : placeholder}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+
+                <PopoverContent
+                  className="p-0"
+                  style={{ width: "var(--radix-popover-trigger-width)" }}
+                  align="start"
                 >
-                  {selectedOption ? selectedOption.label : placeholder}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="p-0"
-                style={{ width: "var(--radix-popover-trigger-width)" }}
-                align="start"
-              >
-                <Command>
-                  <CommandInput placeholder={searchPlaceholder} />
-                  <CommandList className="max-h-60 overflow-y-auto">
-                    <CommandEmpty>{emptyMessage}</CommandEmpty>
-                    <CommandGroup>
-                      {allowClear && (
-                        <CommandItem
-                          value={clearLabel}
-                          onSelect={() => {
-                            field.onChange(null);
-                            setOpen(false); // 3. Cerrar al limpiar
-                          }}
-                          className="text-muted-foreground"
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              field.value == null ? "opacity-100" : "opacity-0",
-                            )}
-                          />
-                          {clearLabel}
-                        </CommandItem>
-                      )}
-                      {options.map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.label}
-                          disabled={option.disabled}
-                          onSelect={() => {
-                            if (!readOnly) {
+                  <Command>
+                    <CommandInput placeholder={searchPlaceholder} />
+
+                    <CommandList className="max-h-60 overflow-y-auto">
+                      <CommandEmpty>{emptyMessage}</CommandEmpty>
+
+                      <CommandGroup>
+                        {allowClear && (
+                          <CommandItem
+                            value={clearLabel}
+                            onSelect={() => {
+                              field.onChange(undefined);
+                              setOpen(false);
+                            }}
+                            className="text-muted-foreground"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                field.value == null
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {clearLabel}
+                          </CommandItem>
+                        )}
+
+                        {options.map((option) => (
+                          <CommandItem
+                            key={option.value}
+                            value={option.label}
+                            disabled={option.disabled}
+                            onSelect={() => {
                               field.onChange(option.value);
-                              setOpen(false); // 4. Cerrar al seleccionar opción
-                            }
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              option.value === field.value
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />
-                          {option.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                              setOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                option.value === field.value
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {option.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
 
             {fieldState.error && (
               <p className="text-sm text-red-500 font-medium">

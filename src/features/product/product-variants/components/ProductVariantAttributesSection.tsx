@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
+import {
+  useWatch,
+  type UseFieldArrayReturn,
+  type UseFormReturn,
+} from "react-hook-form";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,22 +42,17 @@ interface ProductVariantAttributesSectionProps {
   >;
   storeOptionTypes: StoreOptionType[];
   isReadOnly: boolean;
-  /** true = se pueden agregar/quitar atributos y alternar is_visual.
-   *  Se bloquea en edición una vez el producto ya tiene variantes. */
   canEditAttributes: boolean;
   valuesByType: Record<string, string[]>;
   onValuesByTypeChange: (next: Record<string, string[]>) => void;
-  /** Rebuilds the complete matrix after adding or removing an attribute. */
   onAttributeStructureChange?: (
     nextSelectedTypeIds: string[],
     nextValuesByType: Record<string, string[]>,
   ) => void;
-  /** Rebuilds the complete matrix after selecting or deselecting a value. */
   onVariantValuesChange?: (
     nextSelectedTypeIds: string[],
     nextValuesByType: Record<string, string[]>,
   ) => void;
-  /** Invoked with the complete next set of image-defining attributes. */
   onVisualConfigurationChange?: (nextVisualTypeIds: string[]) => void;
 }
 
@@ -72,6 +71,19 @@ export function ProductVariantAttributesSection({
   const [attrPopoverOpen, setAttrPopoverOpen] = useState(false);
   const didAutoSelect = useRef(false);
 
+  const hasError = !!form.formState.errors.option_types;
+  const watchedOptionTypes = useWatch({
+    control: form.control,
+    name: "option_types",
+  });
+  const watchedVariants = useWatch({ control: form.control, name: "variants" });
+
+  useEffect(() => {
+    if (hasError) {
+      form.trigger(["option_types", "variants"]);
+    }
+  }, [watchedOptionTypes, watchedVariants, hasError, form]);
+
   const selectedTypeIds = optionTypesField.fields.map((f) => f.option_type_id);
   const selectedTypes = storeOptionTypes.filter((t) =>
     selectedTypeIds.includes(t.id),
@@ -86,10 +98,12 @@ export function ProductVariantAttributesSection({
       .map((optionType) => optionType.option_type_id);
   }
 
-  // autoseleccionar atributos con is_default_on_create, una sola vez, solo
-  // cuando se puede editar la estructura de atributos
   useEffect(() => {
-    if (!canEditAttributes || didAutoSelect.current || storeOptionTypes.length === 0)
+    if (
+      !canEditAttributes ||
+      didAutoSelect.current ||
+      storeOptionTypes.length === 0
+    )
       return;
     didAutoSelect.current = true;
 
@@ -102,6 +116,7 @@ export function ProductVariantAttributesSection({
           ),
       )
       .map((type) => type.id);
+
     defaults.forEach((type) => {
       const alreadyAdded = optionTypesField.fields.some(
         (f) => f.option_type_id === type.id,
@@ -113,12 +128,14 @@ export function ProductVariantAttributesSection({
         });
       }
     });
+
     const addedVisualDefaultTypeIds = defaults
       .filter(
         (type) =>
           type.is_visual_default && addedDefaultTypeIds.includes(type.id),
       )
       .map((type) => type.id);
+
     if (addedVisualDefaultTypeIds.length > 0) {
       onVisualConfigurationChange?.([
         ...getVisualTypeIds(),
@@ -131,17 +148,24 @@ export function ProductVariantAttributesSection({
         valuesByType,
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canEditAttributes, storeOptionTypes]);
 
   function addAttribute(type: StoreOptionType) {
+    const nextValuesByType = {
+      ...valuesByType,
+      [type.id]: valuesByType[type.id] ?? [],
+    };
+
     if (type.is_visual_default) {
       onVisualConfigurationChange?.([...getVisualTypeIds(), type.id]);
     }
+
+    onValuesByTypeChange(nextValuesByType);
     onAttributeStructureChange?.(
       [...selectedTypeIds, type.id],
-      { ...valuesByType, [type.id]: valuesByType[type.id] ?? [] },
+      nextValuesByType,
     );
+
     optionTypesField.append({
       option_type_id: type.id,
       is_visual: type.is_visual_default,
@@ -155,28 +179,33 @@ export function ProductVariantAttributesSection({
     );
     const removedWasVisual =
       idx >= 0 && form.getValues(`option_types.${idx}.is_visual`) === true;
+
     if (idx >= 0) optionTypesField.remove(idx);
+
     if (removedWasVisual) {
       onVisualConfigurationChange?.(
         getVisualTypeIds().filter((visualTypeId) => visualTypeId !== typeId),
       );
     }
 
-    const next = { ...valuesByType };
-    delete next[typeId];
-    onValuesByTypeChange(next);
+    const nextValuesByType = { ...valuesByType };
+    delete nextValuesByType[typeId];
+
+    onValuesByTypeChange(nextValuesByType);
     onAttributeStructureChange?.(
-      selectedTypeIds.filter((selectedTypeId) => selectedTypeId !== typeId),
-      next,
+      selectedTypeIds.filter((id) => id !== typeId),
+      nextValuesByType,
     );
   }
 
   function toggleValue(typeId: string, valueId: string) {
     const current = valuesByType[typeId] ?? [];
-    const next = current.includes(valueId)
+    const nextValues = current.includes(valueId)
       ? current.filter((v) => v !== valueId)
       : [...current, valueId];
-    const nextValuesByType = { ...valuesByType, [typeId]: next };
+
+    const nextValuesByType = { ...valuesByType, [typeId]: nextValues };
+
     onValuesByTypeChange(nextValuesByType);
     onVariantValuesChange?.(selectedTypeIds, nextValuesByType);
   }
@@ -185,9 +214,11 @@ export function ProductVariantAttributesSection({
     <SectionCard
       title="Atributos y valores"
       description={
-        canEditAttributes
-          ? "Elegí los atributos (ej: Talla, Color) y sus valores. Con esto generamos las variantes automáticamente."
-          : "Los atributos ya no se pueden modificar una vez creado el producto. Podés cambiar qué valores usás dentro de cada uno."
+        isReadOnly
+          ? "Consulta los atributos y valores asociados a este producto."
+          : canEditAttributes
+            ? "Seleccioná los atributos, como Talla o Color, y sus valores para generar las variantes del producto."
+            : "Los atributos no se pueden modificar después de crear el producto. Solo podés agregar o quitar valores."
       }
     >
       <div className="space-y-5">
@@ -231,15 +262,8 @@ export function ProductVariantAttributesSection({
         )}
 
         {form.formState.errors.option_types?.message && (
-          <p className="text-sm text-red-500">
+          <p className="text-sm font-medium text-red-500">
             {form.formState.errors.option_types.message as string}
-          </p>
-        )}
-
-        {selectedTypes.length === 0 && (
-          <p className="text-sm text-muted-foreground italic">
-            Aún no agregaste atributos. Agregá al menos uno (ej: Talla o Color)
-            para poder crear variantes.
           </p>
         )}
 
@@ -247,6 +271,7 @@ export function ProductVariantAttributesSection({
           const otIndex = optionTypesField.fields.findIndex(
             (f) => f.option_type_id === type.id,
           );
+          // Leemos dinámicamente los IDs seleccionados desde props
           const selectedValueIds = valuesByType[type.id] ?? [];
 
           return (
@@ -338,6 +363,7 @@ function OptionValuesPicker({
           key={value.id}
           type={type.input_type}
           value={value}
+          // El chip se activa SOLO si su ID está en selectedValueIds
           active={selectedValueIds.includes(value.id)}
           disabled={isReadOnly}
           onClick={() => onToggle(value.id)}

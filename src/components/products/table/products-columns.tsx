@@ -102,7 +102,6 @@ export const createProductsColumns = ({
       );
     },
   },
-
   // ── SKU ─────────────────────────────────────
   {
     accessorKey: "sku",
@@ -177,13 +176,28 @@ export const createProductsColumns = ({
         offer_end: row.original.offer_end || null,
       });
 
-      return isOffer ? (
-        <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 font-normal">
-          En oferta
+      return (
+        <Badge
+          variant={isOffer ? "default" : "outline"}
+          className="font-normal"
+        >
+          {isOffer ? "Sí" : "No"}
         </Badge>
-      ) : (
-        <Badge variant="outline" className="text-muted-foreground font-normal">
-          Normal
+      );
+    },
+  },
+  // ── TIENE VARIANTES ? ─────────────────────────────────
+  {
+    accessorKey: "has_variants",
+    enableSorting: false,
+    header: "Variantes",
+    cell: ({ row }) => {
+      return (
+        <Badge
+          variant={row.getValue("has_variants") ? "default" : "outline"}
+          className="font-normal"
+        >
+          {row.getValue("has_variants") ? "Sí" : "No"}
         </Badge>
       );
     },
