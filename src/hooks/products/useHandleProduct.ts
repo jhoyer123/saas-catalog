@@ -1,8 +1,3 @@
-import {
-  ProductFormInput,
-  ProductInputClient,
-  ProductInputClientUpdate,
-} from "@/lib/schemas/product";
 import { revalidateProductCache } from "@/lib/actions/productActions";
 import {
   SaveProductPayload,
@@ -12,7 +7,6 @@ import {
 import { useToastPromise } from "../shared/useToastPromise";
 import { useCreateProduct } from "./useCreateProduct";
 import { useDeleteProduct } from "./useDeleteProduct";
-import { useUpdateProduct } from "./useUpdateProduct";
 import { useToggleOffer } from "./useHandleOffer";
 import { useState } from "react";
 
@@ -21,14 +15,13 @@ import { useToggleAvailableProduct } from "./useToogleAvailableProduct";
 import {
   deleteFile,
   deleteFolder,
-  uploadMultipleFiles,
   uploadProductImagesGrouped,
 } from "@/lib/utils/storage";
-import { useSaveProductImages } from "./useSaveProductImages";
 import type { ImagesState } from "@/features/product/product-variants/types/types";
 import { ProductFormOutput } from "@/lib/schemas/productSchema";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { getErrorMessage } from "@/features/options/lib/errors/getErrorMessage";
 
 export function useHandleProduct() {
   const [isPending, setIsPending] = useState(false);
@@ -62,11 +55,6 @@ export function useHandleProduct() {
    * @param imagesState   { general:{newFiles}, bySignature:{sig:{newFiles}} } del hook de imágenes
    * @param productId     si viene, es edit; si no, se genera acá (create)
    */
-
-  function extractStoragePath(publicUrl: string): string {
-    return publicUrl.split("/storage/v1/object/public/stores/")[1];
-  }
-
   const createProduct = (
     data: ProductFormOutput,
     imagesState: ImagesState,
@@ -141,7 +129,7 @@ export function useHandleProduct() {
       messages: {
         loading: "Creando producto...",
         success: "Producto creado",
-        error: (err) => err.message,
+        error: (err) => getErrorMessage(err),
       },
       richColors: true,
       position: "top-right",
@@ -228,9 +216,7 @@ export function useHandleProduct() {
           }
 
           if (result.deleted_image_urls.length > 0) {
-            const paths: string[] =
-              result.deleted_image_urls.map(extractStoragePath);
-            await deleteFile("stores", paths).catch((err) =>
+            await deleteFile("stores", result.deleted_image_urls).catch((err) =>
               console.error("Fallo limpieza de imágenes eliminadas:", err),
             );
           }
@@ -248,7 +234,7 @@ export function useHandleProduct() {
       messages: {
         loading: "Actualizando producto...",
         success: "Producto actualizado",
-        error: (err) => err.message,
+        error: (err) => getErrorMessage(err),
       },
       richColors: true,
       position: "top-right",
@@ -282,7 +268,7 @@ export function useHandleProduct() {
       messages: {
         loading: "Eliminando producto...",
         success: "Producto eliminado",
-        error: (err) => err.message,
+        error: (err) => getErrorMessage(err),
       },
       richColors: true,
       position: "top-right",
@@ -306,7 +292,7 @@ export function useHandleProduct() {
       promise: async () => {
         await withPending(async () => {
           // cambiar estado de oferta
-          await offerProduct({ slugProd, params });
+          await offerProduct({ params });
           // revalidar cache
           revalidateProductCache(storeSlug, slugProd);
           onSuccess?.();
@@ -317,7 +303,7 @@ export function useHandleProduct() {
           ? "Activando oferta..."
           : "Desactivando oferta...",
         success: params.is_offer ? "Oferta activada" : "Oferta desactivada",
-        error: (err) => err.message,
+        error: (err) => getErrorMessage(err),
       },
       richColors: true,
       position: "top-right",
@@ -343,7 +329,7 @@ export function useHandleProduct() {
       promise: async () => {
         await withPending(async () => {
           // cambiar disponibilidad
-          await toggleAvailableProduct({ id, slugProd, is_available });
+          await toggleAvailableProduct({ id, is_available });
           // revalidar cache
           revalidateProductCache(storeSlug, slugProd);
           onSuccess?.();
@@ -352,7 +338,7 @@ export function useHandleProduct() {
       messages: {
         loading: "Actualizando disponibilidad...",
         success: "Disponibilidad actualizada",
-        error: (err) => err.message,
+        error: (err) => getErrorMessage(err),
       },
       richColors: true,
       position: "top-right",

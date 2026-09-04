@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+/* import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateProduct } from "@/lib/services/productServices";
 import { ProductInputServiceUpdate } from "@/lib/schemas/product";
 import { ProductCatalog } from "@/types/product.types";
@@ -63,3 +63,4 @@ export function useUpdateProduct() {
     },
   });
 }
+ */

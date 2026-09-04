@@ -13,15 +13,13 @@ export const useCreateOptionValue = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       typeId,
       dataInput,
     }: {
       typeId: string;
       dataInput: OptionValueForm;
-    }) => {
-      return createOptionValue(typeId, dataInput);
-    },
+    }) => createOptionValue(typeId, dataInput),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [OPTION_VALUES_KEY, variables.typeId],
@@ -35,16 +33,14 @@ export const useUpdateOptionValue = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       valueId,
       dataInput,
     }: {
       valueId: string;
       dataInput: OptionValueForm;
       typeId: string;
-    }) => {
-      return updateOptionValue(valueId, dataInput);
-    },
+    }) => updateOptionValue(valueId, dataInput),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [OPTION_VALUES_KEY, variables.typeId],
@@ -58,9 +54,8 @@ export const useDeleteOptionValue = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ valueId }: { valueId: string; typeId: string }) => {
-      return deleteOptionValue(valueId);
-    },
+    mutationFn: ({ valueId }: { valueId: string; typeId: string }) =>
+      deleteOptionValue(valueId),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [OPTION_VALUES_KEY, variables.typeId],

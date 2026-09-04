@@ -57,7 +57,9 @@ export const createOptionType = async (
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
+  if (!session) {
+    throw new Error("No autenticado");
+  }
 
   const { data, error } = await supabase.from("store_option_types").insert({
     store_id: storeId,
@@ -67,12 +69,7 @@ export const createOptionType = async (
     is_default_on_create: dataInput.is_default_on_create,
   });
 
-  if (error) {
-    if (error.code === "23505") {
-      return { error: "Ya existe un atributo con ese nombre en tu tienda" };
-    }
-    return { error: "Error al crear el atributo" };
-  }
+  if (error) throw error;
 
   return data;
 };
@@ -87,7 +84,9 @@ export const updateOptionType = async (
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
+  if (!session) {
+    throw new Error("No autenticado"); // <-- Debe lanzar el error, no retornarlo
+  }
 
   const updateData: Record<string, unknown> = {
     name: dataInput.name,
@@ -102,12 +101,7 @@ export const updateOptionType = async (
     .eq("id", typeId)
     .eq("store_id", storeId);
 
-  if (error) {
-    if (error.code === "23505") {
-      return { error: "Ya existe un atributo con ese nombre en tu tienda" };
-    }
-    return { error: "Error al actualizar el atributo" };
-  }
+  if (error) throw error;
 
   return data;
 };
@@ -120,13 +114,7 @@ export const reorderOptionTypes = async (orderedIds: string[]) => {
     ordered_ids: orderedIds,
   });
 
-  if (error) {
-    console.error("Error original de Supabase:", error);
-    return { error: "Error al reordenar los atributos" };
-  }
-
-  console.log("Atributos reordenados correctamente");
-  return { success: true };
+  if (error) throw error;
 };
 
 export const deleteOptionType = async (typeId: string, storeId: string) => {
@@ -135,17 +123,15 @@ export const deleteOptionType = async (typeId: string, storeId: string) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
+
+  if (!session) {
+    throw new Error("No autenticado");
+  }
 
   const { error } = await supabase.rpc("delete_option_type", {
     p_type_id: typeId,
     p_store_id: storeId,
   });
 
-  if (error) {
-    if (error.code === "P0001") {
-      return { error: error.message };
-    }
-    return { error: "Error al eliminar el atributo" };
-  }
+  if (error) throw error;
 };

@@ -97,7 +97,7 @@ export async function processImage(
     targetHeight = 800,
     backgroundColor = "#ffffff",
     quality = 0.9,
-    maxSizeBytes = 120 * 1024, // 120kb por defecto para productos
+    maxSizeBytes = 100 * 1024, // 100kb por defecto para productos
   } = options;
 
   // 1. Cargar la imagen en un elemento HTMLImageElement

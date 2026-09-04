@@ -48,6 +48,8 @@ export function useVariantAutoSync({
   );
   const manualRemovedRef = useRef(manualRemovedSigs);
   manualRemovedRef.current = manualRemovedSigs;
+  // 1) Bandera para detectar si es la primera sincronización (render inicial)
+  const isFirstRunRef = useRef(true);
 
   const depsKey = JSON.stringify({
     selectedTypeIds,
@@ -58,13 +60,15 @@ export function useVariantAutoSync({
   useEffect(() => {
     const combos = generateCombinations(selectedTypeIds, valuesByType);
     const validSignatures = new Set(combos.map(comboSignature));
-
+    //logica de editado de variantes
     const currentVariants = form.getValues("variants") ?? [];
-
-    // 1) combinaciones que faltan en el form -> se agregan
+    // Capturamos el estado actual y apagamos la bandera para los siguientes renders
+    const isFirstRun = isFirstRunRef.current;
+    isFirstRunRef.current = false;
     const currentBySig = new Map(
       currentVariants.map((v) => [comboSignature(v.option_values), v]),
     );
+    const shouldBeRemoved = isFirstRun ? markNewVariantsAsRemoved : false;
     combos.forEach((combo) => {
       const sig = comboSignature(combo);
       if (currentBySig.has(sig)) return;
@@ -75,7 +79,7 @@ export function useVariantAutoSync({
         sku: "",
         offer_price: null,
         is_available: true,
-        _removed: markNewVariantsAsRemoved,
+        _removed: shouldBeRemoved,
         option_values: combo,
       });
     });
@@ -114,7 +118,6 @@ export function useVariantAutoSync({
       );
       imagesApi.pruneOrphaned(activeSigs);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [depsKey]);
 
   /**

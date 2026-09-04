@@ -1,4 +1,4 @@
-// hooks/useProductForm.ts
+/* // hooks/useProductForm.ts
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
@@ -178,3 +178,4 @@ export function useProductForm({
     isPending,
   };
 }
+ */

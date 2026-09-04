@@ -54,12 +54,7 @@ export const createOptionValue = async (
     .select(OPTION_VALUE_COLUMNS)
     .single();
 
-  if (error || !data) {
-    if (error?.code === "23505") {
-      throw new Error("Ya existe un valor con ese nombre en este atributo");
-    }
-    throw new Error("Error al crear el valor");
-  }
+  if (error || !data) throw error;
 
   return {
     id: data.id,
@@ -96,12 +91,7 @@ export const updateOptionValue = async (
     .select(OPTION_VALUE_COLUMNS)
     .single();
 
-  if (error || !data) {
-    if (error?.code === "23505") {
-      throw new Error("Ya existe un valor con ese nombre en este atributo");
-    }
-    throw new Error("Error al actualizar el valor");
-  }
+  if (error || !data) throw error;
 
   return {
     id: data.id,
@@ -130,10 +120,5 @@ export const deleteOptionValue = async (valueId: string) => {
     p_value_id: valueId,
   });
 
-  if (error) {
-    if (error.code === "P0001") {
-      throw new Error(error.message);
-    }
-    throw new Error("Error al eliminar el valor");
-  }
+  if (error) throw error;
 };

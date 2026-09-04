@@ -11,6 +11,7 @@ interface ProductIdentitySectionProps<TFieldValues extends FieldValues> {
   categoryOptions: { value: string; label: string }[];
   brandOptions: { value: string; label: string }[];
   isViewMode: boolean;
+  hasVariants?: boolean;
 }
 
 export function ProductIdentitySection<TFieldValues extends FieldValues>({
@@ -19,6 +20,7 @@ export function ProductIdentitySection<TFieldValues extends FieldValues>({
   categoryOptions,
   brandOptions,
   isViewMode,
+  hasVariants,
 }: ProductIdentitySectionProps<TFieldValues>) {
   return (
     <SectionCard
@@ -49,30 +51,34 @@ export function ProductIdentitySection<TFieldValues extends FieldValues>({
           emptyOptionLabel="Sin categoria"
         />
 
-        <FormInput
-          label="Código SKU"
-          name={"sku" as Path<TFieldValues>}
-          control={control}
-          errors={errors}
-          inputProps={{ type: "text", placeholder: "PROD-00123" }}
-          readOnly={isViewMode}
-          emptyOptionLabel="Sin código"
-        />
+        {!hasVariants && (
+          <FormInput
+            label="Código SKU"
+            name={"sku" as Path<TFieldValues>}
+            control={control}
+            errors={errors}
+            inputProps={{ type: "text", placeholder: "PROD-001" }}
+            readOnly={isViewMode}
+            emptyOptionLabel="Sin código"
+          />
+        )}
 
-        <FormCombobox
-          label="Marca del producto"
-          name={"brand_id" as Path<TFieldValues>}
-          control={control}
-          options={brandOptions}
-          placeholder="Selecciona una marca..."
-          searchPlaceholder="Buscar marca..."
-          emptyMessage="Marca no encontrada."
-          disabled={isViewMode}
-          readOnly={isViewMode}
-          allowClear={true}
-          clearLabel="Sin marca"
-          emptyOptionLabel="Sin marca"
-        />
+        <div className={hasVariants ? "md:order-2" : "md:order-4"}>
+          <FormCombobox
+            label="Marca del producto"
+            name={"brand_id" as Path<TFieldValues>}
+            control={control}
+            options={brandOptions}
+            placeholder="Selecciona una marca..."
+            searchPlaceholder="Buscar marca..."
+            emptyMessage="Marca no encontrada."
+            disabled={isViewMode}
+            readOnly={isViewMode}
+            allowClear={true}
+            clearLabel="Sin marca"
+            emptyOptionLabel="Sin marca"
+          />
+        </div>
       </div>
     </SectionCard>
   );

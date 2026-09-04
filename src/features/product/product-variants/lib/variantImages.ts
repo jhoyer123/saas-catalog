@@ -1,7 +1,6 @@
 import {
   ImagesState,
   GalleryState,
-  NO_VISUAL_KEY,
   emptyGallery,
   ImageEntry,
 } from "../types/types";
@@ -13,9 +12,6 @@ export function updateGallery(
   sigKey: string,
   fn: (g: GalleryState) => GalleryState,
 ): ImagesState {
-  if (sigKey === NO_VISUAL_KEY) {
-    return { ...state, general: fn(state.general) };
-  }
   const current = state.bySignature[sigKey] ?? emptyGallery();
   return {
     ...state,
@@ -31,7 +27,6 @@ export function updateGallery(
 export function clearNewVariantImages(state: ImagesState): ImagesState {
   return {
     ...state,
-    general: { ...state.general, newFiles: [] },
     bySignature: Object.fromEntries(
       Object.entries(state.bySignature).map(([signature, gallery]) => [
         signature,
@@ -44,7 +39,6 @@ export function clearNewVariantImages(state: ImagesState): ImagesState {
 /** Clears every client-side gallery when variant mode is restarted. */
 export function resetVariantImages(state: ImagesState): ImagesState {
   return {
-    general: emptyGallery(),
     bySignature: {},
     orphaned: [],
     deletedIds: state.deletedIds,
@@ -87,14 +81,13 @@ export function regroupBySignature(
   // 1. aplanar TODAS las imágenes existentes, incluyendo las que ya estaban
   //    huérfanas (un regroup nuevo puede encontrarles hogar de nuevo)
   const allExisting: ImageEntry[] = [
-    ...state.general.existing,
     ...Object.values(state.bySignature).flatMap((g) => g.existing),
     ...state.orphaned,
   ];
 
   // 2. variantId -> nueva firma, usando visualTypeIds actualizado.
   //    undefined = la variante ya no existe (fue borrada).
-  //    null = existe, pero no tiene atributo visual (comparte "general").
+  //    null = existe, pero no tiene atributo visual (no debería pasar si hay visualTypeIds).
   //    string = firma visual concreta.
   const variantToNewSig = new Map<string, string | null>();
   variants.forEach((v) => {
@@ -106,7 +99,6 @@ export function regroupBySignature(
   });
 
   const nextBySignature: ImagesState["bySignature"] = {};
-  const nextGeneral = emptyGallery();
   const nextOrphaned: ImageEntry[] = [];
 
   allExisting.forEach((entry) => {
@@ -125,8 +117,7 @@ export function regroupBySignature(
 
     const uniqueSigs = new Set(resolved as (string | null)[]);
 
-    // sus variantes ahora caen en firmas distintas entre sí -> ambigüedad real,
-    // NO se asigna a general por default como antes
+    // sus variantes ahora caen en firmas distintas entre sí -> ambigüedad real
     if (uniqueSigs.size > 1) {
       nextOrphaned.push(entry);
       return;
@@ -134,7 +125,9 @@ export function regroupBySignature(
 
     const sig = [...uniqueSigs][0];
     if (sig === null) {
-      nextGeneral.existing.push(entry);
+      // Sin atributos visuales: las imágenes van al producto general (Zod), no aquí.
+      // Las marcamos como huérfanas para que el usuario decida.
+      nextOrphaned.push(entry);
     } else {
       (nextBySignature[sig] ??= emptyGallery()).existing.push(entry);
     }
@@ -144,7 +137,6 @@ export function regroupBySignature(
   //    reagrupar con certeza. Se descartan con aviso (toast en FormProduct):
   //    el usuario debe volver a subirlos bajo la nueva agrupación.
   return {
-    general: nextGeneral,
     bySignature: nextBySignature,
     orphaned: nextOrphaned,
     deletedIds: state.deletedIds, // se preserva tal cual, el regroup no borra nada

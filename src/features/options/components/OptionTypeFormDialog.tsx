@@ -34,6 +34,7 @@ import {
 } from "../hooks/useOptionTypeMutations";
 import { useEffect, useState } from "react";
 import { normalizeText } from "../lib/helpers/formatters";
+import { getErrorMessage } from "../lib/errors/getErrorMessage";
 
 interface Props {
   modalState: ModalState;
@@ -73,6 +74,7 @@ export function OptionTypeFormDialog({ modalState, onClose }: Props) {
         name: optionType?.name ?? "",
         input_type: optionType?.input_type ?? "text",
         is_visual_default: optionType?.is_visual_default ?? false,
+        is_default_on_create: optionType?.is_default_on_create ?? false,
       });
     }
   }, [modalState.open, optionType, reset]);
@@ -98,7 +100,7 @@ export function OptionTypeFormDialog({ modalState, onClose }: Props) {
       messages: {
         loading: isEditing ? "Actualizando atributo..." : "Creando atributo...",
         success: isEditing ? "Atributo actualizado" : "Atributo creado",
-        error: (err: Error) => err.message,
+        error: (err: Error) => getErrorMessage(err),
       },
       richColors: true,
       position: "top-right",

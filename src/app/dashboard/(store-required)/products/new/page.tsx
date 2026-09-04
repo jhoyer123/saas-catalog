@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useGetBrandsNoPage } from "@/hooks/brand/useGetBrandsNoPage";
 import { useGetCategoryNoPage } from "@/hooks/category/useGetCategoryNoPage";
 import Link from "next/link";
-import SkeletonForm from "../[id]/view/loading";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import { useOptionTypesForProduct } from "@/features/product/product-variants/hooks/useOptionTypesAndValues";
 import { useHandleProduct } from "@/hooks/products/useHandleProduct";
+import SkeletonForm from "@/components/shared/SkeletonForm";
 
 export default function Page() {
   const { data: DataPlan, isLoading: isLoadingPlan } = useSessionData();
@@ -48,7 +48,9 @@ export default function Page() {
           </div>
           <div className="flex gap-5">
             <Button variant="outline" asChild>
-              <Link href="/dashboard/products">Cancelar y volver a productos</Link>
+              <Link href="/dashboard/products">
+                Cancelar y volver a productos
+              </Link>
             </Button>
             <Button
               variant="default"

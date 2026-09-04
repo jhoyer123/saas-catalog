@@ -21,7 +21,6 @@ import type {
   ProductFormInput,
   ProductFormOutput,
 } from "@/lib/schemas/productSchema";
-import { NO_VISUAL_KEY } from "../types/types";
 import {
   comboSignature,
   generateCombinations,
@@ -29,8 +28,6 @@ import {
 import { VariantImageCell } from "./VariantImageCell";
 import { useVariantImages } from "../hooks/useVariantImages";
 import { Separator } from "@/components/ui/separator";
-
-export { NO_VISUAL_KEY };
 
 interface ProductVariantsTableProps {
   form: UseFormReturn<ProductFormInput, unknown, ProductFormOutput>;
@@ -230,7 +227,6 @@ export function ProductVariantsTable({
                           optionValues={field.option_values}
                           visualTypeIds={visualTypeIds}
                           imagesBySignature={imagesApi.state.bySignature}
-                          generalGallery={imagesApi.state.general}
                           onOpenImagePicker={onOpenImagePicker}
                           readOnly={isReadOnly || rowDisabled}
                         />

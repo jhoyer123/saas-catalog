@@ -16,14 +16,10 @@ import {
 } from "@/lib/schemas/productSchema";
 import { ProductVariantAttributesSection } from "@/features/product/product-variants/components/ProductVariantAttributesSection";
 import { useVariantAutoSync } from "@/features/product/product-variants/hooks/useVariantAutoSync";
-import {
-  NO_VISUAL_KEY,
-  ProductVariantsTable,
-} from "@/features/product/product-variants/components/Productvariantstable";
+import { ProductVariantsTable } from "@/features/product/product-variants/components/Productvariantstable";
 import { useVariantImages } from "@/features/product/product-variants/hooks/useVariantImages";
 import { buildInitialImagesState } from "@/features/product/product-variants/lib/buildInitialImagesState";
 import { VariantGalleryDialog } from "@/features/product/product-variants/components/VariantGalleryDialog";
-import { emptyGallery } from "@/features/product/product-variants/types/types";
 import { toast } from "sonner";
 import { StoreOptionType } from "@/features/product/product-variants/services/optionsForVariants.service";
 import {
@@ -205,13 +201,13 @@ export default function FormProduct({
         const activeSignatures = new Set(
           data.variants
             .filter((v) => !v._removed)
-            .map((v) => visualSignature(v.option_values, visualTypeIds)),
+            .map((v) => visualSignature(v.option_values, visualTypeIds))
+            .filter((sig): sig is string => sig !== null), // solo firmas visuales reales
         );
 
         let missingCount = 0;
         activeSignatures.forEach((sig) => {
-          const gallery =
-            sig === null ? imagesState.general : imagesState.bySignature[sig];
+          const gallery = imagesState.bySignature[sig];
           const count =
             (gallery?.existing.length ?? 0) + (gallery?.newFiles.length ?? 0);
           if (count === 0) missingCount += 1;
@@ -226,7 +222,11 @@ export default function FormProduct({
           return;
         }
       }
-      data = { ...data, slug: generateSlug(data.name) };
+      data = {
+        ...data,
+        slug: generateSlug(data.name),
+        sku: data.has_variants ? "" : data.sku,
+      };
       console.log(JSON.stringify(data, null, 2));
       console.log(JSON.stringify(imagesApiRef.current?.state, null, 2));
       console.log(imagesApiRef.current?.state);
@@ -281,8 +281,24 @@ export default function FormProduct({
           useEffect(() => {
             onDirtyChange?.(isActuallyDirty);
           }, [isActuallyDirty, onDirtyChange]);
-
           const hasVariants = form.watch("has_variants") as boolean;
+
+          /* // Usamos una referencia para saber si ya pasó la primera carga
+          const isFirstRender = useRef(true);
+
+          useEffect(() => {
+            // Si es la primera carga (montaje), no hacemos nada para no borrar los datos iniciales
+            if (isFirstRender.current) {
+              isFirstRender.current = false;
+              return;
+            }
+
+            // Si el usuario cambia el switch, limpiamos el SKU principal si ahora tiene variantes
+            if (hasVariants) {
+              form.setValue("sku", "", { shouldDirty: true });
+            }
+          }, [hasVariants]); */
+
           // todos los types/atributos seleccionados para el producto, solo sus ids
           const selectedTypeIds = optionTypesField.fields.map(
             (f) => f.option_type_id,
@@ -353,6 +369,7 @@ export default function FormProduct({
                 categoryOptions={categoryOpts}
                 brandOptions={brandOpts}
                 isViewMode={isReadOnly}
+                hasVariants={hasVariants}
               />
 
               <ProductMediaSection<ProductFormInput>
@@ -404,13 +421,10 @@ export default function FormProduct({
                     valuesByType={valuesByType}
                     onValuesByTypeChange={setValuesByType}
                     onAttributeStructureChange={handleAttributeStructureChange}
-                    onVariantValuesChange={
-                      isModCreate ? handleAttributeStructureChange : undefined
-                    }
+                    onVariantValuesChange={handleAttributeStructureChange}
                     onVisualConfigurationChange={(nextVisualTypeIds) => {
                       const currentVariants = form.getValues("variants") ?? [];
                       if (
-                        imagesApi.state.general.newFiles.length ||
                         Object.values(imagesApi.state.bySignature).some(
                           (g) => g.newFiles.length,
                         )
@@ -445,10 +459,10 @@ export default function FormProduct({
                       open
                       onOpenChange={(o) => !o && setOpenSigKey(null)}
                       gallery={
-                        openSigKey === NO_VISUAL_KEY
-                          ? imagesApi.state.general
-                          : (imagesApi.state.bySignature[openSigKey] ??
-                            emptyGallery())
+                        imagesApi.state.bySignature[openSigKey] ?? {
+                          existing: [],
+                          newFiles: [],
+                        }
                       }
                       maxImages={1}
                       onFilesChange={(files) =>

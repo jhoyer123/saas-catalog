@@ -71,8 +71,9 @@ async function insertImageRows(
 }
 
 /**
- * Sube las imágenes NUEVAS (general + galerías por firma) y las persiste en
+ * Sube las imágenes NUEVAS (galerías por firma visual) y las persiste en
  * product_images. Las imágenes existentes no se tocan aquí.
+ * Las imágenes generales del producto las maneja ProductMediaSection (Zod).
  */
 async function persistNewImages(
   storeId: string,
@@ -83,22 +84,11 @@ async function persistNewImages(
   const generalFolder = `${storeId}/products/${productId}`;
   const variantsFolder = `${generalFolder}/variants`;
 
-  // imágenes generales del producto (ProductMediaSection)
+  // imágenes generales del producto (ProductMediaSection) -> visual_signature: null
   const generalPaths = await uploadToFolder("stores", generalFolder, data.product_images);
   await insertImageRows(
     productId,
     generalPaths.map((image_url) => ({ image_url, visual_signature: null })),
-  );
-
-  // galería compartida sin atributos visuales (NO_VISUAL_KEY)
-  const sharedPaths = await uploadToFolder(
-    "stores",
-    variantsFolder,
-    imagesState.general.newFiles,
-  );
-  await insertImageRows(
-    productId,
-    sharedPaths.map((image_url) => ({ image_url, visual_signature: null })),
   );
 
   // galerías por firma visual

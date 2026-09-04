@@ -257,7 +257,7 @@ export function OptionTypesTable() {
     <>
       {(isDeleting || isReordering) && <OverlayProcess />}
 
-      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row mb-6">
+      <div className="flex flex-col gap-4 lg:flex-row mb-6 lg:justify-between lg:items-center">
         <div className="flex flex-col gap-2">
           <h1 className="text-xl font-bold tracking-tight font-poppins md:text-2xl">
             Atributos de tienda

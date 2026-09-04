@@ -1,8 +1,5 @@
-import { ProductInputServiceUpdate } from "../schemas/product";
 import { createClient } from "../supabase/supabaseClient";
-import { generateSlug } from "../utils/slug";
-import * as Sentry from "@sentry/nextjs";
-import { deleteFile, deleteFolder } from "../utils/storage";
+import { deleteFolder } from "../utils/storage";
 import type { ProductFormOutput } from "@/lib/schemas/productSchema";
 
 /**
@@ -129,11 +126,11 @@ export async function saveProductFull(params: {
     p_product_id: params.productId,
     p_payload: params.payload,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data as SaveProductResult;
 }
 
-export const saveProductImages = async (
+/* export const saveProductImages = async (
   productId: string,
   imageUrls: string[],
 ) => {
@@ -161,7 +158,7 @@ export const saveProductImages = async (
   }
 
   return { success: true };
-};
+}; */
 
 /**
  * action for update product
@@ -170,7 +167,7 @@ export const saveProductImages = async (
  * @param storeId
  * @returns
  */
-export const updateProduct = async (
+/* export const updateProduct = async (
   id: string,
   dataProducto: ProductInputServiceUpdate,
 ) => {
@@ -249,7 +246,7 @@ export const updateProduct = async (
   }
 
   return data;
-};
+}; */
 
 /**
  * action for delete product
@@ -286,17 +283,13 @@ export interface ToggleOfferParams {
   offer_start: string | null;
   offer_end: string | null;
 }
-export const toggleOfferAction = async (
-  slugProd: string,
-  params: ToggleOfferParams,
-  storeSlug: string,
-) => {
+export const toggleOfferAction = async (params: ToggleOfferParams) => {
   const supabase = await createClient();
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) return { error: "No autenticado" };
+  if (!session) throw new Error("No autenticado");
 
   const { error } = await supabase
     .from("products")
@@ -311,10 +304,7 @@ export const toggleOfferAction = async (
     })
     .eq("id", params.id);
 
-  if (error) {
-    console.error("toggleOfferAction DB ERROR:", error);
-    return { error: "Error al actualizar la oferta del producto" };
-  }
+  if (error) throw error;
 };
 
 /**
@@ -324,10 +314,8 @@ export const toggleOfferAction = async (
  */
 export const toggleAvailableAction = async (
   id: string,
-  slugProd: string,
   is_available: boolean,
   storeId: string,
-  storeSlug: string,
 ) => {
   const supabase = await createClient();
 
@@ -337,10 +325,7 @@ export const toggleAvailableAction = async (
     .eq("id", id)
     .eq("store_id", storeId);
 
-  if (error) {
-    console.error("toggleAvailableAction DB ERROR:", error);
-    return { error: "Error al actualizar la disponibilidad del producto" };
-  }
+  if (error) throw error;
 
   return { data };
 };

@@ -11,12 +11,14 @@ export const variantSchema = z
   .object({
     _localId: z.string(), // uuid generado en cliente, para linkear imágenes antes de tener id real
     id: z.string().optional(), // presente solo en edit (variante existente)
-    /* price: z.coerce
-    .number({ message: "El precio es obligatorio" })
-    .min(0.01, "El precio debe ser mayor a 0"), */
     price: z.coerce.number().optional(),
     sku: z.string().optional(),
-    offer_price: z.coerce.number().optional().nullable(),
+    offer_price: z
+      .preprocess(
+        (val) => (val === "" || val === undefined ? null : val),
+        z.coerce.number().nullable(),
+      )
+      .optional(),
     is_available: z.boolean().default(true),
     option_values: z
       .array(optionValuePairSchema)
@@ -33,6 +35,16 @@ export const variantSchema = z
           path: ["price"],
           message: "El precio debe ser mayor a 0",
         });
+      }
+      // Validamos que el offer_price sea menor al price (si está definido)
+      if (val.offer_price !== null && val.offer_price !== undefined) {
+        if (val.price === undefined || val.offer_price >= val.price) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["offer_price"],
+            message: "Debe ser menor al precio",
+          });
+        }
       }
       // Validamos option_values
       if (!val.option_values || val.option_values.length === 0) {
@@ -133,17 +145,6 @@ export const productFormSchema = productBaseSchema.superRefine((data, ctx) => {
     });
   }
 
-  // Controlamos que haya al menos 1 variante "activa"
-  if (activeVariants.length === 0) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["variants"],
-      message: "Debe haber al menos una variante activa",
-    });
-    // Hacemos return prematuro porque las siguientes validaciones fallarían sin variantes activas
-    return;
-  }
-
   //cada atributo seleccionado debe tener al menos un valor elegido en alguna variante
   data.option_types.forEach((ot) => {
     const hasValue = data.variants.some((v) =>
@@ -157,6 +158,17 @@ export const productFormSchema = productBaseSchema.superRefine((data, ctx) => {
       });
     }
   });
+
+  // Controlamos que haya al menos 1 variante "activa"
+  if (activeVariants.length === 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["variants"],
+      message: "Debe haber al menos una variante activa",
+    });
+    // Hacemos return prematuro porque las siguientes validaciones fallarían sin variantes activas
+    return;
+  }
 
   // cada variante debe tener al menos un atributo seleccionado (ver variantSchema)
   if (data.variants.length === 0) {

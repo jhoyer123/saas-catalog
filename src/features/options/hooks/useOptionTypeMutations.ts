@@ -16,13 +16,8 @@ export const useCreateOptionType = () => {
   const storeId = sessionData?.store?.id;
 
   return useMutation({
-    mutationFn: async (dataInput: OptionTypeForm) => {
-      const result = await createOptionType(storeId!, dataInput);
-      if (result && typeof result === "object" && "error" in result) {
-        throw new Error(result.error);
-      }
-      return result;
-    },
+    mutationFn: (dataInput: OptionTypeForm) =>
+      createOptionType(storeId!, dataInput),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OPTION_TYPES_KEY] });
     },
@@ -33,21 +28,14 @@ export const useUpdateOptionType = () => {
   const queryClient = useQueryClient();
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
-
   return useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       id,
       dataInput,
     }: {
       id: string;
       dataInput: OptionTypeForm;
-    }) => {
-      const result = await updateOptionType(id, dataInput, storeId!);
-      if (result && typeof result === "object" && "error" in result) {
-        throw new Error(result.error);
-      }
-      return result;
-    },
+    }) => updateOptionType(id, dataInput, storeId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OPTION_TYPES_KEY] });
     },
@@ -60,13 +48,7 @@ export const useDeleteOptionType = () => {
   const storeId = sessionData?.store?.id;
 
   return useMutation({
-    mutationFn: async (typeId: string) => {
-      const result = await deleteOptionType(typeId, storeId!);
-      if (result && typeof result === "object" && "error" in result) {
-        throw new Error(result.error);
-      }
-      return result;
-    },
+    mutationFn: (typeId: string) => deleteOptionType(typeId, storeId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OPTION_TYPES_KEY] });
     },
@@ -75,17 +57,8 @@ export const useDeleteOptionType = () => {
 
 export const useReorderOptionTypes = () => {
   const queryClient = useQueryClient();
-  const { data: sessionData } = useSessionData();
-  const storeId = sessionData?.store?.id;
-
   return useMutation({
-    mutationFn: async (orderedIds: string[]) => {
-      const result = await reorderOptionTypes(orderedIds);
-      if (result && typeof result === "object" && "error" in result) {
-        throw new Error(result.error);
-      }
-      return result;
-    },
+    mutationFn: (orderedIds: string[]) => reorderOptionTypes(orderedIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [OPTION_TYPES_KEY] });
     },

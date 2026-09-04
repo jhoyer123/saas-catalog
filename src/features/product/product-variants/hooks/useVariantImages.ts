@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import {
   ImagesState,
   ImageEntry,
-  NO_VISUAL_KEY,
   emptyGallery,
 } from "../types/types";
 import {
@@ -16,7 +15,6 @@ import type { ComboValue } from "../lib/generateCombinations";
 
 export function useVariantImages(initial?: Partial<ImagesState>) {
   const [state, setState] = useState<ImagesState>({
-    general: initial?.general ?? emptyGallery(),
     bySignature: initial?.bySignature ?? {},
     orphaned: initial?.orphaned ?? [],
     deletedIds: initial?.deletedIds ?? [],
@@ -42,11 +40,6 @@ export function useVariantImages(initial?: Partial<ImagesState>) {
 
   const removeExisting = useCallback((sigKey: string, entry: ImageEntry) => {
     setState((s) => {
-      // MODIFICADO: deletedIds ya no vive dentro de la galería, es plano a
-      // nivel de ImagesState. Se actualizan ambas cosas en un solo setState
-      // para no perder la referencia previa de deletedIds (mismo problema
-      // que resolvimos en ProductMediaSection: leer el valor actual, no una
-      // copia vieja).
       const withoutEntry = updateGallery(s, sigKey, (g) => ({
         ...g,
         existing: g.existing.filter((e) => e.url !== entry.url),
@@ -93,6 +86,5 @@ export function useVariantImages(initial?: Partial<ImagesState>) {
     resetNewFiles,
     reset,
     regroup,
-    NO_VISUAL_KEY,
   };
 }

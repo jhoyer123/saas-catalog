@@ -8,7 +8,6 @@ import {
   emptyGallery,
   GalleryState,
   ImagesState,
-  NO_VISUAL_KEY,
 } from "@/features/product/product-variants/types/types";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
@@ -16,28 +15,23 @@ export function VariantImageCell({
   optionValues,
   visualTypeIds,
   imagesBySignature,
-  generalGallery,
   onOpenImagePicker,
   readOnly = false,
 }: {
   optionValues: ComboValue[];
   visualTypeIds: string[];
   imagesBySignature: ImagesState["bySignature"];
-  generalGallery: GalleryState;
   onOpenImagePicker: (sigKey: string) => void;
   readOnly?: boolean;
 }) {
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
 
   const sig = visualSignature(optionValues, visualTypeIds);
-  const sigKey = sig ?? NO_VISUAL_KEY;
-  const gallery = sig
-    ? (imagesBySignature[sig] ?? emptyGallery())
-    : generalGallery;
+  const gallery = sig ? (imagesBySignature[sig] ?? emptyGallery()) : null;
 
-  const firstExistingUrl = gallery.existing[0]?.url;
+  const firstExistingUrl = gallery?.existing[0]?.url;
   const firstNewFile =
-    gallery.existing.length === 0 ? gallery.newFiles[0] : undefined;
+    gallery?.existing.length === 0 ? gallery?.newFiles[0] : undefined;
 
   useEffect(() => {
     if (!firstNewFile) {
@@ -57,15 +51,18 @@ export function VariantImageCell({
     ? getCatalogImageUrl(firstExistingUrl)
     : localPreviewUrl;
 
-  const total = gallery.existing.length + gallery.newFiles.length;
+  const total = (gallery?.existing.length ?? 0) + (gallery?.newFiles.length ?? 0);
   const needsImage = total === 0;
+
+  // Si no hay firma visual (no debería pasar si hasVisualAttribute=true), no renderizamos botón
+  if (!sig) return null;
 
   return (
     <button
       type="button"
       onClick={() => {
         if (!readOnly) {
-          onOpenImagePicker(sigKey);
+          onOpenImagePicker(sig);
         }
       }}
       disabled={readOnly}

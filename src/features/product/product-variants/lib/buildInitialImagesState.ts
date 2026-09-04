@@ -18,7 +18,6 @@ export function buildInitialImagesState(
   visualTypeIds: string[] = [],
 ): ImagesState {
   const state: ImagesState = {
-    general: emptyGallery(),
     bySignature: {},
     orphaned: [],
     deletedIds: [],
@@ -37,8 +36,8 @@ export function buildInitialImagesState(
   });
 
   for (const img of product.image_details) {
-    // PRIORIDAD 1: la imagen ya tiene firma visual (guardada por el módulo de
-    // variantes). Se asigna directo a su galería, sin depender de variant_id.
+    // Si la imagen ya tiene firma visual (guardada por el módulo de variantes).
+    // Se asigna directo a su galería.
     if (img.visual_signature) {
       const target = (state.bySignature[img.visual_signature] ??= emptyGallery());
       const existing = target.existing.find((e) => e.url === img.image_url);
@@ -54,57 +53,9 @@ export function buildInitialImagesState(
       continue;
     }
 
-    // PRIORIDAD 2: imagen general del producto (sin variante ni firma).
-    if (!img.variant_id) {
-      const existing = state.general.existing.find(
-        (e) => e.url === img.image_url,
-      );
-      if (existing) {
-        existing.ids.push(img.id);
-      } else {
-        state.general.existing.push({
-          url: img.image_url,
-          ids: [img.id],
-          variantIds: [],
-        });
-      }
-      continue;
-    }
-
-    // PRIORIDAD 3: imagen vieja referenciando una variante. Se resuelve la
-    // firma desde esa variante; si la variante ya no existe -> huérfana.
-    const sig = variantToSig.get(img.variant_id);
-
-    if (sig === undefined) {
-      const existing = state.orphaned.find((e) => e.url === img.image_url);
-      if (existing) {
-        existing.ids.push(img.id);
-        existing.variantIds.push(img.variant_id);
-      } else {
-        state.orphaned.push({
-          url: img.image_url,
-          ids: [img.id],
-          variantIds: [img.variant_id],
-        });
-      }
-      continue;
-    }
-
-    const target =
-      sig === null
-        ? state.general
-        : (state.bySignature[sig] ??= emptyGallery());
-    const existing = target.existing.find((e) => e.url === img.image_url);
-    if (existing) {
-      existing.ids.push(img.id);
-      existing.variantIds.push(img.variant_id);
-    } else {
-      target.existing.push({
-        url: img.image_url,
-        ids: [img.id],
-        variantIds: [img.variant_id],
-      });
-    }
+    // Imagen sin visual_signature -> imagen general del producto.
+    // Estas las maneja el schema Zod (product_images / product_existing_images).
+    // No las tocamos acá.
   }
 
   return state;
