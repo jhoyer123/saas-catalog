@@ -44,7 +44,9 @@ export const ProductCard = React.memo(function ProductCard({
   const addItem = useCartStore((s) => s.addItem);
 
   // Lógica para mostrar precio con descuento si la oferta está activa
-  const hasDiscount = isOfferActive;
+  const hasDiscount = product.has_variants
+    ? product.offer_price
+    : isOfferActive;
   const displayPrice = hasDiscount ? product.offer_price : product.price;
 
   // Agrega el producto al carrito desde la tarjeta
@@ -107,7 +109,11 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
         />
 
         {/* Badge de descuento y disponibilidad */}
-        {discountPercent && <OfferBadge discountPercent={discountPercent} />}
+        {discountPercent && (
+          <OfferBadge
+            discountPercent={product.has_variants ? null : discountPercent}
+          />
+        )}
         {!product.is_available && <AvailableBadge />}
 
         {/* Botones hover — solo lg+ */}
@@ -140,13 +146,21 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
         </Link>
 
         <div className="mt-1.5 flex items-baseline justify-center gap-2 font-inter flex-wrap">
-          <span className="text-md sm:text-xl font-bold text-background-foreground">
-            Bs. {displayPrice!.toFixed(2)}
-          </span>
-          {hasDiscount && product.price !== displayPrice && (
-            <span className="text-sm text-muted-foreground line-through font-medium">
-              Bs. {product.price.toFixed(2)}
+          {product.has_variants ? (
+            <span className="text-md sm:text-xl font-bold text-background-foreground">
+              Desde Bs. {displayPrice!.toFixed(2)}
             </span>
+          ) : (
+            <>
+              <span className="text-md sm:text-xl font-bold text-background-foreground">
+                Bs. {displayPrice!.toFixed(2)}
+              </span>
+              {hasDiscount && product.price !== displayPrice && (
+                <span className="text-sm text-muted-foreground line-through font-medium">
+                  Bs. {product.price.toFixed(2)}
+                </span>
+              )}
+            </>
           )}
         </div>
 

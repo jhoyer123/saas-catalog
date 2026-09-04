@@ -8,33 +8,24 @@ import { ProductGrid } from "@/components/catalog/products/ProductGrid";
 import { ProductFilterControls } from "@/components/catalog/filter/ProductFilterControls";
 import { MobileFilterSheet } from "@/components/catalog/filter/MobileFilterSheet";
 import { ProductPagination } from "@/components/catalog/products/ProductPagination";
-import { Banner } from "@/types/catalog/catalog.types";
+import { Banner, StoreCatalog } from "@/types/catalog/catalog.types";
 import { InputSearch } from "./header/InputSearch";
 import { useProductFilter } from "@/hooks/catalog/useProductFilter";
 import { BrandCatalog } from "@/types/brand.types";
 import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
-import CatalogNotAvailable from "./CatalogNotAvailable";
-import { checkIsPlanActive } from "@/lib/helpers/validations";
 import CategoryPills from "./category/CategoryPills";
 
-// Hook reutilizable para medir altura
 function useElementHeight(id: string) {
   const [height, setHeight] = useState(0);
-
   useEffect(() => {
     const el = document.getElementById(id);
     if (!el) return;
-
     const update = () => setHeight(el.offsetHeight);
-
     const ro = new ResizeObserver(update);
     ro.observe(el);
-
     update();
-
     return () => ro.disconnect();
   }, [id]);
-
   return height;
 }
 
@@ -42,15 +33,7 @@ interface CatalogClientProps {
   categories: { id: string; name: string; slug: string }[];
   brands: BrandCatalog[];
   banners: Banner[];
-  store: {
-    name: string;
-    slug: string;
-    logo_url: string | null;
-    whatsapp_number: string | null;
-    updated_at: string; // Agregado para el cache busting
-    plan_expires_at: string | null; // Agregado para validación de plan
-    is_active: boolean; // Agregado para validar si la tienda está activa
-  };
+  store: StoreCatalog;
 }
 
 export default function CatalogClient({
@@ -60,46 +43,32 @@ export default function CatalogClient({
   store,
 }: CatalogClientProps) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-
   const headerHeight = useElementHeight("catalog-header");
   const inputBarHeight = useElementHeight("catalog-input-bar");
-
   const { filters } = useProductFilter();
 
-  // Evitar múltiples scrolls
   const filterKey = JSON.stringify(filters);
   const isMounted = useRef(false);
   const prevFilterKey = useRef(filterKey);
   useEffect(() => {
-    // Primera vez no hacer nada
     if (!isMounted.current) {
       isMounted.current = true;
       prevFilterKey.current = filterKey;
       return;
     }
-
-    // Si no cambiaron filtros no hacer scroll
     if (prevFilterKey.current === filterKey) return;
-
     prevFilterKey.current = filterKey;
-
     const section = document.getElementById("catalog-products");
     if (!section) return;
-
     const top =
       section.getBoundingClientRect().top +
       window.scrollY -
       headerHeight -
       inputBarHeight;
-
-    requestAnimationFrame(() => {
-      window.scrollTo({ top, behavior: "smooth" });
-    });
+    requestAnimationFrame(() => window.scrollTo({ top, behavior: "smooth" }));
   }, [filterKey, headerHeight, inputBarHeight]);
 
-  // Normalización para queryKey estable
   const normalize = (v: unknown) => v ?? "";
-
   const search = filters.search;
   const category = filters.category ?? "";
   const brand = filters.brand ?? "";
@@ -148,24 +117,12 @@ export default function CatalogClient({
   const total = data?.total ?? 0;
   const hasBanners = banners.length > 0;
 
-  //validar si el plan está activo
-  const [isBlocked, setIsBlocked] = useState(() => !checkIsPlanActive(store));
-
-  useEffect(() => {
-    if (!checkIsPlanActive(store)) {
-      setIsBlocked(true);
-    }
-  }, [store]);
-
-  if (isBlocked) {
-    return <CatalogNotAvailable handle={store.slug} />;
-  }
-
   return (
-    <main className="min-h-screen  bg-catalog-primary pb-6">
+    <main className="min-h-screen bg-catalog-primary">
+      {/* Barra de búsqueda sticky — mobile */}
       <div
         id="catalog-input-bar"
-        className="bg-catalog-primary py-2 sticky z-20 top-0 h-full w-full flex items-center justify-center lg:hidden"
+        className="bg-catalog-primary/95 backdrop-blur-sm py-2.5 sticky z-20 top-0 w-full flex items-center justify-center border-b border-border/40 lg:hidden"
         style={{ top: headerHeight }}
       >
         <InputSearch onOpenFilters={() => setMobileFiltersOpen(true)} />
@@ -180,14 +137,24 @@ export default function CatalogClient({
         brands={brands}
       />
 
-      {hasBanners && (
-        <div className="max-w-7xl w-full mx-auto py-1 lg:py-3 px-1">
-          <div className="flex gap-3 items-center justify-center">
-            <aside className="w-90 hidden lg:block shrink-0">
-              <ProductFilterControls categories={categories} brands={brands} />
-            </aside>
+      <div className="container max-w-360 mx-auto px-1 flex gap-8 items-start relative">
+        <aside
+          className="hidden lg:block w-70 shrink-0 sticky"
+          style={{
+            top: headerHeight + 24,
+            height: `calc(100vh - ${headerHeight + 40}px)`,
+          }}
+        >
+          <div className="h-full overflow-y-auto pr-4 custom-scrollbar">
+            <ProductFilterControls categories={categories} brands={brands} />
+          </div>
+        </aside>
 
-            <div className="flex-1">
+        {/* COLUMNA DERECHA: Contenido que hace scroll */}
+        <main className="flex-1 flex flex-col min-w-0 pt-4 pb-12 gap-8">
+          {/* 1. Zona de Banners */}
+          {hasBanners && (
+            <div className="w-full">
               <HeroSection
                 banners={banners.map((b) => ({
                   ...b,
@@ -195,53 +162,46 @@ export default function CatalogClient({
                 }))}
               />
             </div>
-          </div>
-        </div>
-      )}
-
-      <section
-        id="catalog-products"
-        className="container w-full h-full max-w-7xl mx-auto px-1"
-      >
-        <div
-          className={`flex h-full ${hasBanners ? "py-0 gap-4 flex-col" : "py-6 gap-3 flex-row"}`}
-        >
-          {!hasBanners && (
-            <aside
-              className="hidden lg:block w-64 xl:w-80 shrink-0 sticky self-start"
-              style={{ top: headerHeight }}
-            >
-              <ProductFilterControls categories={categories} brands={brands} />
-            </aside>
           )}
 
-          <div className="flex-1 flex flex-col">
-            {/* Loader mejorado */}
-            {isFetching && !isLoading && (
-              <div className="h-0.5 w-full overflow-hidden mb-2 bg-border rounded-full">
-                <div className="h-full w-2/5 bg-primary/50 rounded-full catalog-loading-bar" />
-              </div>
-            )}
+          {/* 2. Zona de Productos */}
+          <section
+            id="catalog-products"
+            className="w-full flex flex-col min-w-0"
+          >
+            {/* Loader — barra fina */}
+            <div
+              className={`h-0.5 w-full overflow-hidden rounded-full transition-opacity duration-200 ${
+                isFetching && !isLoading
+                  ? "opacity-100 mb-3"
+                  : "opacity-0 mb-0 h-0"
+              } bg-border`}
+            >
+              <div className="h-full w-2/5 bg-primary/60 rounded-full catalog-loading-bar" />
+            </div>
 
-            <div className="w-full flex flex-col mb-4 gap-1.5 md:gap-2 md:mt-4 lg:hidden">
-              <h2 className="px-2 text-[17px] md:text-md font-bold font-poppins text-catalog-secondary/70">
+            {/* Categorías — solo mobile/tablet */}
+            <div className="w-full flex flex-col gap-2 mb-5 lg:hidden">
+              <h2 className="px-1 text-[15px] font-semibold text-catalog-secondary/70">
                 Categorías
               </h2>
               <CategoryPills categories={categories} />
             </div>
 
-            <div className="flex flex-col items-start mb-4 md:pt-3 md:flex-row md:items-center md:justify-between w-full px-1.5">
-              <h2 className="text-sm font-bold font-inter text-catalog-secondary/65 md:text-md lg:text-lg">
-                Catálogo de Productos
+            {/* Header de resultados */}
+            <div className="flex items-center justify-between mb-4 px-1">
+              <h2 className="text-base font-semibold text-catalog-secondary lg:text-lg">
+                Catálogo
               </h2>
-              <p className="text-sm font-inter text-catalog-secondary/60">
-                {total} productos encontrados
-              </p>
+              <span className="text-xs text-catalog-secondary/50 lg:text-sm">
+                {total} {total === 1 ? "producto" : "productos"}
+              </span>
             </div>
 
+            {/* Grid de Productos */}
             <div
               className={`transition-opacity duration-200 ${
-                isFetching && !isLoading ? "opacity-60 pointer-events-none" : ""
+                isFetching && !isLoading ? "opacity-50 pointer-events-none" : ""
               }`}
             >
               <ProductGrid
@@ -252,16 +212,19 @@ export default function CatalogClient({
               />
             </div>
 
+            {/* Paginación */}
             {totalPages > 0 && (
-              <ProductPagination
-                totalPages={totalPages}
-                pageSize={12}
-                total={total}
-              />
+              <div className="mt-8">
+                <ProductPagination
+                  totalPages={totalPages}
+                  pageSize={12}
+                  total={total}
+                />
+              </div>
             )}
-          </div>
-        </div>
-      </section>
+          </section>
+        </main>
+      </div>
     </main>
   );
 }

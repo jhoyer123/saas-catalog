@@ -8,6 +8,10 @@ import {
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { cacheKey, cacheTag } from "../helpers/cacheKeys";
+import {
+  mapToProductDetailCatalog,
+  RawProductRow,
+} from "@/components/catalog/lib/product-detail.mapper";
 
 /**
  * get public store info (name, slug, logo_url) for the catalog header
@@ -36,13 +40,11 @@ async function getPublicStoreRaw(storeSlug: string) {
   };
 }
 
-// ← único cambio: cache() wrapeando lo que ya tenías
+// cache() wrapeando
 export const getPublicStore = cache((storeSlug: string) => {
   return unstable_cache(
     async () => getPublicStoreRaw(storeSlug),
-    //["public-store", storeSlug],
     cacheKey("public-store", storeSlug),
-    //{ tags: [`store-${storeSlug}`], revalidate: false },
     {
       tags: [cacheTag("store", storeSlug), cacheTag("store-data", storeSlug)],
       revalidate: false,
@@ -67,9 +69,7 @@ async function getPublicCategoriesRaw(storeId: string) {
 export async function getPublicCategories(storeSlug: string, storeId: string) {
   return unstable_cache(
     async () => getPublicCategoriesRaw(storeId),
-    //["public-categories", storeSlug],
     cacheKey("public-categories", storeSlug),
-    //{ tags: [`categories-${storeSlug}`], revalidate: false },
     {
       tags: [
         cacheTag("categories", storeSlug),
@@ -84,7 +84,6 @@ export async function getPublicCategories(storeSlug: string, storeId: string) {
  * get brands for public catalog
  */
 async function getPublicBrandsRaw(storeId: string) {
-  //const storeId = await getStoreIdBySlug(storeSlug);
   const { data, error } = await supabasePublic
     .from("brands")
     .select("id, name, slug")
@@ -98,9 +97,7 @@ async function getPublicBrandsRaw(storeId: string) {
 export async function getPublicBrands(storeSlug: string, storeId: string) {
   return unstable_cache(
     async () => getPublicBrandsRaw(storeId),
-    //["public-brands", storeSlug],
     cacheKey("public-brands", storeSlug),
-    //{ tags: [`brands-${storeSlug}`], revalidate: false },
     {
       tags: [cacheTag("brands", storeSlug), cacheTag("store-data", storeSlug)],
       revalidate: false,
@@ -114,7 +111,6 @@ export async function getPublicBrands(storeSlug: string, storeId: string) {
  * @returns
  */
 async function getPublicBannersRaw(storeId: string) {
-  //const storeId = await getStoreIdBySlug(storeSlug);
   const { data, error } = await supabasePublic
     .from("store_banners")
     .select("id, image_url")
@@ -128,9 +124,7 @@ async function getPublicBannersRaw(storeId: string) {
 export async function getPublicBanners(storeSlug: string, storeId: string) {
   return unstable_cache(
     async () => getPublicBannersRaw(storeId),
-    //["public-banners", storeSlug],
     cacheKey("public-banners", storeSlug),
-    //{ tags: [`banners-${storeSlug}`], revalidate: false },
     {
       tags: [cacheTag("banners", storeSlug), cacheTag("store-data", storeSlug)],
       revalidate: false,
@@ -140,16 +134,14 @@ export async function getPublicBanners(storeSlug: string, storeId: string) {
 
 /**
  * Get initial products for public catalog (first page, no filters)
- * Se cachea a nivel de servidor porque es la consulta más común y no cambia con el tiempo (no depende de ofertas activas)
+ * Se cachea a nivel de servidor porque es la consulta más común
  * Se revalida solo cuando el dueño cambia algo en los productos (revalidateTag "products")
  */
 async function getPublicProductsInitialRaw(storeId: string) {
-  //const storeId = await getStoreIdBySlug(storeSlug);
-
   const { data, error, count } = await supabasePublic
     .from("products")
     .select(
-      `id, name, price, is_offer, offer_price, offer_start, offer_end, slug,is_available, images:product_images(image_url)`,
+      `id, name, price, has_variants, is_offer, offer_price, offer_start, offer_end, slug,is_available, images:product_images(image_url)`,
       { count: "exact" },
     )
     .limit(1, { foreignTable: "product_images" })
@@ -162,6 +154,7 @@ async function getPublicProductsInitialRaw(storeId: string) {
       id: product.id,
       name: product.name,
       price: product.price,
+      has_variants: product.has_variants ?? false,
       is_offer: product.is_offer ?? false,
       is_available: product.is_available,
       offer_price: product.offer_price ?? null,
@@ -183,12 +176,7 @@ export async function getPublicProductsInitial(
 ) {
   return unstable_cache(
     async () => getPublicProductsInitialRaw(storeId),
-    //["public-products-initial", storeSlug],
     cacheKey("public-products-initial", storeSlug),
-    /* {
-      tags: [`products-${storeSlug}`],
-      revalidate: false,
-    }, */
     {
       tags: [
         cacheTag("products", storeSlug),
@@ -203,7 +191,7 @@ export async function getPublicProductsInitial(
  * Get public product detail by slug
  * Usa la misma query/mapeo que fetchPublicProductBySlug
  */
-async function getPublicProductBySlugRaw(
+/* async function getPublicProductBySlugRaw(
   slug: string,
 ): Promise<ProductDetailCatalog> {
   const { data, error } = await supabasePublic
@@ -236,14 +224,46 @@ async function getPublicProductBySlugRaw(
     ),
     is_available: data.is_available,
   };
+} */
+async function getPublicProductBySlugRaw(
+  slug: string,
+): Promise<ProductDetailCatalog> {
+  const { data, error } = await supabasePublic
+    .from("products")
+    .select(
+      `
+      id, name, price, description, has_variants, is_offer, offer_price,
+      slug, offer_start, offer_end, is_available,
+      brand:brands(id, name, slug),
+      category:categories(id, name, slug),
+      images:product_images(image_url, display_order, visual_signature),
+      option_types:product_option_types(
+        is_visual,
+        option_type:store_option_types(id, name, input_type)
+      ),
+      variants:product_variants(
+        id, sku, price, offer_price, stock, is_available, option_signature,
+        values:variant_option_values(
+          option_type_id,
+          option_value:store_option_values(id, value, image_url, color_hexes, unit)
+        )
+      )
+    `,
+    )
+    .eq("slug", slug)
+    .eq("is_available", true)
+    .order("display_order", { foreignTable: "images" })
+    .single();
+
+  if (error || !data) throw new Error("Producto no encontrado");
+
+  return mapToProductDetailCatalog(data as unknown as RawProductRow);
 }
 
 export async function getPublicProductBySlug(storeSlug: string, slug: string) {
   return unstable_cache(
     async () => getPublicProductBySlugRaw(slug),
-    //["public-product", storeSlug, slug],
     cacheKey("public-product", storeSlug, slug),
-    //{ tags: [`product-${storeSlug}-${slug}`], revalidate: false },
     {
       tags: [
         cacheTag(`product-${slug}`, storeSlug),
@@ -272,9 +292,7 @@ export async function getPublicStoreSocialMedia(
 ) {
   return unstable_cache(
     async () => getPublicStoreSocialMediaRaw(storeId),
-    //["public-store-social-links", storeSlug],
     cacheKey("public-store-social-links", storeSlug),
-    //{ tags: [`store-social-links-${storeSlug}`], revalidate: false },
     {
       tags: [
         cacheTag("store-social-links", storeSlug),
@@ -303,9 +321,7 @@ export async function getPublicStoreBranches(
 ) {
   return unstable_cache(
     async () => getPublicStoreBranchesRaw(storeId),
-    //["public-store-branches", storeSlug],
     cacheKey("public-store-branches", storeSlug),
-    //{ tags: [`store-branches-${storeSlug}`], revalidate: false },
     {
       tags: [
         cacheTag("store-branches", storeSlug),

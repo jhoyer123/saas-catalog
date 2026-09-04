@@ -7,7 +7,6 @@ export const useGetOptionTypes = (storeId: string) => {
     queryKey: ["option-types", storeId],
     queryFn: () => listOptionTypes(storeId),
     enabled: !!storeId,
-    //staleTime: 1000 * 60 * 5,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 30,
   });

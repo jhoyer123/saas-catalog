@@ -74,26 +74,54 @@ export interface ProductDetail {
   product_variants: ProductVariantDetail[];
 }
 
-/**
- * Tipo para detalle de producto en el catálogo público
- */
+/** Valor de una opción (ej: "Azul", "M") */
+export interface ProductOptionValue {
+  id: string;
+  value: string;
+  image_url: string | null; // swatch/thumbnail chico
+  color_hexes: string[] | null;
+  unit: string | null;
+  images?: string[]; // galería completa si esta opción es visual y tiene fotos propias
+}
+
+/** Tipo de opción del producto (ej: "Color", "Talla") con sus valores disponibles */
+export interface ProductOptionType {
+  id: string;
+  name: string;
+  input_type: "text" | "color" | "image" | "number";
+  is_visual: boolean;
+  values: ProductOptionValue[]; // valores únicos usados por las variantes de este producto
+}
+
+/** Una variante concreta (SKU) con sus valores de opción resueltos */
+export interface ProductVariant {
+  id: string;
+  sku: string | null;
+  price: number;
+  offer_price: number | null;
+  stock: number;
+  is_available: boolean;
+  option_signature: string; // ej: "color:azul|talla:m" -> usado para matchear selección rápido
+  option_values: Record<string, string>; // { option_type_id: option_value_id } -> para lookup O(1) en UI
+}
+
 export interface ProductDetailCatalog {
   id: string;
   name: string;
   description: string;
   price: number;
   has_variants: boolean;
-  brand_id?: string | null;
-  //store_id: string;
-  category_id: string;
   is_offer: boolean;
-  offer_price?: number | null;
-  offer_start?: string | null;
-  offer_end?: string | null;
-  brand?: string | null;
-  slug: string;
+  offer_price: number | null;
+  offer_start: string | null;
+  offer_end: string | null;
   is_available: boolean;
+  slug: string;
   images: string[];
+  brand: { id: string; name: string; slug: string } | null;
+  category: { id: string; name: string; slug: string } | null;
+  option_types: ProductOptionType[]; // vacío si has_variants=false
+  variants: ProductVariant[]; // vacío si has_variants=false
 }
 
 //super type para el formulario
@@ -131,8 +159,8 @@ export interface ProductCatalogCard {
   name: string;
   description?: string | null;
   price: number;
+  has_variants: boolean;
   is_available: boolean;
-  //is_offer_active: boolean;
   is_offer: boolean;
   offer_price: number | null;
   offer_start: string | null;
