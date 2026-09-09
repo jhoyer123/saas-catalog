@@ -6,9 +6,12 @@
 /** Producto dentro del carrito — solo datos esenciales */
 export interface CartItem {
   id: string;
+  product_id: string;
+  variant_id?: string;
   name: string;
   link: string; // URL al producto (opcional, pero útil para el resumen del pedido)
   image: string;
   price: number; // precio unitario (ya con oferta aplicada si corresponde)
   quantity: number; // siempre >= 1
+  options?: { name: string; value: string }[];
 }

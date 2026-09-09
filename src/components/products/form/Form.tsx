@@ -227,9 +227,9 @@ export default function FormProduct({
         slug: generateSlug(data.name),
         sku: data.has_variants ? "" : data.sku,
       };
-      console.log(JSON.stringify(data, null, 2));
-      console.log(JSON.stringify(imagesApiRef.current?.state, null, 2));
-      console.log(imagesApiRef.current?.state);
+      //console.log(JSON.stringify(data, null, 2));
+      //console.log(JSON.stringify(imagesApiRef.current?.state, null, 2));
+      //console.log(imagesApiRef.current?.state);
       // persistencia: producto + variantes + imágenes (create o edit)
       const result =
         mode === "create"
@@ -246,6 +246,7 @@ export default function FormProduct({
               storeId,
               storeSlug,
               initialData?.id!,
+              initialData?.slug!,
               () => resetFormRef.current?.(),
             );
     } catch (e) {
@@ -282,22 +283,6 @@ export default function FormProduct({
             onDirtyChange?.(isActuallyDirty);
           }, [isActuallyDirty, onDirtyChange]);
           const hasVariants = form.watch("has_variants") as boolean;
-
-          /* // Usamos una referencia para saber si ya pasó la primera carga
-          const isFirstRender = useRef(true);
-
-          useEffect(() => {
-            // Si es la primera carga (montaje), no hacemos nada para no borrar los datos iniciales
-            if (isFirstRender.current) {
-              isFirstRender.current = false;
-              return;
-            }
-
-            // Si el usuario cambia el switch, limpiamos el SKU principal si ahora tiene variantes
-            if (hasVariants) {
-              form.setValue("sku", "", { shouldDirty: true });
-            }
-          }, [hasVariants]); */
 
           // todos los types/atributos seleccionados para el producto, solo sus ids
           const selectedTypeIds = optionTypesField.fields.map(
@@ -348,20 +333,22 @@ export default function FormProduct({
 
           return (
             <>
-              <VariantToggleSection<ProductFormInput>
-                control={form.control}
-                isViewMode={isReadOnly}
-                isCreateMode={isModCreate}
-                hasVariants={hasVariants}
-                onHasVariantsChange={() => {
-                  variantsField.replace([]);
-                  optionTypesField.replace([]);
-                  setValuesByType({});
-                  setVisualTypeIds([]);
-                  imagesApi.reset();
-                  setOpenSigKey(null);
-                }}
-              />
+              {((initialData && !initialData?.has_variants) || isReadOnly || mode === "create") && (
+                <VariantToggleSection<ProductFormInput>
+                  control={form.control}
+                  isViewMode={isReadOnly}
+                  isCreateMode={isModCreate}
+                  hasVariants={hasVariants}
+                  onHasVariantsChange={() => {
+                    variantsField.replace([]);
+                    optionTypesField.replace([]);
+                    setValuesByType({});
+                    setVisualTypeIds([]);
+                    imagesApi.reset();
+                    setOpenSigKey(null);
+                  }}
+                />
+              )}
 
               <ProductIdentitySection<ProductFormInput>
                 control={form.control}

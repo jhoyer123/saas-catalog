@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import { ArrowRight, ShoppingCart } from "lucide-react";
 import { ProductCatalogCard } from "@/types/product.types";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,11 @@ import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 import { AvailableBadge } from "./AvailableBadge";
 import React from "react";
 import { Whatsapp } from "@/components/icons/Whatsapp";
+import {
+  buildProductInquiryMessage,
+  buildProductUrl,
+  normalizeWhatsAppNumber,
+} from "@/lib/helpers/whatsapp";
 
 interface ProductCardProps {
   product: ProductCatalogCard;
@@ -42,10 +47,11 @@ export const ProductCard = React.memo(function ProductCard({
   };
 
   const addItem = useCartStore((s) => s.addItem);
+  const router = useRouter();
 
   // Lógica para mostrar precio con descuento si la oferta está activa
   const hasDiscount = product.has_variants
-    ? product.offer_price
+    ? product.is_offer && product.is_offer
     : isOfferActive;
   const displayPrice = hasDiscount ? product.offer_price : product.price;
 
@@ -53,10 +59,15 @@ export const ProductCard = React.memo(function ProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // evita navegar al detalle
     e.stopPropagation();
+    if (product.has_variants) {
+      router.push(`/public/${store_slug}/${product.slug}`);
+      return;
+    }
     addItem({
       id: product.id,
+      product_id: product.id,
       name: product.name,
-      link: `app.jhoyerdev.me/public/${store_slug}/${product.slug}`,
+      link: buildProductUrl(store_slug, product.slug),
       image: getCatalogImageUrl(product.images[0]?.image_url),
       price: displayPrice!,
     });
@@ -68,17 +79,18 @@ export const ProductCard = React.memo(function ProductCard({
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!telefono || displayPrice == null) return;
     const msg = encodeURIComponent(
-      `¡Hola! Me gustaría hacer un pedido:
-
-De este producto:
-${product.name}
-app.jhoyerdev.me/public/${store_slug}/${product.slug}
-Precio: Bs. ${displayPrice!.toFixed(2)}
-
-¿Está disponible? Me gustaría más información`,
+      buildProductInquiryMessage({
+        name: product.name,
+        url: buildProductUrl(store_slug, product.slug),
+        price: displayPrice,
+      }),
     );
-    window.open(`https://wa.me/${telefono}?text=${msg}`, "_blank");
+    window.open(
+      `https://wa.me/${normalizeWhatsAppNumber(telefono)}?text=${msg}`,
+      "_blank",
+    );
   };
 
   const discountPercent =
@@ -89,7 +101,7 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
       : null;
 
   return (
-    <div className="bg-card flex flex-col justify-between group relative w-full hover:shadow-md transition-all duration-300 border border-border shadow-sm">
+    <div className="bg-card group relative flex h-full w-full flex-col justify-between border border-border shadow-sm transition-all duration-300 hover:shadow-md">
       {/* ───────── IMAGEN ───────── */}
       <Link
         href={`/public/${store_slug}/${product.slug}`}
@@ -118,29 +130,39 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
 
         {/* Botones hover — solo lg+ */}
         <div className="hidden lg:flex absolute bottom-2 right-2 z-10 flex-col gap-1.5 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-          <button
-            onClick={handleWhatsApp}
-            aria-label="Consultar por WhatsApp"
-            className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-green-500 hover:text-white text-gray-600 transition-colors duration-200"
-            data-umami-event="Contactar WhatsApp"
-            data-umami-event-product={product.name}
-          >
-            <Whatsapp size={20} />
-          </button>
+          {!product.has_variants && (
+            <button
+              onClick={handleWhatsApp}
+              aria-label="Consultar por WhatsApp"
+              className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-green-500 hover:text-white text-gray-600 transition-colors duration-200"
+              data-umami-event="Contactar WhatsApp"
+              data-umami-event-product={product.name}
+            >
+              <Whatsapp size={20} />
+            </button>
+          )}
           <button
             onClick={handleAddToCart}
-            aria-label={`Agregar ${product.name} al carrito`}
+            aria-label={
+              product.has_variants
+                ? `Elegir variante de ${product.name}`
+                : `Agregar ${product.name} al carrito`
+            }
             className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-gray-900 hover:text-white text-gray-600 transition-colors duration-200"
           >
-            <ShoppingCart className="w-4 h-4" />
+            {product.has_variants ? (
+              <ArrowRight className="w-4 h-4" />
+            ) : (
+              <ShoppingCart className="w-4 h-4" />
+            )}
           </button>
         </div>
       </Link>
 
       {/* ───────── INFO ───────── */}
-      <div className="p-2">
+      <div className="flex flex-1 flex-col p-2">
         <Link href={`/public/${store_slug}/${product.slug}`} prefetch={false}>
-          <h3 className="text-sm sm:text-base font-medium font-inter text-gray-700 leading-snug line-clamp-2 hover:text-gray-900 transition-colors lg:text-center">
+          <h3 className="min-h-11 text-sm font-medium font-inter leading-snug text-gray-700 line-clamp-2 transition-colors hover:text-gray-900 sm:text-base lg:text-center">
             {product.name}
           </h3>
         </Link>
@@ -167,21 +189,31 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
         {/* Botones visibles — mobile/tablet (debajo del precio, sin hover) */}
         {showButtons && (
           <div className="flex lg:hidden gap-2 mt-2">
-            <button
-              onClick={handleWhatsApp}
-              aria-label="Consultar por WhatsApp"
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border bg-[#25D366] text-xs font-medium hover:bg-green-50 transition-colors text-white"
-              data-umami-event="Pedir por WhatsApp un producto desde la tarjeta"
-              data-umami-event-product={product.name}
-            >
-              <Whatsapp size={16} />
-            </button>
+            {!product.has_variants && (
+              <button
+                onClick={handleWhatsApp}
+                aria-label="Consultar por WhatsApp"
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg border bg-[#25D366] text-xs font-medium hover:bg-green-50 transition-colors text-white"
+                data-umami-event="Pedir por WhatsApp un producto desde la tarjeta"
+                data-umami-event-product={product.name}
+              >
+                <Whatsapp size={16} />
+              </button>
+            )}
             <button
               onClick={handleAddToCart}
-              aria-label={`Agregar ${product.name} al carrito`}
+              aria-label={
+                product.has_variants
+                  ? `Elegir variante de ${product.name}`
+                  : `Agregar ${product.name} al carrito`
+              }
               className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-700 transition-colors"
             >
-              <ShoppingCart className="w-3.5 h-3.5" />
+              {product.has_variants ? (
+                <ArrowRight className="w-3.5 h-3.5" />
+              ) : (
+                <ShoppingCart className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
         )}

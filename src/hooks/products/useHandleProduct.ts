@@ -121,7 +121,7 @@ export function useHandleProduct() {
             throw err;
           }
 
-          revalidateProductCache(storeSlug, null);
+          await revalidateProductCache(storeSlug, null);
 
           onSuccess?.();
         });
@@ -149,6 +149,7 @@ export function useHandleProduct() {
     storeId: string,
     storeSlug: string,
     productId: string,
+    productSlug: string,
     onSuccess?: () => void,
   ) => {
     showPromise({
@@ -224,8 +225,7 @@ export function useHandleProduct() {
           await queryClient.invalidateQueries({
             queryKey: ["product", productId],
           });
-
-          revalidateProductCache(storeSlug, data.slug ?? null);
+          await revalidateProductCache(storeSlug, productSlug);
 
           router.push(`/dashboard/products`);
           //onSuccess?.();
@@ -261,7 +261,7 @@ export function useHandleProduct() {
           // Eliminar producto en la db
           await remove({ id });
           // Revalidar cache
-          revalidateProductCache(storeSlug, slugProd);
+          await revalidateProductCache(storeSlug, slugProd);
           onSuccess?.();
         });
       },
@@ -294,7 +294,7 @@ export function useHandleProduct() {
           // cambiar estado de oferta
           await offerProduct({ params });
           // revalidar cache
-          revalidateProductCache(storeSlug, slugProd);
+          await revalidateProductCache(storeSlug, slugProd);
           onSuccess?.();
         });
       },
@@ -331,7 +331,7 @@ export function useHandleProduct() {
           // cambiar disponibilidad
           await toggleAvailableProduct({ id, is_available });
           // revalidar cache
-          revalidateProductCache(storeSlug, slugProd);
+          await revalidateProductCache(storeSlug, slugProd);
           onSuccess?.();
         });
       },

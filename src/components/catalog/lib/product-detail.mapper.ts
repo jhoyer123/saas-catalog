@@ -17,8 +17,8 @@ export type RawProductRow = {
   offer_end: string | null;
   is_available: boolean;
   slug: string;
-  brand: { id: string; name: string; slug: string }[] | null;
-  category: { id: string; name: string; slug: string }[] | null;
+  brand_id: string | null;
+  category_id: string;
   images: {
     image_url: string;
     display_order: number;
@@ -55,7 +55,7 @@ export function mapToProductDetailCatalog(
   const generalImages: string[] = [];
   const imagesBySignature = new Map<string, string[]>();
 
-  for (const img of raw.images.sort(
+  for (const img of [...raw.images].sort(
     (a, b) => a.display_order - b.display_order,
   )) {
     if (img.visual_signature) {
@@ -93,7 +93,7 @@ export function mapToProductDetailCatalog(
         image_url: val.option_value.image_url,
         color_hexes: val.option_value.color_hexes,
         unit: val.option_value.unit,
-        images: imagesBySignature.get(val.option_value.value), // match por texto del valor
+        images: undefined,
       });
     }
   }
@@ -121,9 +121,10 @@ export function mapToProductDetailCatalog(
     images: generalImages.length
       ? generalImages
       : (Array.from(imagesBySignature.values())[0] ?? []),
-    brand: raw.brand?.[0] ?? null,
-    category: raw.category?.[0] ?? null,
+    brand_id: raw.brand_id ?? null,
+    category_id: raw.category_id,
     option_types,
     variants,
+    visual_images_by_signature: Object.fromEntries(imagesBySignature),
   };
 }

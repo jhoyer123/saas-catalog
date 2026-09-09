@@ -35,8 +35,8 @@ export default function Page() {
 
   return (
     <div className="h-full w-full p-4">
-      <div className="mx-auto flex w-full flex-col gap-6">
-        <div className="flex items-center justify-between gap-4">
+      <div className="mx-auto flex w-full flex-col gap-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold tracking-tight">
               Crear producto
@@ -46,8 +46,8 @@ export default function Page() {
               agregarlo a tu catálogo.
             </p>
           </div>
-          <div className="flex gap-5">
-            <Button variant="outline" asChild>
+          <div className="flex flex-wrap w-full items-center justify-end gap-3">
+            <Button variant="outline" asChild className="w-full sm:w-auto">
               <Link href="/dashboard/products">
                 Cancelar y volver a productos
               </Link>
@@ -57,6 +57,7 @@ export default function Page() {
               type="submit"
               form="product-form"
               disabled={isPending}
+              className="w-full sm:w-auto"
             >
               Crear producto
             </Button>

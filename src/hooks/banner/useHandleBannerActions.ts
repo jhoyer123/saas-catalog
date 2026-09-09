@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useToastPromise } from "../shared/useToastPromise";
 import { useSaveBanners } from "./useSaveBanners";
 import { useSessionData } from "../auth/useSessionData";
-import { uploadMultipleFiles } from "@/lib/utils/storage";
+import { deleteFile, uploadMultipleFiles } from "@/lib/utils/storage";
 import { revalidateBannersCacheAction } from "@/lib/actions/bannerActions";
 
 export function useHandleBannerActions() {
@@ -54,7 +54,21 @@ export function useHandleBannerActions() {
 
           // 2. Guardar paths y eliminar en DB via action.
           // Recién acá, con todos los archivos subidos con éxito, tocamos la DB.
-          await saveBannersDB({ imageUrls, imagesToDelete });
+          //await saveBannersDB({ imageUrls, imagesToDelete });
+          try {
+            await saveBannersDB({ imageUrls, imagesToDelete });
+          } catch (dbError) {
+            // Si la DB falla, borramos las imágenes recién subidas para no dejar basura en el bucket
+            if (imageUrls.length > 0) {
+              await deleteFile("stores", imageUrls).catch((cleanupError) => {
+                console.error(
+                  "Error al limpiar archivos en Storage:",
+                  cleanupError,
+                );
+              });
+            }
+            throw dbError; // Re-lanzamos el error para que useToastPromise muestre la notificación
+          }
 
           //revalidar cache y purgar cache de Cloudflare.
           revalidateBannersCacheAction(slugStore!);

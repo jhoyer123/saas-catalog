@@ -3,8 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { ProductImageGallery } from "@/components/catalog/products/ProductImageGallery";
-import { ProductInfo } from "@/components/catalog/products/ProductInfo";
+import {
+  DescriptionAccordion,
+  ProductInfo,
+} from "@/components/catalog/products/ProductInfo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -18,6 +22,10 @@ import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 import { SkeletonDetailProduct } from "@/components/detailProduct/SkeletonDetailProduct";
 import { getPublicStore } from "@/lib/actions/catalogActions";
 import RelatedProductsSlider from "./RelatedProductsSlider";
+import {
+  buildVisualSignature,
+  findVariant,
+} from "../lib/helpers/resolveVariant";
 
 interface ProductDetailClientProps {
   slugProd: string;
@@ -46,8 +54,11 @@ export default function ProductDetailClient({
     queryKey: ["public-product", storeSlug, slugProd],
     queryFn: () => fetchPublicProductBySlug(slugProd, storeSlug),
     staleTime: 1000 * 60 * 10, // Los datos se consideran frescos por 10 minutos
+    //refetchOnMount: "always",
+    //refetchOnWindowFocus: true,
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
+
   //Recuperamos las marcas para resolver el nombre de la marca del producto (OJO AQUI PODRIAMOS SIMPLEMTE TRAER DEL UNESTABLE CACHE)
   const { data: brands = [] } = useQuery({
     queryKey: ["public-brands", storeSlug],
@@ -64,7 +75,7 @@ export default function ProductDetailClient({
       product?.id,
     ],
     queryFn: () =>
-      fetchRelatedProducts(storeSlug, product!.category_id, product!.id),
+      fetchRelatedProducts(storeSlug, product!.category_id!, product!.id),
     enabled: !!product, // Solo correr esta query si ya tenemos el producto (porque necesitamos su category_id)
     staleTime: 1000 * 60 * 10, // Los datos se consideran frescos por 10 minutos
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
@@ -80,19 +91,94 @@ export default function ProductDetailClient({
     const ro = new ResizeObserver(() => setHeaderHeight(header.offsetHeight));
     ro.observe(header);
 
-    // Medición inicial
-    setHeaderHeight(header.offsetHeight);
+    const frame = requestAnimationFrame(() =>
+      setHeaderHeight(header.offsetHeight),
+    );
 
-    return () => ro.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      ro.disconnect();
+    };
     // Agregamos [store, product] para que vuelva a correr cuando carguen los datos
   }, [store, product]);
 
   //hook para mostrar la oferta
   const ahora = useTiempoActual();
 
-  const { isOfferActive, discountPercent } = useMemo(() => {
-    if (!product) return { isOfferActive: false, discountPercent: null };
-    const isOfferActive = checkIsOfferActive(
+  const [selection, setSelection] = useState<{
+    productId: string | null;
+    options: Record<string, string>;
+  }>({ productId: null, options: {} });
+  const productId = product?.id;
+  const selectedOptions = useMemo(
+    () =>
+      productId && selection.productId === productId ? selection.options : {},
+    [productId, selection],
+  );
+  const setSelectedOptions: Dispatch<SetStateAction<Record<string, string>>> = (
+    nextOptions,
+  ) => {
+    setSelection((current) => {
+      const currentOptions =
+        current.productId === productId ? current.options : {};
+      const options =
+        typeof nextOptions === "function"
+          ? nextOptions(currentOptions)
+          : nextOptions;
+      return { productId: productId ?? null, options };
+    });
+  };
+
+  const currentVariant = useMemo(() => {
+    if (!product?.has_variants) return undefined;
+    return findVariant(
+      product.variants,
+      selectedOptions,
+      product.option_types.map((optionType) => optionType.id),
+    );
+  }, [product, selectedOptions]);
+
+  // DESPUÉS
+  const {
+    isOfferActive,
+    discountPercent,
+    effectivePrice,
+    effectiveOfferPrice,
+  } = useMemo(() => {
+    if (!product) {
+      return {
+        isOfferActive: false,
+        discountPercent: null,
+        effectivePrice: 0,
+        effectiveOfferPrice: null,
+      };
+    }
+
+    if (product.has_variants) {
+      if (!currentVariant) {
+        return {
+          isOfferActive: false,
+          discountPercent: null,
+          effectivePrice: null,
+          effectiveOfferPrice: null,
+        };
+      }
+
+      const price = currentVariant.price;
+      const offerPrice = currentVariant?.offer_price ?? null;
+      const active = offerPrice != null;
+      const discount = active
+        ? Math.round(((price - offerPrice) / price) * 100)
+        : null;
+      return {
+        isOfferActive: active,
+        discountPercent: discount,
+        effectivePrice: price,
+        effectiveOfferPrice: offerPrice,
+      };
+    }
+
+    const active = checkIsOfferActive(
       {
         is_offer: product.is_offer,
         offer_price: product.offer_price || null,
@@ -101,16 +187,19 @@ export default function ProductDetailClient({
       },
       ahora,
     );
-
-    const discountPercent =
-      isOfferActive && product.offer_price
+    const discount =
+      active && product.offer_price
         ? Math.round(
             ((product.price - product.offer_price) / product.price) * 100,
           )
         : null;
-
-    return { isOfferActive, discountPercent };
-  }, [product, ahora]);
+    return {
+      isOfferActive: active,
+      discountPercent: discount,
+      effectivePrice: product.price,
+      effectiveOfferPrice: product.offer_price,
+    };
+  }, [product, ahora, currentVariant]);
 
   const productWithResolvedBrand = useMemo(() => {
     if (!product) return null;
@@ -120,7 +209,7 @@ export default function ProductDetailClient({
 
     return {
       ...product,
-      brand: resolvedBrandName,
+      brand_name: resolvedBrandName ? resolvedBrandName : null,
     };
   }, [product, brands]);
 
@@ -134,6 +223,30 @@ export default function ProductDetailClient({
     }
   };
 
+  // AGREGAR
+  const galleryImages = useMemo(() => {
+    if (!productWithResolvedBrand?.has_variants) {
+      return (
+        productWithResolvedBrand?.images.map((img) =>
+          getCatalogImageUrl(img),
+        ) ?? []
+      );
+    }
+    const visualTypes = productWithResolvedBrand.option_types.filter(
+      (optionType) => optionType.is_visual,
+    );
+    const visualSignature = buildVisualSignature(
+      selectedOptions,
+      visualTypes.map((optionType) => optionType.id),
+    );
+    const visualImages = visualSignature
+      ? productWithResolvedBrand.visual_images_by_signature?.[visualSignature]
+      : undefined;
+
+    return visualImages?.length
+      ? visualImages.map((img) => getCatalogImageUrl(img))
+      : productWithResolvedBrand.images.map((img) => getCatalogImageUrl(img));
+  }, [productWithResolvedBrand, selectedOptions]);
   // Si TanStack Query todavía está armando los datos (casi imposible con hidratación, pero TypeScript lo exige)
   if (!productWithResolvedBrand || !store) return <SkeletonDetailProduct />;
 
@@ -142,38 +255,52 @@ export default function ProductDetailClient({
       {/* <Header store={store} /> */}
       <div style={{ height: headerHeight }} />
       {/* buton regresar */}
-      <div className="container mx-auto px-4 py-3 text-catalog-secondary">
+      <div className="container mx-auto px-1 md:px-4 pb-2 pt-4 text-catalog-secondary">
         <Button
           onClick={handleVolver}
-          className="rounded-full bg-catalog-secondary/20 hover:bg-catalog-secondary/30 text-catalog-secondary/80 focus:bg-catalog-primary/90 active:bg-catalog-primary transition-colors text-sm"
+          className="rounded-full border border-catalog-secondary/15 bg-transparent text-catalog-secondary/70 shadow-none transition-colors hover:bg-catalog-secondary hover:text-catalog-primary focus:bg-catalog-secondary focus:text-catalog-primary active:bg-catalog-secondary"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
       </div>
       {/* imagen + detalles del producto */}
-      <section className="container mx-auto px-2 pb-6">
-        <div className="w-full max-w-5xl mx-auto grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-7 justify-center items-start">
-          {/* imagenes del producto */}
+      <section className="container mx-auto max-w-7xl px-1 md:px-4 pb-12 sm:px-6 lg:px-8">
+        <div className="mx-auto grid w-full grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:gap-12">
+          {/* Galeria y descripcion permanecen visibles mientras se consulta la variante. */}
           <div
             className="lg:sticky lg:self-start"
             style={{ top: headerHeight + 16 }}
           >
             <ProductImageGallery
-              images={productWithResolvedBrand.images.map((img) =>
-                getCatalogImageUrl(img),
-              )}
+              key={galleryImages.join("|")}
+              images={galleryImages}
               productName={productWithResolvedBrand.name}
               discountPercent={discountPercent}
-              is_available={productWithResolvedBrand.is_available}
+              is_available={
+                productWithResolvedBrand.has_variants
+                  ? (currentVariant?.is_available ?? true)
+                  : productWithResolvedBrand.is_available
+              }
             />
+            <div className="hidden lg:block">
+              <DescriptionAccordion
+                description={productWithResolvedBrand.description}
+              />
+            </div>
           </div>
-          {/* info del producto */}
-          <div>
+          {/* El panel de compra se desplaza solo cuando las variantes exceden el viewport. */}
+          <div className="min-h-0 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
             <ProductInfo
               product={productWithResolvedBrand}
               whatssapNumber={store.whatsapp_number}
               isOfferActive={isOfferActive}
               discountPercent={discountPercent}
+              effectivePrice={effectivePrice}
+              effectiveOfferPrice={effectiveOfferPrice}
+              selectedImage={galleryImages[0]}
+              currentVariant={currentVariant}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={setSelectedOptions}
               slugProd={slugProd}
               store_slug={storeSlug}
             />

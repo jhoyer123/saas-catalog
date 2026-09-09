@@ -21,6 +21,7 @@ import { CartItem } from "@/components/cart/CartItem";
 import { CartEmptyState } from "@/components/cart/CartEmptyState";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { DialogDescription } from "../ui/dialog";
+import { normalizeWhatsAppNumber } from "@/lib/helpers/whatsapp";
 
 interface CartDrawerProps {
   open: boolean;
@@ -46,7 +47,7 @@ export function CartDrawer({
   const cartSummaryText = items
     .map(
       (item) =>
-        `• ${item.name} x${item.quantity} — Bs. ${(item.price * item.quantity).toFixed(2)} - ${item.link}`,
+        `• ${item.name}${item.options?.length ? ` (${item.options.map((option) => `${option.name}: ${option.value}`).join(", ")})` : ""} x${item.quantity} — Bs. ${(item.price * item.quantity).toFixed(2)} - ${item.link}`,
     )
     .join("\n");
 
@@ -114,12 +115,12 @@ export function CartDrawer({
 
         {/* ── Resumen y botón de acción ── */}
         {!isEmpty && (
-          <CartSummary
+            <CartSummary
             totalItems={itemCount}
             totalPrice={priceTotal}
-            whatsappNumber={whatsappNumber}
             cartSummaryText={cartSummaryText}
-          />
+              whatsappNumber={whatsappNumber ? normalizeWhatsAppNumber(whatsappNumber) : whatsappNumber}
+            />
         )}
       </SheetContent>
     </Sheet>

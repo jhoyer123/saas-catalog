@@ -107,18 +107,17 @@ export default function CatalogClient({
           undefined,
         page: pageNum,
       }),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 30 * 60 * 1000, // 30 minutos
     placeholderData: keepPreviousData,
   });
-
   const products = data?.products ?? [];
   const totalPages = data?.totalPages ?? 0;
   const total = data?.total ?? 0;
   const hasBanners = banners.length > 0;
 
   return (
-    <main className="min-h-screen bg-catalog-primary">
+    <main className="min-h-screen w-full bg-catalog-primary">
       {/* Barra de búsqueda sticky — mobile */}
       <div
         id="catalog-input-bar"
@@ -137,22 +136,23 @@ export default function CatalogClient({
         brands={brands}
       />
 
-      <div className="container max-w-360 mx-auto px-1 flex gap-8 items-start relative">
+      <div className="w-full h-full px-1 md:px-2 2xl:px-1 flex gap-2 items-start relative">
         <aside
-          className="hidden lg:block w-70 shrink-0 sticky"
+          className="hidden lg:block w-70 xl:w-80 2xl:w-90 shrink-0 sticky"
           style={{
-            top: headerHeight + 24,
-            height: `calc(100vh - ${headerHeight + 40}px)`,
+            top: headerHeight,
+            /* La altura será el 100% de la pantalla menos el header */
+            height: `calc(100vh - ${headerHeight}px)`,
           }}
         >
-          <div className="h-full overflow-y-auto pr-4 custom-scrollbar">
+          <div className="h-full overflow-y-auto pr-1 custom-scrollbar">
             <ProductFilterControls categories={categories} brands={brands} />
           </div>
         </aside>
 
         {/* COLUMNA DERECHA: Contenido que hace scroll */}
-        <main className="flex-1 flex flex-col min-w-0 pt-4 pb-12 gap-8">
-          {/* 1. Zona de Banners */}
+        <section className="flex-1 flex flex-col min-w-0 gap-2">
+          {/* Zona de Banners */}
           {hasBanners && (
             <div className="w-full">
               <HeroSection
@@ -164,7 +164,7 @@ export default function CatalogClient({
             </div>
           )}
 
-          {/* 2. Zona de Productos */}
+          {/* Zona de Productos */}
           <section
             id="catalog-products"
             className="w-full flex flex-col min-w-0"
@@ -181,19 +181,19 @@ export default function CatalogClient({
             </div>
 
             {/* Categorías — solo mobile/tablet */}
-            <div className="w-full flex flex-col gap-2 mb-5 lg:hidden">
-              <h2 className="px-1 text-[15px] font-semibold text-catalog-secondary/70">
+            <div className="w-full flex flex-col gap-2 mb-3 lg:hidden">
+              <h2 className="px-1 text-base font-inter font-semibold text-catalog-secondary/70">
                 Categorías
               </h2>
               <CategoryPills categories={categories} />
             </div>
 
             {/* Header de resultados */}
-            <div className="flex items-center justify-between mb-4 px-1">
-              <h2 className="text-base font-semibold text-catalog-secondary lg:text-lg">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h2 className="text-base font-inter font-semibold text-catalog-secondary/70 lg:text-lg">
                 Catálogo
               </h2>
-              <span className="text-xs text-catalog-secondary/50 lg:text-sm">
+              <span className="text-sm font-inter font-semibold text-catalog-secondary/50 lg:text-sm">
                 {total} {total === 1 ? "producto" : "productos"}
               </span>
             </div>
@@ -214,16 +214,14 @@ export default function CatalogClient({
 
             {/* Paginación */}
             {totalPages > 0 && (
-              <div className="mt-8">
-                <ProductPagination
-                  totalPages={totalPages}
-                  pageSize={12}
-                  total={total}
-                />
-              </div>
+              <ProductPagination
+                totalPages={totalPages}
+                pageSize={12}
+                total={total}
+              />
             )}
           </section>
-        </main>
+        </section>
       </div>
     </main>
   );

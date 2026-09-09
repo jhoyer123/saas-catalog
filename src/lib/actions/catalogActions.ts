@@ -144,9 +144,10 @@ async function getPublicProductsInitialRaw(storeId: string) {
       `id, name, price, has_variants, is_offer, offer_price, offer_start, offer_end, slug,is_available, images:product_images(image_url)`,
       { count: "exact" },
     )
-    .limit(1, { foreignTable: "product_images" })
     .eq("store_id", storeId)
-    .range(0, 11);
+    .order("created_at", { ascending: true })
+    .range(0, 11)
+    .limit(1, { foreignTable: "product_images" });
 
   if (error) throw new Error(error.message);
   return {
@@ -191,40 +192,6 @@ export async function getPublicProductsInitial(
  * Get public product detail by slug
  * Usa la misma query/mapeo que fetchPublicProductBySlug
  */
-/* async function getPublicProductBySlugRaw(
-  slug: string,
-): Promise<ProductDetailCatalog> {
-  const { data, error } = await supabasePublic
-    .from("products")
-    .select(
-      `
-      id, name, price, description, has_variants, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id, category_id,images:product_images(image_url)
-      `,
-    )
-    .eq("slug", slug)
-    .single();
-
-  if (error || !data) throw new Error("Producto no encontrado");
-
-  return {
-    id: data.id,
-    name: data.name,
-    price: data.price,
-    description: data.description,
-    has_variants: data.has_variants ?? false,
-    brand_id: data.brand_id ?? null,
-    category_id: data.category_id,
-    is_offer: data.is_offer ?? false,
-    offer_price: data.offer_price ?? null,
-    offer_start: data.offer_start ?? null,
-    offer_end: data.offer_end ?? null,
-    slug: data.slug,
-    images: (data.images ?? []).map(
-      (img: { image_url: string }) => img.image_url,
-    ),
-    is_available: data.is_available,
-  };
-} */
 async function getPublicProductBySlugRaw(
   slug: string,
 ): Promise<ProductDetailCatalog> {
@@ -233,9 +200,7 @@ async function getPublicProductBySlugRaw(
     .select(
       `
       id, name, price, description, has_variants, is_offer, offer_price,
-      slug, offer_start, offer_end, is_available,
-      brand:brands(id, name, slug),
-      category:categories(id, name, slug),
+      slug, offer_start, offer_end, is_available,brand_id,category_id,
       images:product_images(image_url, display_order, visual_signature),
       option_types:product_option_types(
         is_visual,
@@ -251,12 +216,9 @@ async function getPublicProductBySlugRaw(
     `,
     )
     .eq("slug", slug)
-    .eq("is_available", true)
-    .order("display_order", { foreignTable: "images" })
     .single();
 
   if (error || !data) throw new Error("Producto no encontrado");
-
   return mapToProductDetailCatalog(data as unknown as RawProductRow);
 }
 

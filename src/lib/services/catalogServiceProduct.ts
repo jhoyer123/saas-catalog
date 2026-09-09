@@ -137,7 +137,6 @@ export async function fetchRelatedProducts(
     slug: product.slug,
     images: product.images ?? [],
   })) as ProductCatalogCard[];
-
   return products;
 }
 
@@ -172,8 +171,8 @@ export async function fetchPublicProducts({
       `,
       { count: "exact" },
     )
-    .limit(1, { foreignTable: "product_images" })
-    .eq("store_id", storeId);
+    .eq("store_id", storeId)
+    .limit(1, { foreignTable: "product_images" });
 
   if (search) query = query.ilike("name", `%${search}%`);
   if (category) query = query.eq("category_id", category);
@@ -191,8 +190,8 @@ export async function fetchPublicProducts({
     case "newest":
       query = query.order("created_at", { ascending: false });
       break;
-    // default:
-    //query = query.order("display_order", { ascending: true });
+    default:
+      query = query.order("created_at", { ascending: true });
   }
 
   const from = (page - 1) * pageSize;
@@ -252,9 +251,7 @@ export async function fetchPublicProductBySlug(
     .select(
       `
       id, name, price, description, has_variants, is_offer, offer_price,
-      slug, offer_start, offer_end, is_available,
-      brand:brands(id, name, slug),
-      category:categories(id, name, slug),
+      slug, offer_start, offer_end, is_available,brand_id,category_id,
       images:product_images(image_url, display_order, visual_signature),
       option_types:product_option_types(
         is_visual,
@@ -271,11 +268,8 @@ export async function fetchPublicProductBySlug(
     )
     .eq("slug", slug)
     .eq("store_id", storeId)
-    .eq("is_available", true)
-    .order("display_order", { foreignTable: "images" })
     .single();
 
   if (error || !data) throw new Error("Producto no encontrado");
-
   return mapToProductDetailCatalog(data as unknown as RawProductRow);
 }

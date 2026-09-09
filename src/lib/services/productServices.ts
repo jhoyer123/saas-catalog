@@ -120,6 +120,7 @@ export async function saveProductFull(params: {
   productId: string;
   payload: SaveProductPayload;
 }): Promise<SaveProductResult> {
+  console.log("saveProductFull params:", params.payload);
   const supabase = createClient();
   const { data, error } = await supabase.rpc("save_product_full", {
     p_store_id: params.storeId,

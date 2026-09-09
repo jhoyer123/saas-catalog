@@ -1,19 +1,33 @@
 "use client";
 
-import { ProductDetailCatalog } from "@/types/product.types";
 import { ShoppingCart, Star, Sparkles, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
+import { ProductDetailCatalog, ProductVariant } from "@/types/product.types";
+import { cn } from "@/lib/utils";
+import {
+  buildProductInquiryMessage,
+  buildProductUrl,
+  normalizeWhatsAppNumber,
+} from "@/lib/helpers/whatsapp";
 
 interface ProductInfoProps {
   product: ProductDetailCatalog;
   whatssapNumber?: string | null;
   isOfferActive: boolean;
   discountPercent?: number | null;
+  effectivePrice: number | null;
+  effectiveOfferPrice: number | null;
+  selectedImage?: string;
+  currentVariant?: ProductVariant;
+  selectedOptions: Record<string, string>;
+  setSelectedOptions: React.Dispatch<
+    React.SetStateAction<Record<string, string>>
+  >;
   slugProd: string;
   store_slug: string;
 }
@@ -35,7 +49,7 @@ function useHasOverflow() {
     return () => observer.disconnect();
   }, []);
 
-  return { ref, hasOverflow };
+  return { hasOverflow };
 }
 
 // ─── Badge config ───────────────────────────────────────────────
@@ -85,17 +99,21 @@ function ProductBadge({ type }: { type: BadgeType }) {
   );
 }
 
-const WhatsAppIcon = () => (
+export const WhatsAppIcon = ({
+  className,
+  ...props
+}: React.SVGProps<SVGSVGElement>) => (
   <svg
     viewBox="0 0 24 24"
-    className="w-5 h-5 fill-current"
+    className={cn("w-5 h-5 fill-current", className)}
     xmlns="http://www.w3.org/2000/svg"
+    {...props}
   >
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
   </svg>
 );
 
-function DescriptionAccordion({
+export function DescriptionAccordion({
   description,
 }: {
   description?: string | null;
@@ -173,51 +191,124 @@ export function ProductInfo({
   whatssapNumber,
   isOfferActive,
   discountPercent,
+  effectivePrice,
+  effectiveOfferPrice,
+  selectedImage,
+  currentVariant,
+  selectedOptions,
+  setSelectedOptions,
   slugProd,
   store_slug,
 }: ProductInfoProps) {
   const addItem = useCartStore((s) => s.addItem);
+  const missingSelection = product.has_variants && !currentVariant;
+  const outOfStock = currentVariant
+    ? !currentVariant.is_available
+    : !product.has_variants && !product.is_available;
+  const displayPrice = isOfferActive ? effectiveOfferPrice : effectivePrice;
+  const hasVariantOffers =
+    product.has_variants &&
+    product.variants.some((variant) => variant.offer_price != null);
+  const selectedOptionDetails = product.option_types.flatMap((optionType) => {
+    const valueId = selectedOptions[optionType.id];
+    const value = optionType.values.find(
+      (optionValue) => optionValue.id === valueId,
+    );
+    return value ? [{ name: optionType.name, value: value.value }] : [];
+  });
+  const itemId = currentVariant?.id ?? product.id;
 
-  const displayPrice = isOfferActive ? product.offer_price : product.price;
+  const renderOptionValue = (
+    inputType: ProductDetailCatalog["option_types"][number]["input_type"],
+    value: (typeof product.option_types)[number]["values"][number],
+  ) => {
+    if (inputType === "color" && value.color_hexes?.length) {
+      return (
+        <span className="inline-flex items-center gap-3" aria-hidden="true">
+          {value.color_hexes.map((hex, idx) => (
+            <span
+              key={hex || idx}
+              className="h-9 w-9 shrink-0 rounded-full border border-gray-200 transition-transform duration-200 hover:scale-105"
+              style={{ backgroundColor: hex }}
+            />
+          ))}
+        </span>
+      );
+    }
 
+    if (inputType === "image" && value.image_url) {
+      return (
+        <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-50 transition-transform duration-200 hover:scale-105">
+          <Image
+            src={value.image_url}
+            alt={value.value || "Variante"}
+            fill
+            sizes="40px"
+            className="object-cover object-center"
+          />
+        </span>
+      );
+    }
+
+    return (
+      <span className="text-sm font-semibold">
+        {value.value}
+        {inputType === "number" && value.unit && (
+          <span className="ml-1 text-xs font-normal text-gray-500">
+            {value.unit}
+          </span>
+        )}
+      </span>
+    );
+  };
+
+  // DESPUÉS
   const handleAddToCart = () => {
+    if (missingSelection) {
+      toast.error("Elegí las opciones del producto antes de agregarlo");
+      return;
+    }
     addItem({
-      id: product.id,
+      id: itemId,
+      product_id: product.id,
+      variant_id: currentVariant?.id,
       name: product.name,
-      link: `app.jhoyerdev.me/public/${store_slug}/${slugProd}`,
-      image: product.images[0] || "/images/placeholder.png",
+      link: buildProductUrl(store_slug, slugProd),
+      image: selectedImage || product.images[0] || "/images/placeholder.png",
       price: displayPrice!,
+      options: selectedOptionDetails,
     });
     toast.success("Producto agregado al carrito", { position: "bottom-right" });
   };
 
   const telefono = whatssapNumber;
-  const { ref, hasOverflow } = useHasOverflow();
+  const { hasOverflow } = useHasOverflow();
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     // ajusta el número si lo tienes disponible en el store
+    if (!telefono || displayPrice == null) return;
     const msg = encodeURIComponent(
-      `¡Hola! Me gustaría hacer un pedido:
-      
-De este producto:
-${product.name}
-app.jhoyerdev.me/public/${store_slug}/${slugProd}
-Precio: Bs. ${displayPrice!.toFixed(2)}
-
-¿Está disponible? Me gustaría más información`,
+      buildProductInquiryMessage({
+        name: product.name,
+        url: buildProductUrl(store_slug, slugProd),
+        price: displayPrice,
+        options: product.has_variants ? selectedOptionDetails : undefined,
+      }),
     );
-    window.open(`https://wa.me/${telefono}?text=${msg}`, "_blank");
+    window.open(
+      `https://wa.me/${normalizeWhatsAppNumber(telefono)}?text=${msg}`,
+      "_blank",
+    );
   };
-
   return (
     <>
-      <div className="flex flex-col gap-5 items-center justify-center h-full w-full px-2 py-4 bg-catalog-tertiary md:px-6 md:py-10 shadow-sm shadow-catalog-secondary/30 rounded-md ring-1 ring-catalog-secondary/10">
+      <div className="flex flex-col gap-5 items-center justify-center h-full w-full px-2 py-4 bg-catalog-tertiary md:px-6 md:py-10 shadow-sm shadow-catalog-secondary/10 rounded-sm">
         {/* ── BRAND ── */}
-        {product.brand && (
-          <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-catalog-secondary">
-            {product.brand}
+        {product.brand_name && (
+          <p className="mb-1 text-xs font-bold uppercase tracking-[0.22em] text-catalog-secondary/55">
+            {product.brand_name}
           </p>
         )}
 
@@ -228,20 +319,42 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
 
         {/* ── BADGE (reemplaza las estrellas) ── */}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <ProductBadge type="featured" />
-          <ProductBadge type="recommended" />
+          {isOfferActive && <ProductBadge type="featured" />}
+          <Badge
+            variant="outline"
+            className={cn(
+              "rounded-full px-3 py-1 text-[11px] uppercase tracking-wide",
+              outOfStock
+                ? "border-red-200 bg-red-50 text-red-700"
+                : "border-emerald-200 bg-emerald-50 text-emerald-700",
+            )}
+          >
+            {outOfStock ? "Agotado" : "Disponible"}
+          </Badge>
         </div>
 
         {/* ── PRICING ── */}
-        <div className="flex items-end gap-4 flex-wrap justify-center">
-          <span className="font-['Playfair_Display',serif] text-4xl font-bold tracking-tight text-catalog-secondary">
-            Bs. {displayPrice!.toFixed(2)}
-          </span>
+        <div className="flex flex-wrap items-end justify-center gap-3">
+          {missingSelection ? (
+            <div className="text-center text-sm font-medium text-muted-foreground">
+              <p>Selecciona todos los atributos para ver el precio</p>
+              {hasVariantOffers && (
+                <p className="mt-1 text-xs text-emerald-700">
+                  Algunas combinaciones tienen oferta. Elige la combinación
+                  completa para verla.
+                </p>
+              )}
+            </div>
+          ) : (
+            <span className="font-['Playfair_Display',serif] text-4xl font-bold tracking-tight text-catalog-secondary md:text-5xl">
+              Bs. {displayPrice!.toFixed(2)}
+            </span>
+          )}
 
-          {isOfferActive && (
+          {!missingSelection && isOfferActive && (
             <div className="mb-1 flex flex-col items-start">
               <span className="text-lg text-gray-400 line-through">
-                Bs. {product.price.toFixed(2)}
+                Bs. {effectivePrice!.toFixed(2)}
               </span>
               <span className="rounded bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
                 AHORRA {discountPercent}%
@@ -250,62 +363,128 @@ Precio: Bs. ${displayPrice!.toFixed(2)}
           )}
         </div>
 
+        {/* ── VARIANT SELECTORS ── */}
+        {product.has_variants && (
+          <div className="w-full flex flex-col gap-4 items-start px-3">
+            {product.option_types.map((ot) => (
+              <div key={ot.id}>
+                <p className="text-xs font-bold font-inter tracking-wide text-catalog-secondary/70 mb-2 text-start">
+                  {ot.name}
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {ot.values.map((val) => {
+                    const isSelected = selectedOptions[ot.id] === val.id;
+                    const testSelection = {
+                      ...selectedOptions,
+                      [ot.id]: val.id,
+                    };
+                    const isPossible = product.variants.some((v) =>
+                      Object.entries(testSelection).every(
+                        ([k, vId]) => v.option_values[k] === vId,
+                      ),
+                    );
+                    return (
+                      <button
+                        key={val.id}
+                        type="button"
+                        disabled={!isPossible}
+                        onClick={() =>
+                          setSelectedOptions((prev) => {
+                            if (prev[ot.id] === val.id) {
+                              const next = { ...prev };
+                              delete next[ot.id];
+                              return next;
+                            }
+                            return { ...prev, [ot.id]: val.id };
+                          })
+                        }
+                        className={cn(
+                          "inline-flex min-h-10 items-center justify-center gap-2 rounded-full border text-sm transition-all",
+                          isSelected
+                            ? "border-catalog-secondary bg-catalog-secondary text-catalog-primary shadow-sm"
+                            : "border-catalog-secondary/25 bg-catalog-primary/40 text-catalog-secondary hover:border-catalog-secondary/60 hover:bg-catalog-primary",
+                          !isPossible &&
+                            "opacity-30 cursor-not-allowed line-through",
+                          ot.input_type === "color" ? "px-1 py-1" : "px-4 py-2",
+                        )}
+                      >
+                        {renderOptionValue(ot.input_type, val)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {outOfStock && !missingSelection && (
+              <p className="text-center text-sm font-semibold text-red-500">
+                Sin stock para esta combinación
+              </p>
+            )}
+          </div>
+        )}
+
         {/* ── CTA BUTTONS ── */}
         <div className="w-full">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-1 ">
+          <div className="grid grid-cols-1 gap-3">
             {/* WhatsApp primero en mobile */}
-            <button
+            <Button
               onClick={handleWhatsApp}
+              disabled={missingSelection || outOfStock || !whatssapNumber}
               aria-label="Consultar por WhatsApp"
               className={cn(
-                buttonVariants({ variant: "default" }),
-                "w-full flex items-center justify-center gap-2 cursor-pointer",
+                "w-full h-auto min-h-12 py-2.5 px-4 rounded-none",
+                "flex items-center justify-center gap-2 text-center",
+                "text-xs sm:text-sm md:text-base font-semibold text-white",
                 "bg-[#25D366] hover:bg-[#20b958] active:bg-[#1da851]",
-                "text-white font-semibold text-[16px]",
-                "shadow-lg hover:shadow-xl transition-all duration-200 rounded-none",
+                "shadow-md hover:shadow-lg transition-all duration-200",
+                (missingSelection || outOfStock || !whatssapNumber) &&
+                  "cursor-not-allowed opacity-45 bg-muted text-muted-foreground shadow-none hover:bg-muted active:bg-muted",
               )}
               data-umami-event="Pedir por WhatsApp un producto desde la tarjeta"
               data-umami-event-product={product.name}
             >
-              <span className="flex items-center gap-2 text-[16px]">
-                <WhatsAppIcon />
-                Comprar por WhatsApp
+              <WhatsAppIcon className="h-5 w-5 shrink-0" />
+              <span className="leading-tight">
+                {missingSelection ? (
+                  <>
+                    <span className="sm:hidden">Selecciona variante</span>
+                    <span className="hidden sm:inline">
+                      Selecciona una variante para consultar
+                    </span>
+                  </>
+                ) : outOfStock ? (
+                  "Variante agotada"
+                ) : (
+                  "Comprar por WhatsApp"
+                )}
               </span>
-            </button>
+            </Button>
+
             <Button
               onClick={handleAddToCart}
-              className="md:text-[16px] cursor-pointer bg-catalog-secondary text-catalog-primary rounded-none lg:w-auto hover:bg-catalog-secondary/90 focus:bg-catalog-secondary/90 active:bg-catalog-secondary/80"
+              disabled={missingSelection || outOfStock}
+              className={cn(
+                "w-full h-auto min-h-12 py-2.5 px-4 rounded-none",
+                "flex items-center justify-center gap-2 text-center",
+                "text-xs sm:text-sm md:text-base font-semibold",
+                "bg-catalog-secondary text-catalog-primary hover:bg-catalog-secondary/90 focus:bg-catalog-secondary/90 active:bg-catalog-secondary/80",
+                (missingSelection || outOfStock) &&
+                  "opacity-40 cursor-not-allowed",
+              )}
             >
-              <ShoppingCart className="h-5 w-5" />
-              Agregar al carrito
+              <ShoppingCart className="h-5 w-5 shrink-0" />
+              <span className="leading-tight">Agregar al carrito</span>
             </Button>
-            <p className="mt-2 text-center text-xs text-catalog-secondary/70">
+
+            <p className="mt-1 text-center text-xs text-catalog-secondary/70">
               Respuesta rápida por WhatsApp.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="relative">
-        {/* <div
-          ref={ref}
-          className="shadow-sm shadow-catalog-secondary/30 rounded-md ring-1 ring-catalog-secondary/10 mt-4 flex flex-col gap-5 w-full px-3 py-4 bg-catalog-tertiary overflow-y-auto max-h-120 md:px-6 md:py-10  md:max-h-150 custom-scroll"
-        >
-          <div>
-            <h3 className="mb-3 text-xs font-bold font-inter uppercase tracking-[0.15em] text-catalog-secondary/80">
-              Descripción
-            </h3>
-            <div
-              className="prose prose-sm font-inter max-w-none text-catalog-secondary/90 leading-relaxed [&>p]:mb-2"
-              dangerouslySetInnerHTML={{
-                __html: product.description
-                  ? product.description
-                  : "No hay descripción disponible.",
-              }}
-            />
-          </div>
-        </div>
- */}
+      <div className="relative lg:hidden">
         {/* ── DESCRIPCIÓN ACORDEÓN ── */}
         <DescriptionAccordion description={product.description} />
         {/* Fade solo si hay overflow */}

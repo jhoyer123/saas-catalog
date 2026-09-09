@@ -1,4 +1,3 @@
-// src/hooks/store/useStoreActions.ts
 import { useState } from "react";
 import { useToastPromise } from "../shared/useToastPromise";
 import { useCreateStore } from "@/hooks/store/useCreateStore";
@@ -83,50 +82,6 @@ export function useHandleStoreActions() {
    * @param storeSlug
    * @param onSuccess
    */
-  /*  const updateStore = (
-    id: string,
-    data: StoreForm,
-    storeSlug: string,
-    onSuccess?: () => void,
-  ) => {
-    showPromise({
-      promise: async () => {
-        await withPending(async () => {
-          const { logo, ...storeData } = data;
-
-          // 1. Actualizar datos de la tienda
-          await update({ id, data: storeData as StoreAction });
-
-          // 2. Si hay logo nuevo, subirlo desde el cliente y actualizar
-          if (logo instanceof File) {
-            // aqui iria el delete folder
-            const responseUpload = await uploadFile({
-              bucket: "stores",
-              folder: `stores/${id}/branding`,
-              file: logo,
-            });
-            await updateStoreLogo(id, responseUpload.path);
-          }
-
-          // revalidar caché
-          await revalidateStoreCache(storeSlug);
-
-          // revalidar cache de react-query
-          queryClient.invalidateQueries({ queryKey: ["session-data"] });
-
-          onSuccess?.();
-        });
-      },
-      messages: {
-        loading: "Actualizando tienda...",
-        success: "Tienda actualizada",
-        error: (err) => err.message,
-      },
-      richColors: true,
-      position: "top-right",
-      duration: 3000,
-    });
-  }; */
   const updateStore = (
     id: string,
     data: StoreForm,

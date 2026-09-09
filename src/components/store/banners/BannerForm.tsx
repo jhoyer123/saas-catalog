@@ -29,7 +29,7 @@ export default function BannerForm({
   } = useForm<BannerFormValues>({
     resolver: zodResolver(bannerSchema),
     defaultValues: {
-      images: undefined,
+      images: [],
       imageExisting: existingBanners,
       imageToDelete: [],
     },

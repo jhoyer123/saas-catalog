@@ -118,10 +118,14 @@ export interface ProductDetailCatalog {
   is_available: boolean;
   slug: string;
   images: string[];
-  brand: { id: string; name: string; slug: string } | null;
-  category: { id: string; name: string; slug: string } | null;
+  brand_id: string | null;
+  category_id: string;
   option_types: ProductOptionType[]; // vacío si has_variants=false
   variants: ProductVariant[]; // vacío si has_variants=false
+  visual_images_by_signature?: Record<string, string[]>;
+  
+  brand_name?: string | null; // nombre de la marca (resuelto)
+  category_name?: string | null; // nombre de la categoría (resuelto)
 }
 
 //super type para el formulario

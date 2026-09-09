@@ -146,7 +146,13 @@ export const deleteFolder = async (
  * Sube imágenes de un producto, agrupadas por firma.
  * Útil para subir imágenes generales y variantes de un producto.
  */
+import { createHash } from "crypto";
+
 type UploadInputBySignature = Record<string, { newFiles: File[] }>;
+
+function hashSignature(sig: string): string {
+  return createHash("sha256").update(sig).digest("hex").slice(0, 12);
+}
 
 export async function uploadProductImagesGrouped(params: {
   storeId: string;
@@ -166,26 +172,28 @@ export async function uploadProductImagesGrouped(params: {
   // Subimos variantes
   const bySignatureUpload: Record<
     string,
-    { successes: string[]; errors: any[] } // <--- Aquí cambiamos para que successes sea un array de strings (paths)
+    { successes: string[]; errors: any[] }
   > = {};
 
   for (const [sig, group] of Object.entries(bySignature)) {
     if (!group.newFiles.length) continue;
 
+    const safeFolder = hashSignature(sig);
+
     const sigUpload = await uploadMultipleFiles(
-      { bucket: "stores", folder: `${base}/variants/${sig}` },
+      { bucket: "stores", folder: `${base}/variants/${safeFolder}` },
       group.newFiles,
     );
 
     bySignatureUpload[sig] = {
-      successes: sigUpload.successes.map((s) => s.path), // <--- Extraemos solo el path relativo
+      successes: sigUpload.successes.map((s) => s.path),
       errors: sigUpload.errors,
     };
   }
 
   return {
     general: {
-      successes: generalUpload.successes.map((s) => s.path), // <--- Extraemos solo el path relativo
+      successes: generalUpload.successes.map((s) => s.path),
       errors: generalUpload.errors,
     },
     bySignature: bySignatureUpload,

@@ -32,6 +32,7 @@ import type {
   ProductFormOutput,
 } from "@/lib/schemas/productSchema";
 import SectionCard from "@/components/products/form/SectionCard";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 interface ProductVariantAttributesSectionProps {
   form: UseFormReturn<ProductFormInput, unknown, ProductFormOutput>;
@@ -407,7 +408,7 @@ function OptionValueChip({
         (value.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={value.image_url}
+            src={getCatalogImageUrl(value.image_url)}
             alt={value.value}
             className="h-5 w-5 rounded object-cover"
           />

@@ -7,8 +7,8 @@
 
 "use client";
 
-import { MessageCircle } from "lucide-react";
 import { Whatsapp } from "../icons/Whatsapp";
+import { normalizeWhatsAppNumber } from "@/lib/helpers/whatsapp";
 
 interface CartSummaryProps {
   totalItems: number;
@@ -32,7 +32,7 @@ export function CartSummary({
     );
 
     window.open(
-      `https://wa.me/${whatsappNumber}?text=${message}`,
+      `https://wa.me/${normalizeWhatsAppNumber(whatsappNumber)}?text=${message}`,
       "_blank",
       "noopener,noreferrer",
     );

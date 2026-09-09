@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingCart } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/hooks/cart/useCartStore";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 
@@ -31,7 +30,7 @@ export function CartButton({ whatsappNumber }: CartButtonProps) {
         aria-label="Abrir carrito de compras"
         className="relative bg-catalog-primary cursor-pointer p-2 text-catalog-secondary focus:outline-none focus:ring-2 focus:ring-catalog-primary rounded"
       >
-        <ShoppingCart className="h-5 w-5 lg:h-5 lg:w-5" />
+        <ShoppingCart className="h-5 w-5 lg:h-6 lg:w-6 xl:h-6 xl:w-6" />
 
         {/* Badge de cantidad */}
         {displayCount > 0 && (
