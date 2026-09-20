@@ -475,7 +475,6 @@ async function exportToWebP(
     workingCanvas = newCanvas;
   }
 
-  return best;
 }
 
 /**
