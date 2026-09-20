@@ -60,33 +60,80 @@ export async function validateImageDimensions(
 
 // ============================================
 // image-utils.ts
-// Utilidades para procesamiento de imágenes
-// usando Canvas API nativa del navegador
+// Procesamiento de imágenes con Canvas API.
+// SOLO WebP. Si no se logra el peso máximo, lanza error.
 // ============================================
 
+/**
+ * La imagen no se pudo dejar dentro del peso permitido
+ * (ni siquiera reduciendo calidad y tamaño hasta el mínimo).
+ */
+export class ImageTooHeavyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ImageTooHeavyError";
+  }
+}
+
+/**
+ * El navegador no sabe codificar WebP con canvas (ej: Safari).
+ */
+export class WebPNotSupportedError extends Error {
+  constructor() {
+    super(
+      "Tu navegador no permite procesar imágenes WebP. Usa Chrome, Edge o Firefox.",
+    );
+    this.name = "WebPNotSupportedError";
+  }
+}
+
 interface ProcessImageOptions {
-  /** Ancho máximo del canvas de salida en px */
+  /** Ancho del canvas de salida en px */
   targetWidth?: number;
-  /** Alto máximo del canvas de salida en px. null = proporcional al ancho */
+  /** Alto del canvas de salida en px. null = proporcional al ancho (logos) */
   targetHeight?: number | null;
   /** Color de fondo para el letterbox (default: blanco) */
   backgroundColor?: string;
-  /** Calidad WebP entre 0 y 1 (default: 0.85) */
+  /** Calidad WebP máxima con la que se intenta primero (default: 0.85) */
   quality?: number;
-  /** Peso máximo en bytes. Si se supera, reduce calidad automáticamente */
+  /** Calidad WebP mínima permitida antes de reducir dimensiones (default: 0.6) */
+  minQuality?: number;
+  /**
+   * Ancho mínimo al que se permite reducir la imagen (default: 600).
+   * Si es mayor o igual a targetWidth, nunca se reducen las dimensiones,
+   * solo la calidad.
+   */
+  minWidth?: number;
+  /** Peso máximo en bytes. ES LA REGLA: nunca se devuelve algo más pesado */
   maxSizeBytes?: number;
+  /** Mensaje del error si no se logra el peso máximo */
+  errorMessage?: string;
 }
 
 /**
  * Procesa una imagen antes de subirla:
  * 1. Redimensiona manteniendo proporciones (sin recortar)
- * 2. Aplica letterbox con fondo de color para rellenar el espacio
+ * 2. Aplica letterbox con fondo de color (productos/banners)
  * 3. Convierte a WebP
- * 4. Comprime hasta respetar el peso máximo
+ * 4. Ajusta calidad y, si hace falta, dimensiones, hasta cumplir maxSizeBytes
  *
- * @param file - Archivo de imagen original
- * @param options - Opciones de procesamiento
- * @returns Nuevo File procesado en formato WebP
+ * Si no lo logra lanza ImageTooHeavyError con `errorMessage`.
+ * Si el navegador no soporta WebP lanza WebPNotSupportedError.
+ *
+ * Ejemplo de uso:
+ *
+ *   try {
+ *     const processed = await processImage(file, {
+ *       maxSizeBytes: 150 * 1024,
+ *       errorMessage: "La imagen del producto es demasiado pesada",
+ *     });
+ *   } catch (e) {
+ *     if (e instanceof ImageTooHeavyError || e instanceof WebPNotSupportedError) {
+ *       toast.error(e.message);
+ *     } else {
+ *       throw e;
+ *     }
+ *   }
  */
 export async function processImage(
   file: File,
@@ -97,56 +144,56 @@ export async function processImage(
     targetHeight = 800,
     backgroundColor = "#ffffff",
     quality = 0.85,
-    maxSizeBytes = 120 * 1024, // 120kb por defecto para productos
+    minQuality = 0.6,
+    minWidth = 600,
+    maxSizeBytes = 150 * 1024,
+    errorMessage = "La imagen es demasiado pesada. Prueba con otra imagen.",
   } = options;
 
-  // 1. Cargar la imagen en un elemento HTMLImageElement
   const img = await loadImage(file);
 
-  // En logos (targetHeight = null), usamos alto proporcional con límite.
-  const canvasHeight =
+  // Logos (targetHeight = null): alto proporcional con límite.
+  const baseHeight =
     targetHeight ??
     Math.min(
       Math.round(targetWidth * (img.height / img.width)),
       targetWidth * 2,
     );
+  const useLetterbox = targetHeight !== null;
 
-  // 2. Productos/banners mantienen letterbox; logos ocupan todo el canvas.
-  const { drawWidth, drawHeight, offsetX, offsetY } = targetHeight
-    ? calculateLetterbox(img.width, img.height, targetWidth, canvasHeight)
-    : {
-        drawWidth: targetWidth,
-        drawHeight: canvasHeight,
-        offsetX: 0,
-        offsetY: 0,
-      };
+  // scale = 1 → tamaño completo. Baja 15% en cada vuelta si no cabe.
+  let scale = 1;
 
-  // 3. Crear canvas y dibujar
-  const canvas = document.createElement("canvas");
-  canvas.width = targetWidth;
-  canvas.height = canvasHeight;
+  while (true) {
+    const width = Math.round(targetWidth * scale);
+    const height = Math.round(baseHeight * scale);
 
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("No se pudo obtener el contexto del canvas");
+    // Nunca reducimos por debajo del mínimo (evita imágenes destruidas)
+    if (scale < 1 && width < minWidth) {
+      throw new ImageTooHeavyError(errorMessage);
+    }
 
-  // Solo rellenamos fondo cuando hay letterbox.
-  if (targetHeight) {
-    ctx.fillStyle = backgroundColor;
-    ctx.fillRect(0, 0, targetWidth, canvasHeight);
+    // Siempre dibujamos desde la imagen ORIGINAL (no desde un canvas ya
+    // reducido) para no acumular pérdida de calidad en cada reducción.
+    const canvas = renderCanvas(
+      img,
+      width,
+      height,
+      useLetterbox,
+      backgroundColor,
+    );
+
+    const blob = await encodeUnderLimit(
+      canvas,
+      maxSizeBytes,
+      minQuality,
+      quality,
+    );
+
+    if (blob) return buildFile(blob, file.name);
+
+    scale *= 0.85;
   }
-
-  // Imagen centrada
-  ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-
-  // 4. Exportar a WebP respetando el peso máximo
-  const processedFile = await exportToWebP(
-    canvas,
-    file.name,
-    quality,
-    maxSizeBytes,
-  );
-
-  return processedFile;
 }
 
 // ============================================
@@ -176,6 +223,45 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 /**
+ * Dibuja la imagen original en un canvas nuevo del tamaño indicado
+ */
+function renderCanvas(
+  img: HTMLImageElement,
+  width: number,
+  height: number,
+  useLetterbox: boolean,
+  backgroundColor: string,
+): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No se pudo obtener el contexto del canvas");
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  if (useLetterbox) {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, width, height);
+
+    const { drawWidth, drawHeight, offsetX, offsetY } = calculateLetterbox(
+      img.width,
+      img.height,
+      width,
+      height,
+    );
+    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+  } else {
+    // Logos: ocupan todo el canvas (conserva transparencia)
+    ctx.drawImage(img, 0, 0, width, height);
+  }
+
+  return canvas;
+}
+
+/**
  * Calcula posición y tamaño para centrar la imagen
  * dentro del canvas sin recortarla (letterbox)
  */
@@ -185,16 +271,11 @@ function calculateLetterbox(
   targetWidth: number,
   targetHeight: number,
 ) {
-  const scaleX = targetWidth / srcWidth;
-  const scaleY = targetHeight / srcHeight;
-
-  // Tomamos la escala más pequeña para que quepa completa
-  const scale = Math.min(scaleX, scaleY);
+  const scale = Math.min(targetWidth / srcWidth, targetHeight / srcHeight);
 
   const drawWidth = srcWidth * scale;
   const drawHeight = srcHeight * scale;
 
-  // Centramos la imagen en el canvas
   const offsetX = (targetWidth - drawWidth) / 2;
   const offsetY = (targetHeight - drawHeight) / 2;
 
@@ -202,54 +283,54 @@ function calculateLetterbox(
 }
 
 /**
- * Exporta el canvas a WebP.
- * Si supera maxSizeBytes, reduce la calidad progresivamente
- * hasta respetar el límite sin romper la imagen.
+ * Intenta dejar el canvas en WebP dentro de maxBytes SIN cambiar dimensiones.
+ * - Prueba con la calidad máxima (caso común: cabe a la primera).
+ * - Si no cabe, prueba con la mínima. Si ni así cabe, devuelve null
+ *   (el llamador reducirá dimensiones).
+ * - Si cabe con la mínima, busca la MEJOR calidad que aún cumple (búsqueda
+ *   binaria, 5 pasos).
  */
-async function exportToWebP(
+async function encodeUnderLimit(
   canvas: HTMLCanvasElement,
-  originalName: string,
-  initialQuality: number,
-  maxSizeBytes: number,
-): Promise<File> {
-  let quality = initialQuality;
-  let workingCanvas = canvas;
+  maxBytes: number,
+  minQuality: number,
+  maxQuality: number,
+): Promise<Blob | null> {
+  const top = await canvasToWebP(canvas, maxQuality);
+  if (top.size <= maxBytes) return top;
 
-  //Loop principal
-  while (true) {
-    let blob = await canvasToBlob(workingCanvas, "image/webp", quality);
+  const floor = await canvasToWebP(canvas, minQuality);
+  if (floor.size > maxBytes) return null;
 
-    if (blob.size <= maxSizeBytes) {
-      return buildFile(blob, originalName);
+  let best = floor;
+  let lo = minQuality; // sabemos que cabe
+  let hi = maxQuality; // sabemos que no cabe
+
+  for (let i = 0; i < 5; i++) {
+    const mid = (lo + hi) / 2;
+    const blob = await canvasToWebP(canvas, mid);
+    if (blob.size <= maxBytes) {
+      best = blob;
+      lo = mid;
+    } else {
+      hi = mid;
     }
-
-    //FASE 1: bajar calidad (pero con límite sano)
-    if (quality > 0.6) {
-      quality -= 0.05;
-      continue;
-    }
-
-    //FASE 2: reducir resolución
-    const nextWidth = Math.floor(workingCanvas.width * 0.85);
-    const nextHeight = Math.floor(workingCanvas.height * 0.85);
-
-    //límite mínimo (evitar imágenes feas)
-    if (nextWidth < 600) {
-      return buildFile(blob, originalName); // mejor esto que destruir la imagen
-    }
-
-    const newCanvas = document.createElement("canvas");
-    newCanvas.width = nextWidth;
-    newCanvas.height = nextHeight;
-
-    const ctx = newCanvas.getContext("2d")!;
-    ctx.drawImage(workingCanvas, 0, 0, nextWidth, nextHeight);
-
-    workingCanvas = newCanvas;
-
-    // 🔄 MUY IMPORTANTE: resetear calidad
-    quality = initialQuality;
   }
+
+  return best;
+}
+
+/**
+ * canvas.toBlob a WebP. Si el navegador devuelve otro formato
+ * (Safari devuelve PNG), lanza error en vez de seguir con un archivo falso.
+ */
+async function canvasToWebP(
+  canvas: HTMLCanvasElement,
+  quality: number,
+): Promise<Blob> {
+  const blob = await canvasToBlob(canvas, "image/webp", quality);
+  if (blob.type !== "image/webp") throw new WebPNotSupportedError();
+  return blob;
 }
 
 function buildFile(blob: Blob, originalName: string): File {

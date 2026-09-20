@@ -133,7 +133,7 @@ export default function InputFile({
             targetWidth: 1280,
             targetHeight: 730,
             quality: 0.88,
-            maxSizeBytes: 180 * 1024, // 180kb para banners
+            maxSizeBytes: 200 * 1024, // 200kb para banners
           });
           validNewFiles.push(processed);
         }
