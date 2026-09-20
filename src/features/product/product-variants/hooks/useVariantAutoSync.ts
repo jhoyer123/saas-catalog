@@ -69,11 +69,12 @@ export function useVariantAutoSync({
       currentVariants.map((v) => [comboSignature(v.option_values), v]),
     );
     const shouldBeRemoved = isFirstRun ? markNewVariantsAsRemoved : false;
+    const missingVariants: VariantValue[] = [];
     combos.forEach((combo) => {
       const sig = comboSignature(combo);
       if (currentBySig.has(sig)) return;
 
-      variantsField.append({
+      missingVariants.push({
         _localId: crypto.randomUUID(),
         price: 0,
         sku: "",
@@ -83,6 +84,9 @@ export function useVariantAutoSync({
         option_values: combo,
       });
     });
+    if (missingVariants.length > 0) {
+      variantsField.append(missingVariants, { shouldFocus: false });
+    }
 
     // 2) variantes cuya combinación dejó de ser válida -> apagadas (_removed)
     //    y variantes apagadas cuya combinación volvió a ser válida -> restauradas

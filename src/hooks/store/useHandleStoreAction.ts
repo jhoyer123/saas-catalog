@@ -49,7 +49,7 @@ export function useHandleStoreActions() {
           // 2. Si hay logo, subirlo desde el cliente y actualizar
           if (logo instanceof File) {
             const responseUpload = await uploadFile({
-              bucket: "stores",
+              storeId: newStore.id,
               folder: `${newStore.id}/branding`,
               file: logo,
             });
@@ -102,7 +102,7 @@ export function useHandleStoreActions() {
           // 2. Si hay logo nuevo, subirlo y actualizar
           if (logo instanceof File) {
             const responseUpload = await uploadFile({
-              bucket: "stores",
+              storeId: id,
               folder: `${id}/branding`,
               file: logo,
             });
@@ -112,7 +112,7 @@ export function useHandleStoreActions() {
             // 3. Borrar el logo viejo, sin que un fallo acá tumbe todo el flujo
             if (oldLogoPath) {
               try {
-                await deleteFile("stores", oldLogoPath);
+                await deleteFile(oldLogoPath);
               } catch (err) {
                 console.error("No se pudo eliminar el logo anterior:", err);
                 // opcional: reportar a un servicio de logging, pero no re-lanzar

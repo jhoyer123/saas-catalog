@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import {
   useWatch,
   type UseFieldArrayReturn,
@@ -71,6 +71,9 @@ export function ProductVariantAttributesSection({
 }: ProductVariantAttributesSectionProps) {
   const [attrPopoverOpen, setAttrPopoverOpen] = useState(false);
   const didAutoSelect = useRef(false);
+  const pendingVariantSync = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const hasError = !!form.formState.errors.option_types;
   const watchedOptionTypes = useWatch({
@@ -208,7 +211,17 @@ export function ProductVariantAttributesSection({
     const nextValuesByType = { ...valuesByType, [typeId]: nextValues };
 
     onValuesByTypeChange(nextValuesByType);
-    onVariantValuesChange?.(selectedTypeIds, nextValuesByType);
+    if (onVariantValuesChange) {
+      if (pendingVariantSync.current !== null) {
+        clearTimeout(pendingVariantSync.current);
+      }
+      pendingVariantSync.current = setTimeout(() => {
+        pendingVariantSync.current = null;
+        startTransition(() => {
+          onVariantValuesChange(selectedTypeIds, nextValuesByType);
+        });
+      }, 0);
+    }
   }
 
   return (

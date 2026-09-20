@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import {
   Controller,
   Path,
@@ -30,7 +30,7 @@ interface ProductMediaSectionProps<TFieldValues extends FieldValues> {
   isViewMode: boolean;
 }
 
-export function ProductMediaSection<TFieldValues extends FieldValues>({
+function ProductMediaSectionBase<TFieldValues extends FieldValues>({
   control,
   errors,
   setValue,
@@ -130,3 +130,17 @@ export function ProductMediaSection<TFieldValues extends FieldValues>({
     </SectionCard>
   );
 }
+
+export const ProductMediaSection = memo(
+  ProductMediaSectionBase,
+  (previous, next) =>
+    previous.control === next.control &&
+    previous.setValue === next.setValue &&
+    previous.getValues === next.getValues &&
+    previous.maxImages === next.maxImages &&
+    previous.existingImages === next.existingImages &&
+    previous.isViewMode === next.isViewMode &&
+    previous.errors.description?.message === next.errors.description?.message &&
+    previous.errors.product_images?.message ===
+      next.errors.product_images?.message,
+) as typeof ProductMediaSectionBase;

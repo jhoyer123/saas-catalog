@@ -44,7 +44,7 @@ export function useHandleBannerActions() {
 
           // 1. Subir archivos desde el cliente.
           const { successes } = await uploadMultipleFiles(
-            { bucket: "stores", folder: `${storeId}/banners` },
+            { storeId, folder: `${storeId}/banners` },
             newFiles,
           );
 
@@ -60,7 +60,7 @@ export function useHandleBannerActions() {
           } catch (dbError) {
             // Si la DB falla, borramos las imágenes recién subidas para no dejar basura en el bucket
             if (imageUrls.length > 0) {
-              await deleteFile("stores", imageUrls).catch((cleanupError) => {
+              await deleteFile(imageUrls).catch((cleanupError) => {
                 console.error(
                   "Error al limpiar archivos en Storage:",
                   cleanupError,

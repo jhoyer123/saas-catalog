@@ -35,7 +35,7 @@ export async function saveBannersAction(
     }
 
     try {
-      await deleteFile("stores", imagesToDelete);
+      await deleteFile(imagesToDelete);
     } catch (err) {
       // No abortamos el flujo: la base de datos ya quedó consistente.
       // Solo dejamos registro de que quedaron huérfanos en storage.
@@ -51,7 +51,7 @@ export async function saveBannersAction(
 
     if (insertError) {
       try {
-        await deleteFile("stores", imageUrls);
+        await deleteFile(imageUrls);
       } catch (cleanupErr) {
         console.error(
           "Error limpiando archivos huérfanos tras fallo de insert:",

@@ -6,15 +6,28 @@
 const CLOUDFLARE_WORKER = "https://supabase-images.jhoyervega4.workers.dev/"; */
 
 //esto de la de la base de datos de test
-const SUPABASE_STORAGE =
-  "https://sgyhnurfolicvvtkoyun.supabase.co/storage/v1/object/public/";
+//const SUPABASE_STORAGE =
+//"https://sgyhnurfolicvvtkoyun.supabase.co/storage/v1/object/public/";
 
-const CLOUDFLARE_WORKER = "https://test-supabase.jhoyervega4.workers.dev/";
+//const CLOUDFLARE_WORKER = "https://test-supabase.jhoyervega4.workers.dev/";
 
 //esto no se toca es la funcion global que obtiene la imagen
-export function getCatalogImageUrl(url: string | null | undefined): string {
+/* export function getCatalogImageUrl(url: string | null | undefined): string {
   if (!url) return "/images/placeholder.webp";
   if (url.startsWith("http"))
     return url.replace(SUPABASE_STORAGE, CLOUDFLARE_WORKER + "stores/");
   return CLOUDFLARE_WORKER + "stores/" + url;
+}
+ */
+
+const R2_CDN_URL = process.env.NEXT_PUBLIC_CDN_URL!;
+
+export function getCatalogImageUrl(url: string | null | undefined): string {
+  if (!url) return "/images/placeholder.webp";
+
+  if (url.startsWith("http")) {
+    return url;
+  }
+
+  return `${R2_CDN_URL}/${url}`;
 }

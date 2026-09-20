@@ -148,11 +148,20 @@ export default function InputFile({
         }
       }
 
-      const processed = preset.processConfig
-        ? await processImage(file, preset.processConfig)
-        : await processImage(file);
+      try {
+        const processed = preset.processConfig
+          ? await processImage(file, preset.processConfig)
+          : await processImage(file);
 
-      validNewFiles.push(processed);
+        validNewFiles.push(processed);
+      } catch (processingError) {
+        const message =
+          processingError instanceof Error
+            ? processingError.message
+            : "No se pudo optimizar la imagen";
+
+        errors.push(`${file.name}: ${message}`);
+      }
     }
 
     if (errors.length > 0) {

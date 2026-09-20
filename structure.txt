@@ -124,10 +124,7 @@ catalogo-whatsapp/
 
 
 
-STORAGE
-/storage-root (Tu bucket en Cloudflare R2, S3, Supabase, etc.)
-│
-└── /stores/
+ /stores/
     └── /{storeId}/                          <-- Aislamiento total por cliente (Tenant)
         │
         ├── /branding/                       <-- ARCHIVOS ÚNICOS (Nombres fijos)
@@ -154,10 +151,10 @@ STORAGE
         │
         └── /products/                       
             ├── /{productId}/                <-- Carpeta agrupada por ID del producto
-            │   ├── {uuid_archivo_A}.webp    # Imagen 1 de la galería
-            │   ├── {uuid_archivo_B}.webp    # Imagen 2 de la galería
+            │   ├── /genreal/
+            |   |   ├── {uuid.webp}   # Imagen 2 de la galería
             │   └── /variants/               <-- Fotos específicas de una variante
-            │       ├── {uuid_archivo_C}.webp
+            │       ├── {uuid}.webp
             │       └── ...
             │
             └── /{otro_productId}/

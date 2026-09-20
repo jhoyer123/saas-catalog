@@ -1,8 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { RotateCcw, Trash2 } from "lucide-react";
-import type { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
+import {
+  useWatch,
+  type UseFieldArrayReturn,
+  type UseFormReturn,
+} from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -64,6 +68,12 @@ export function ProductVariantsTable({
     (typeof form.formState.errors.variants?.message === "string"
       ? form.formState.errors.variants.message
       : null);
+  const watchedVariants = useWatch({
+    control: form.control,
+    name: "variants",
+  }) ?? [];
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkOfferPrice, setBulkOfferPrice] = useState("");
   // firmas de combinación que siguen siendo válidas con la selección actual de
   // valores. Si una fila está removida pero su firma NO está acá, fue removida
   // porque se destildó un valor -> no se puede restaurar desde la tabla (solo
@@ -76,14 +86,28 @@ export function ProductVariantsTable({
     [selectedTypeIds, valuesByType],
   );
 
+  const optionTypeNames = useMemo(
+    () => new Map(storeOptionTypes.map((type) => [type.id, type.name])),
+    [storeOptionTypes],
+  );
+  const optionValueLabels = useMemo(
+    () =>
+      new Map(
+        storeOptionTypes.flatMap((type) =>
+          type.store_option_values.map((value) => [
+            `${type.id}:${value.id}`,
+            value.value,
+          ] as const),
+        ),
+      ),
+    [storeOptionTypes],
+  );
+
   function getTypeName(typeId: string) {
-    return storeOptionTypes.find((t) => t.id === typeId)?.name ?? "?";
+    return optionTypeNames.get(typeId) ?? "?";
   }
   function getValueLabel(typeId: string, valueId: string) {
-    const type = storeOptionTypes.find((t) => t.id === typeId);
-    return (
-      type?.store_option_values.find((v) => v.id === valueId)?.value ?? "?"
-    );
+    return optionValueLabels.get(`${typeId}:${valueId}`) ?? "?";
   }
 
   if (variantsField.fields.length === 0) {
@@ -96,6 +120,20 @@ export function ProductVariantsTable({
   }
 
   const hasVisualAttribute = visualTypeIds.length > 0;
+
+  function applyBulkPrice(field: "price" | "offer_price", value: string) {
+    const parsedValue = Number(value);
+    if (value === "" || !Number.isFinite(parsedValue) || parsedValue < 0) return;
+
+    const currentVariants = form.getValues("variants") ?? [];
+    form.setValue(
+      "variants",
+      currentVariants.map((variant) =>
+        variant._removed ? variant : { ...variant, [field]: parsedValue },
+      ),
+      { shouldDirty: true, shouldValidate: true },
+    );
+  }
 
   // Funcion para quitar o restaurar una variante desde la tabla
   const handleToggleRemoved = (index: number, removed: boolean) => {
@@ -147,10 +185,10 @@ export function ProductVariantsTable({
   };
 
   return (
-    <div className="w-full space-y-3">
+    <div className="w-full min-w-0 max-w-full space-y-3">
       {/* Tabla */}
-      <div className="w-full overflow-x-auto rounded-lg border bg-background shadow-sm">
-        <div className="min-w-225 p-4 flex flex-col">
+      <div className="w-full min-w-0 overflow-x-auto rounded-lg border bg-background shadow-sm">
+        <div className="min-w-175 p-4 flex flex-col sm:min-w-225">
           {/* Encabezado de la sección */}
           <div className="space-y-1 pb-4">
             <h3 className="text-base font-semibold tracking-tight">
@@ -162,6 +200,68 @@ export function ProductVariantsTable({
                 ? "Consulta el precio, código y disponibilidad de cada combinación."
                 : "Configurá el precio, código y disponibilidad de cada combinación."}
             </p>
+            {!isReadOnly && (
+              <div className="flex flex-wrap items-end gap-2 pt-2">
+                <div className="grid min-w-40 gap-1">
+                  <label
+                    htmlFor="bulk-variant-price"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
+                    Precio para todas
+                  </label>
+                  <input
+                    id="bulk-variant-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={bulkPrice}
+                    onChange={(event) => setBulkPrice(event.target.value)}
+                    placeholder="0.00"
+                    className="h-9 rounded-md border bg-background px-3 text-sm"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={bulkPrice === ""}
+                  onClick={() => applyBulkPrice("price", bulkPrice)}
+                >
+                  Aplicar precio
+                </Button>
+                <div className="grid min-w-40 gap-1">
+                  <label
+                    htmlFor="bulk-variant-offer-price"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
+                    Oferta para todas
+                  </label>
+                  <input
+                    id="bulk-variant-offer-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={bulkOfferPrice}
+                    onChange={(event) =>
+                      setBulkOfferPrice(event.target.value)
+                    }
+                    placeholder="0.00"
+                    className="h-9 rounded-md border bg-background px-3 text-sm"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={bulkOfferPrice === ""}
+                  onClick={() =>
+                    applyBulkPrice("offer_price", bulkOfferPrice)
+                  }
+                >
+                  Aplicar oferta
+                </Button>
+              </div>
+            )}
             {/* error de validación */}
             {variantsError && (
               <p className="text-sm font-medium text-red-500 mt-2">
@@ -170,206 +270,219 @@ export function ProductVariantsTable({
             )}
           </div>
           <Separator />
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                {hasVisualAttribute && (
-                  <TableHead className="w-20 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                    Imagen
+          <div className="w-full">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-10 text-center text-xs font-medium text-muted-foreground">
+                    #
                   </TableHead>
-                )}
 
-                <TableHead className="min-w-45 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                  Combinación
-                </TableHead>
+                  {hasVisualAttribute && (
+                    <TableHead className="w-20 whitespace-nowrap text-xs font-medium text-muted-foreground">
+                      Imagen
+                    </TableHead>
+                  )}
 
-                <TableHead className="w-28 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                  Precio
-                </TableHead>
+                  <TableHead className="min-w-45 whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    Combinación
+                  </TableHead>
 
-                <TableHead className="w-28 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                  Precio de oferta
-                </TableHead>
+                  <TableHead className="w-28 whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    Precio
+                  </TableHead>
 
-                <TableHead className="w-32 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                  Código SKU
-                </TableHead>
+                  <TableHead className="w-28 whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    Precio de oferta
+                  </TableHead>
 
-                <TableHead className="w-24 whitespace-nowrap text-center text-xs font-medium text-muted-foreground">
-                  Disponibilidad
-                </TableHead>
+                  <TableHead className="w-32 whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    Código SKU
+                  </TableHead>
 
-                {!isReadOnly && (
-                  <TableHead className="w-12 whitespace-nowrap" />
-                )}
-              </TableRow>
-            </TableHeader>
+                  <TableHead className="w-24 whitespace-nowrap text-center text-xs font-medium text-muted-foreground">
+                    Disponibilidad
+                  </TableHead>
 
-            <TableBody>
-              {variantsField.fields.map((field, index) => {
-                const isRemoved = form.watch(`variants.${index}._removed`);
-                const rowDisabled = isRemoved;
-                const canRestore = validSignatures.has(
-                  comboSignature(field.option_values),
-                );
+                  {!isReadOnly && (
+                    <TableHead className="w-12 whitespace-nowrap" />
+                  )}
+                </TableRow>
+              </TableHeader>
 
-                return (
-                  <TableRow
-                    key={field._fieldId}
-                    className={cn(
-                      "align-middle",
-                      isRemoved && "bg-muted/40 opacity-60",
-                    )}
-                  >
-                    {hasVisualAttribute && (
+              <TableBody>
+                {variantsField.fields.map((field, index) => {
+                  const variant = watchedVariants[index] ?? field;
+                  const isRemoved = variant._removed;
+                  const rowDisabled = isRemoved;
+                  const canRestore = validSignatures.has(
+                    comboSignature(field.option_values),
+                  );
+
+                  return (
+                    <TableRow
+                      key={field._fieldId}
+                      className={cn(
+                        "align-middle",
+                        isRemoved && "bg-muted/40 opacity-60",
+                      )}
+                    >
+                      <TableCell className="w-10 py-3 text-center text-xs text-muted-foreground">
+                        {index + 1}
+                      </TableCell>
+
+                      {hasVisualAttribute && (
+                        <TableCell className="py-3">
+                          <VariantImageCell
+                            optionValues={field.option_values}
+                            visualTypeIds={visualTypeIds}
+                            imagesBySignature={imagesApi.state.bySignature}
+                            onOpenImagePicker={onOpenImagePicker}
+                            readOnly={isReadOnly || rowDisabled}
+                          />
+                        </TableCell>
+                      )}
+
                       <TableCell className="py-3">
-                        <VariantImageCell
-                          optionValues={field.option_values}
-                          visualTypeIds={visualTypeIds}
-                          imagesBySignature={imagesApi.state.bySignature}
-                          onOpenImagePicker={onOpenImagePicker}
-                          readOnly={isReadOnly || rowDisabled}
-                        />
+                        <div className="flex max-w-md flex-wrap gap-1.5">
+                          {field.option_values.map((ov) => (
+                            <Badge
+                              key={ov.option_type_id}
+                              variant="secondary"
+                              className="whitespace-nowrap px-2 py-0.5 text-xs font-normal"
+                            >
+                              {getTypeName(ov.option_type_id)}:{" "}
+                              {getValueLabel(
+                                ov.option_type_id,
+                                ov.option_value_id,
+                              )}
+                            </Badge>
+                          ))}
+                        </div>
                       </TableCell>
-                    )}
 
-                    <TableCell className="py-3">
-                      <div className="flex max-w-md flex-wrap gap-1.5">
-                        {field.option_values.map((ov) => (
-                          <Badge
-                            key={ov.option_type_id}
-                            variant="secondary"
-                            className="whitespace-nowrap px-2 py-0.5 text-xs font-normal"
-                          >
-                            {getTypeName(ov.option_type_id)}:{" "}
-                            {getValueLabel(
-                              ov.option_type_id,
-                              ov.option_value_id,
-                            )}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-
-                    {/* Precio — obligatorio, muestra error si se intenta enviar vacío */}
-                    <TableCell className="py-3">
-                      <FormInput
-                        name={`variants.${index}.price`}
-                        control={form.control}
-                        inputProps={{
-                          type: "number",
-                          step: "0.01",
-                          disabled: rowDisabled,
-                          placeholder: "0.00",
-                        }}
-                        readOnly={isReadOnly}
-                      />
-                    </TableCell>
-
-                    {/* Precio oferta — completamente opcional, nunca obligatorio */}
-                    <TableCell className="py-3">
-                      <FormInput
-                        name={`variants.${index}.offer_price`}
-                        control={form.control}
-                        inputProps={{
-                          type: "number",
-                          step: "0.01",
-                          disabled: rowDisabled,
-                          placeholder: "0.00",
-                        }}
-                        readOnly={isReadOnly}
-                        emptyOptionLabel="Sin valor"
-                      />
-                    </TableCell>
-
-                    {/* SKU — opcional */}
-                    <TableCell className="py-3">
-                      <FormInput
-                        name={`variants.${index}.sku`}
-                        control={form.control}
-                        inputProps={{
-                          disabled: rowDisabled,
-                          placeholder: "PROD-001",
-                        }}
-                        readOnly={isReadOnly}
-                        emptyOptionLabel="Sin código"
-                      />
-                    </TableCell>
-
-                    <TableCell className="py-3 text-center">
-                      <div className="flex flex-col items-center justify-center gap-1.5">
-                        <Switch
-                          checked={form.watch(`variants.${index}.is_available`)}
-                          disabled={isReadOnly || rowDisabled}
-                          className="cursor-pointer"
-                          title={
-                            form.watch(`variants.${index}.is_available`)
-                              ? "La variante está disponible"
-                              : "La variante no está disponible"
-                          }
-                          onCheckedChange={(checked) => {
-                            form.setValue(
-                              `variants.${index}.is_available`,
-                              checked,
-                              {
-                                shouldDirty: true,
-                              },
-                            );
+                      {/* Precio — obligatorio, muestra error si se intenta enviar vacío */}
+                      <TableCell className="py-3">
+                        <FormInput
+                          name={`variants.${index}.price`}
+                          control={form.control}
+                          inputProps={{
+                            type: "number",
+                            step: "0.01",
+                            disabled: rowDisabled,
+                            placeholder: "0.00",
                           }}
+                          readOnly={isReadOnly}
                         />
-
-                        <span
-                          className={cn(
-                            "text-xs font-medium",
-                            form.watch(`variants.${index}.is_available`)
-                              ? rowDisabled
-                                ? "text-muted-foreground"
-                                : "text-green-600"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {form.watch(`variants.${index}.is_available`)
-                            ? "Disponible"
-                            : "Agotado"}
-                        </span>
-                      </div>
-                    </TableCell>
-
-                    {!isReadOnly && (
-                      <TableCell className="py-3 text-center">
-                        {isRemoved ? (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            disabled={!canRestore}
-                            title={
-                              canRestore
-                                ? "Restaurar variante"
-                                : "Esta variante se quita por un valor deseleccionado. Volvé a tildar el valor para restaurarla."
-                            }
-                            onClick={() => handleToggleRemoved?.(index, false)}
-                          >
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            title="Quitar variante"
-                            onClick={() => handleToggleRemoved?.(index, true)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        )}
                       </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+
+                      {/* Precio oferta — completamente opcional, nunca obligatorio */}
+                      <TableCell className="py-3">
+                        <FormInput
+                          name={`variants.${index}.offer_price`}
+                          control={form.control}
+                          inputProps={{
+                            type: "number",
+                            step: "0.01",
+                            disabled: rowDisabled,
+                            placeholder: "0.00",
+                          }}
+                          readOnly={isReadOnly}
+                          emptyOptionLabel="Sin valor"
+                        />
+                      </TableCell>
+
+                      {/* SKU — opcional */}
+                      <TableCell className="py-3">
+                        <FormInput
+                          name={`variants.${index}.sku`}
+                          control={form.control}
+                          inputProps={{
+                            disabled: rowDisabled,
+                            placeholder: "PROD-001",
+                          }}
+                          readOnly={isReadOnly}
+                          emptyOptionLabel="Sin código"
+                        />
+                      </TableCell>
+
+                      <TableCell className="py-3 text-center">
+                        <div className="flex flex-col items-center justify-center gap-1.5">
+                          <Switch
+                            checked={variant.is_available}
+                            disabled={isReadOnly || rowDisabled}
+                            className="cursor-pointer"
+                            title={
+                              variant.is_available
+                                ? "La variante está disponible"
+                                : "La variante no está disponible"
+                            }
+                            onCheckedChange={(checked) => {
+                              form.setValue(
+                                `variants.${index}.is_available`,
+                                checked,
+                                {
+                                  shouldDirty: true,
+                                },
+                              );
+                            }}
+                          />
+
+                          <span
+                            className={cn(
+                              "text-xs font-medium",
+                              variant.is_available
+                                ? rowDisabled
+                                  ? "text-muted-foreground"
+                                  : "text-green-600"
+                                : "text-muted-foreground",
+                            )}
+                          >
+                            {variant.is_available
+                              ? "Disponible"
+                              : "Agotado"}
+                          </span>
+                        </div>
+                      </TableCell>
+
+                      {!isReadOnly && (
+                        <TableCell className="py-3 text-center">
+                          {isRemoved ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={!canRestore}
+                              title={
+                                canRestore
+                                  ? "Restaurar variante"
+                                  : "Esta variante se quita por un valor deseleccionado. Volvé a tildar el valor para restaurarla."
+                              }
+                              onClick={() =>
+                                handleToggleRemoved?.(index, false)
+                              }
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              title="Quitar variante"
+                              onClick={() => handleToggleRemoved?.(index, true)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          )}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </div>

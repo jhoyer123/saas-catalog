@@ -88,14 +88,42 @@ export function useHandleProduct() {
               ]),
             ),
           });
+          const fin = performance.now();
 
           const uploadErrors = [
             ...uploadResult.general.errors,
             ...Object.values(uploadResult.bySignature).flatMap((r) => r.errors),
           ];
+
+          const uploadedCount =
+            uploadResult.general.successes.length +
+            Object.values(uploadResult.bySignature).reduce(
+              (total, r) => total + r.successes.length,
+              0,
+            );
+
+          const requestedImageCount =
+            product_images.length +
+            Object.values(imagesState.bySignature).reduce(
+              (total, group) => total + group.newFiles.length,
+              0,
+            );
+
+          // El usuario intentó subir imágenes, pero ninguna pudo subirse
+          if (requestedImageCount > 0 && uploadedCount === 0) {
+            await deleteFolder(productFolder).catch(() => {});
+
+            throw new Error(
+              "No se pudo subir ninguna imagen. El producto no fue creado.",
+            );
+          }
+
+          // Algunas fallaron, pero al menos una sí subió.
+          // Continuamos usando solamente las exitosas.
           if (uploadErrors.length > 0) {
             toast.warning(
-              `${uploadErrors.length} imagen(es) no se pudieron subir`,
+              `${uploadErrors.length} imagen(es) no se pudieron subir. ` +
+                `El producto se creará con las imágenes disponibles.`,
             );
           }
 
@@ -117,11 +145,11 @@ export function useHandleProduct() {
           try {
             result = await saveProductFull({ storeId, productId, payload });
           } catch (err) {
-            await deleteFolder("stores", productFolder).catch(() => {});
+            await deleteFolder(productFolder).catch(() => {});
             throw err;
           }
 
-          await revalidateProductCache(storeSlug, null);
+          revalidateProductCache(storeSlug, null);
 
           onSuccess?.();
         });
@@ -197,7 +225,9 @@ export function useHandleProduct() {
               ),
             },
             // unión de ambas fuentes: generales (del form) + por firma (del hook de imágenes)
-            imageToDelete: [...imageToDelete, ...imagesState.deletedIds],
+            imageToDelete: Array.from(
+              new Set([...imageToDelete, ...imagesState.deletedIds]),
+            ),
           };
 
           let result: SaveProductResult;
@@ -211,13 +241,13 @@ export function useHandleProduct() {
               ),
             ];
             if (uploadedPaths.length > 0) {
-              await deleteFile("stores", uploadedPaths).catch(() => {});
+              await deleteFile(uploadedPaths).catch(() => {});
             }
             throw err;
           }
 
           if (result.deleted_image_urls.length > 0) {
-            await deleteFile("stores", result.deleted_image_urls).catch((err) =>
+            await deleteFile(result.deleted_image_urls).catch((err) =>
               console.error("Fallo limpieza de imágenes eliminadas:", err),
             );
           }
@@ -261,7 +291,7 @@ export function useHandleProduct() {
           // Eliminar producto en la db
           await remove({ id });
           // Revalidar cache
-          await revalidateProductCache(storeSlug, slugProd);
+          revalidateProductCache(storeSlug, slugProd);
           onSuccess?.();
         });
       },

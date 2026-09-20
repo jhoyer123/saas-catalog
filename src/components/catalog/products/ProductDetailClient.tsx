@@ -264,9 +264,10 @@ export default function ProductDetailClient({
         </Button>
       </div>
       {/* imagen + detalles del producto */}
-      <section className="container mx-auto max-w-7xl px-1 md:px-4 pb-12 sm:px-6 lg:px-8">
+      <section className="container mx-auto max-w-7xl px-1 pb-12 md:px-4 sm:px-6 lg:px-8">
+        {/* items-start es CRUCIAL: permite que cada columna tenga solo la altura de su contenido */}
         <div className="mx-auto grid w-full grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:gap-12">
-          {/* Galeria y descripcion permanecen visibles mientras se consulta la variante. */}
+          {/* Columna Izquierda: Galería y Descripción */}
           <div
             className="lg:sticky lg:self-start"
             style={{ top: headerHeight + 16 }}
@@ -288,8 +289,12 @@ export default function ProductDetailClient({
               />
             </div>
           </div>
-          {/* El panel de compra se desplaza solo cuando las variantes exceden el viewport. */}
-          <div className="min-h-0 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
+
+          {/* Columna Derecha: Panel de Compra (se fija de igual forma si la izquierda es más alta) */}
+          <div
+            className="lg:sticky lg:self-start"
+            style={{ top: headerHeight + 16 }}
+          >
             <ProductInfo
               product={productWithResolvedBrand}
               whatssapNumber={store.whatsapp_number}

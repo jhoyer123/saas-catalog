@@ -399,13 +399,13 @@ export function ProductInfo({
                           })
                         }
                         className={cn(
-                          "inline-flex min-h-10 items-center justify-center gap-2 rounded-full border text-sm transition-all",
+                          "inline-flex min-h-10 items-center justify-center gap-2 border text-sm transition-all",
                           isSelected
                             ? "border-catalog-secondary bg-catalog-secondary text-catalog-primary shadow-sm"
                             : "border-catalog-secondary/25 bg-catalog-primary/40 text-catalog-secondary hover:border-catalog-secondary/60 hover:bg-catalog-primary",
                           !isPossible &&
                             "opacity-30 cursor-not-allowed line-through",
-                          ot.input_type === "color" ? "px-1 py-1" : "px-4 py-2",
+                          ot.input_type === "color" ? "px-1 py-1 rounded-full" : "px-3.5 py-2 rounded-sm",
                         )}
                       >
                         {renderOptionValue(ot.input_type, val)}

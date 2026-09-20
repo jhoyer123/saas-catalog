@@ -17,7 +17,7 @@ export const useGetBanner = () => {
       return fetchBanners(storeId);
     },
     enabled: !!storeId, // Solo ejecutar si storeId está disponible
-    staleTime: 1000 * 60 * 5, // Los datos se consideran frescos por 5 minutos
+    staleTime: Infinity, // Los datos se consideran frescos por 5 minutos
     gcTime: 1000 * 60 * 30, // Mantener en caché por 30 minutos aunque no se usen
   });
 };

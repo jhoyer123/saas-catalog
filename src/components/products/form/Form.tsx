@@ -7,7 +7,7 @@ import { BrandOfForm } from "@/types/brand.types";
 import { Plan } from "@/types/plan.types";
 import { ProductIdentitySection } from "./ProductIdentitySection";
 import { ProductMediaSection } from "./ProductMediaSection";
-import { VariantToggleSection } from "./VariantToggleSection";
+//import { VariantToggleSection } from "./VariantToggleSection";
 import FormInput from "@/components/shared/InputForm";
 import { ProductForm } from "./ProductForm";
 import {
@@ -159,6 +159,14 @@ export default function FormProduct({
         .filter((optionType) => optionType.is_visual)
         .map((optionType) => optionType.option_type_id) ?? [],
   );
+  const initialVariantImages = useMemo(
+    () =>
+      buildInitialImagesState(
+        initialData as unknown as ProductWithRelations,
+        visualTypeIds,
+      ),
+    [initialData, visualTypeIds],
+  );
 
   const isModCreate = mode === "create";
 
@@ -290,10 +298,7 @@ export default function FormProduct({
           );
           // estas son las imagenes de las variantes
           const imagesApi = useVariantImages(
-            buildInitialImagesState(
-              initialData as unknown as ProductWithRelations,
-              visualTypeIds,
-            ),
+            initialVariantImages,
           );
 
           // mantiene el ref al día para que handleSubmit lea el estado más reciente
@@ -333,7 +338,7 @@ export default function FormProduct({
 
           return (
             <>
-              {((initialData && !initialData?.has_variants) || isReadOnly || mode === "create") && (
+              {/* {((initialData && !initialData?.has_variants) || isReadOnly || mode === "create") && (
                 <VariantToggleSection<ProductFormInput>
                   control={form.control}
                   isViewMode={isReadOnly}
@@ -348,7 +353,7 @@ export default function FormProduct({
                     setOpenSigKey(null);
                   }}
                 />
-              )}
+              )} */}
 
               <ProductIdentitySection<ProductFormInput>
                 control={form.control}
@@ -376,8 +381,8 @@ export default function FormProduct({
                       Precio del Producto
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Ingresa el precio del producto aqui solo si no tiene
-                      variantes.
+                      Ingresa el precio del producto aqui. {/* solo si no tiene
+                      variantes. */}
                     </p>
                   </div>
                   <div className="max-w-md">

@@ -140,7 +140,7 @@ export function OptionValuesPanel({ optionType, onClose }: Props) {
     });
     // Si el valor tenía imagen asociada, intentamos borrarla del storage (no bloqueante)
     if (value.image_url) {
-      deleteFile("stores", value.image_url).catch(async (err) => {
+      deleteFile(value.image_url).catch(async (err) => {
         console.error("No se pudo borrar archivo viejo:", value.image_url, err);
       });
     }

@@ -337,9 +337,9 @@ export function OptionValueFormDialog({
           });
 
           const resp = await uploadFile({
-            bucket: "stores",
-            folder: `${storeId}/option-values`,
             file: processed,
+            storeId,
+            folder: `${storeId}/option-values`,
           });
 
           imageUrl = resp.path;
@@ -406,7 +406,7 @@ export function OptionValueFormDialog({
 
         // Si todo salió bien, borramos la imagen vieja (si existía)
         if (newlyUploadedImagePath && optionValue?.image_url) {
-          deleteFile("stores", optionValue.image_url).catch((err) => {
+          deleteFile(optionValue.image_url).catch((err) => {
             console.error("No se pudo borrar archivo viejo:", err);
           });
         }
@@ -416,7 +416,7 @@ export function OptionValueFormDialog({
       } catch (error) {
         // Si la base de datos falla, revertimos (borramos) la imagen nueva que acabamos de subir
         if (newlyUploadedImagePath) {
-          await deleteFile("stores", newlyUploadedImagePath).catch(
+          await deleteFile(newlyUploadedImagePath).catch(
             (deleteErr) => {
               console.error("No se pudo revertir la imagen nueva:", deleteErr);
             },

@@ -43,12 +43,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: "Dashboard", url: "/dashboard/panel", icon: Frame },
-  {
+  /* {
     name: "Atributos",
     url: "/dashboard/options",
     icon: SlidersHorizontal,
     requiresStore: true,
-  },
+  }, */
   {
     name: "Categorias",
     url: "/dashboard/categories",
