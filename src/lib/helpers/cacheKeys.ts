@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 
 export function cacheKey(prefix: string, storeSlug: string, extra?: string) {
   return [`${prefix}-${CACHE_VERSION}`, storeSlug, ...(extra ? [extra] : [])];
