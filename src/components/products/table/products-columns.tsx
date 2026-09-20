@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2, Eye, TagIcon } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import type { ModalType } from "@/hooks/products/useModalsProduct";
 import { checkIsOfferActive } from "@/lib/helpers/validations";
 import { Switch } from "@/components/ui/switch";
@@ -64,7 +63,6 @@ export const createProductsColumns = ({
         return (
           <div className="relative h-11 w-11 overflow-hidden rounded-md border bg-muted shrink-0">
             <Image
-              //src={images[0]}
               src={getCatalogImageUrl(images[0])}
               alt={name}
               fill
@@ -104,7 +102,6 @@ export const createProductsColumns = ({
       );
     },
   },
-
   // ── SKU ─────────────────────────────────────
   {
     accessorKey: "sku",
@@ -179,13 +176,28 @@ export const createProductsColumns = ({
         offer_end: row.original.offer_end || null,
       });
 
-      return isOffer ? (
-        <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 font-normal">
-          En oferta
+      return (
+        <Badge
+          variant={isOffer ? "default" : "outline"}
+          className="font-normal"
+        >
+          {isOffer ? "Sí" : "No"}
         </Badge>
-      ) : (
-        <Badge variant="outline" className="text-muted-foreground font-normal">
-          Normal
+      );
+    },
+  },
+  // ── TIENE VARIANTES ? ─────────────────────────────────
+  {
+    accessorKey: "has_variants",
+    enableSorting: false,
+    header: "Variantes",
+    cell: ({ row }) => {
+      return (
+        <Badge
+          variant={row.getValue("has_variants") ? "default" : "outline"}
+          className="font-normal"
+        >
+          {row.getValue("has_variants") ? "Sí" : "No"}
         </Badge>
       );
     },

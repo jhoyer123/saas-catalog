@@ -19,10 +19,10 @@ import type { CartItem } from "@/types/cart.types";
 interface CartState {
   items: CartItem[];
 
-  /** Agrega un producto. Si ya existe (mismo id), incrementa cantidad en 1. */
+  /** Agrega un producto. Si ya existe (misma identidad), incrementa cantidad. */
   addItem: (product: Omit<CartItem, "quantity">) => void;
 
-  /** Elimina completamente un item del carrito. */
+  /** Elimina completamente un item del carrito por su identidad estable. */
   removeItem: (id: string) => void;
 
   /** Establece la cantidad exacta de un item (mínimo 1). */

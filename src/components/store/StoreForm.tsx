@@ -12,8 +12,8 @@ import { Button } from "../ui/button";
 import { processImage } from "@/lib/helpers/image";
 import { ImageHint } from "../shared/ImageHint";
 import { useHandleStoreActions } from "@/hooks/store/useHandleStoreAction";
-import { useSessionData } from "@/hooks/auth/useSessionData";
 import { OverlayProcess } from "../shared/OverlayProcess";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
 
 interface Props {
   defaultValues?: Store;
@@ -24,9 +24,7 @@ const StoreForm = ({ defaultValues }: Props) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(
-    defaultValues?.logo_url
-      ? `${defaultValues.logo_url}?t=${Date.now()}`
-      : null,
+    defaultValues?.logo_url ? getCatalogImageUrl(defaultValues.logo_url) : null,
   );
 
   const {
@@ -62,13 +60,14 @@ const StoreForm = ({ defaultValues }: Props) => {
     setPreview(URL.createObjectURL(finalFile));
   };
 
+  const storeSlug = defaultValues?.slug;
+  const storeId = defaultValues?.id;
+
   const { createStore, updateStore, isPending } = useHandleStoreActions();
-  const { data: sessionData } = useSessionData();
-  const storeSlug = sessionData?.store?.slug;
 
   const onSubmit = (data: StoreForm) => {
     if (isEditing) {
-      updateStore(defaultValues?.id || "", data, storeSlug!, () => reset(data));
+      updateStore(storeId!, data, storeSlug!, () => reset(data));
     } else {
       createStore(data, () => reset(data));
     }
@@ -81,7 +80,7 @@ const StoreForm = ({ defaultValues }: Props) => {
       <form
         id="store-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 lg:space-y-8 w-full max-w-5xl mx-auto"
+        className="space-y-4 lg:space-y-8 w-full mx-auto"
       >
         <div className="flex items-end justify-end mb-10">
           <Button type="submit" disabled={isPending || !isDirty}>
@@ -90,7 +89,7 @@ const StoreForm = ({ defaultValues }: Props) => {
         </div>
         <div className="flex flex-col w-full gap-5 md:flex-row">
           {/* Logo */}
-          <div className="grid gap-2 w-1/2">
+          <div className="grid gap-2 w-full md:w-1/2">
             <Label className="font-medium text-sm">
               Logo de la Tienda <span className="text-red-500">*</span>
             </Label>

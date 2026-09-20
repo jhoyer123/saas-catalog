@@ -30,11 +30,12 @@ export default function Carousel({ children, itemsCount }: Props) {
   useEffect(() => {
     if (!emblaApi) return;
 
-    updateButtons();
+    const frame = requestAnimationFrame(updateButtons);
     emblaApi.on("select", updateButtons);
     emblaApi.on("reInit", updateButtons);
 
     return () => {
+      cancelAnimationFrame(frame);
       emblaApi.off("select", updateButtons);
       emblaApi.off("reInit", updateButtons);
     };
@@ -44,7 +45,7 @@ export default function Carousel({ children, itemsCount }: Props) {
     <div className="relative w-full">
       <div className="overflow-hidden" ref={emblaRef}>
         {/* Eliminado justify-center que rompía el layout de Embla */}
-        <div className="flex touch-pan-y backface-hidden lg:justify-center">
+        <div className="flex touch-pan-y backface-hidden">
           {children}
         </div>
       </div>

@@ -49,7 +49,7 @@ export function ProductFilterControls({
   }, [filters.isOffer]);
 
   return (
-    <div className="bg-card rounded-md lg:border lg:border-border/50 p-4 lg:p-7 space-y-5 lg:shadow-sm">
+    <div className="bg-card h-full p-4 lg:p-7 space-y-5">
       {/* Header */}
       <div className="items-center justify-between flex pb-1 border-b border-border/40">
         <h2 className="font-poppins text-sm lg:text-base hidden lg:flex tracking-widest uppercase text-muted-foreground font-medium">
@@ -68,7 +68,7 @@ export function ProductFilterControls({
       </div>
 
       {/* Búsqueda */}
-      <div className="space-y-2 hidden md:block">
+      <div className="space-y-2 hidden md:block w-full">
         <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Buscar
         </Label>
@@ -77,7 +77,7 @@ export function ProductFilterControls({
           <Input
             type="text"
             placeholder="Buscar productos..."
-            className="pl-9 h-9 text-sm bg-muted/30 border-border/80 rounded-xs placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-offset-0 transition-all"
+            className="pl-9 h-9 w-full text-sm bg-muted/30 border-border/80 rounded-xs placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-offset-0 transition-all"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
@@ -88,7 +88,7 @@ export function ProductFilterControls({
       <div className="hidden lg:block h-px bg-linear-to-r from-transparent via-border to-transparent" />
 
       {/* Categoría */}
-      <div className="space-y-2">
+      <div className="space-y-2 w-full">
         <Label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Categoría
         </Label>
@@ -98,7 +98,7 @@ export function ProductFilterControls({
             updateFilter("category", value === "all" ? null : value)
           }
         >
-          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
+          <SelectTrigger className="h-9 w-full text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
             <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
           <SelectContent
@@ -127,7 +127,7 @@ export function ProductFilterControls({
               updateFilter("brand", value === "all" ? null : value)
             }
           >
-            <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
+            <SelectTrigger className="h-9 w-full text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
               <SelectValue placeholder="Todas las marcas" />
             </SelectTrigger>
             <SelectContent
@@ -188,7 +188,7 @@ export function ProductFilterControls({
             )
           }
         >
-          <SelectTrigger className="h-9 text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
+          <SelectTrigger className="h-9 w-full text-sm bg-muted/30 border-border/80 rounded-xs focus:ring-1 focus:ring-offset-0 transition-all">
             <SelectValue placeholder="Seleccionar orden" />
           </SelectTrigger>
           <SelectContent

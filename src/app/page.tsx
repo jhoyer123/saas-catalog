@@ -136,7 +136,7 @@ export default function Home() {
               },
             ].map((item, i) => (
               <div
-                key={i}
+                key={`${item.title}-${i}`}
                 className={`p-8 bg-white shadow-lg border border-gray-200
                            hover:shadow-xl transition
                            ${item.span}`}

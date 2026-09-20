@@ -1,4 +1,4 @@
-// hooks/useProductForm.ts
+/* // hooks/useProductForm.ts
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
@@ -10,9 +10,10 @@ import {
   type ProductInputClient,
   type ProductInputClientUpdate,
 } from "@/lib/schemas/product";
-import { useProductActions } from "./useHandleAction";
+import { useProductActions } from "./useHandleProduct";
 import { ProductDetail } from "@/types/product.types";
 import { useSessionData } from "../auth/useSessionData";
+import type { ProductVariantDraft } from "@/features/product/product-variants/types/types";
 
 type FormMode = "create" | "update" | "view";
 
@@ -21,6 +22,7 @@ interface UseProductFormProps {
   initialData?: ProductDetail;
   categories: { id: string; name: string }[];
   brands: { id: string; name: string }[];
+  variantDraft?: ProductVariantDraft;
 }
 
 export function useProductForm({
@@ -28,6 +30,7 @@ export function useProductForm({
   initialData,
   categories,
   brands,
+  variantDraft,
 }: UseProductFormProps) {
   const isCreate = mode === "create";
   const isUpdate = mode === "update";
@@ -37,14 +40,13 @@ export function useProductForm({
   const { data: sessionData } = useSessionData();
   const storeId = sessionData?.store?.id;
   const storeSlug = sessionData?.store?.slug;
-
   const {
     register,
     control,
     handleSubmit,
     formState: { errors, isDirty },
     setValue,
-    getValues,
+    watch,
     reset,
   } = useForm({
     resolver: zodResolver(
@@ -55,44 +57,29 @@ export function useProductForm({
       name: initialData?.name ?? "",
       sku: initialData?.sku ?? "",
       price: initialData?.price ?? 0,
+      has_variants: initialData?.has_variants ?? false,
       description: initialData?.description ?? "",
       category_id: initialData?.category_id ?? "",
-      brand_id: initialData?.brand_id ?? "",
+      brand_id: initialData?.brand_id ?? undefined,
       imageExisting: initialData?.images ?? [],
       imageToDelete: [],
+      images: undefined, // para crear, se suben nuevas imágenes
     },
   });
 
-  // Cuando initialData llega (o cambia), sincroniza el form
-  /*  useEffect(() => {
-    if (initialData && isUpdate) {
-      reset({
-        name: initialData.name ?? "",
-        sku: initialData.sku ?? "",
-        brand: initialData.brand ?? "",
-        price: initialData.price ?? 0,
-        description: initialData.description ?? "",
-        category_id: initialData.category_id ?? "",
-        imageExisting: initialData.images ?? [],
-        imageToDelete: [],
-      });
-    }
-  }, [initialData?.id]); */
-
-  //refinar las categorias para el select (memo para evitar recrear el array en cada render)
+  //refinar las datos para el select (memo para evitar recrear el array en cada render)
   const categoryOptions = useMemo(
     () =>
       (categories ?? []).map((cat) => ({
-        value: String(cat.id),
+        value: cat.id,
         label: cat.name,
       })),
     [categories],
   );
-
   const brandOptions = useMemo(
     () =>
       (brands ?? []).map((brand) => ({
-        value: String(brand.id),
+        value: brand.id,
         label: brand.name,
       })),
     [brands],
@@ -107,6 +94,12 @@ export function useProductForm({
   const handleFormSubmit = (
     data: ProductFormInput | ProductFormInputUpdate,
   ) => {
+    if (!storeId || !storeSlug) {
+      throw new Error(
+        "No se encontró la tienda activa para guardar el producto.",
+      );
+    }
+
     const transformed = isUpdate
       ? {
           ...data,
@@ -123,19 +116,20 @@ export function useProductForm({
       if (isCreate) {
         createProduct(
           transformed as ProductInputClient,
-          storeId!,
-          storeSlug!,
+          storeId,
+          storeSlug,
+          variantDraft,
           () => {
             reset({
               name: "",
               brand_id: "",
               sku: "",
               category_id: "",
+              has_variants: false,
               description: "",
               price: 0,
               images: undefined,
             });
-            console.log(getValues());
           },
         );
       }
@@ -145,16 +139,20 @@ export function useProductForm({
           initialData?.id!,
           initialData?.slug!,
           transformed as ProductInputClientUpdate,
-          storeId!,
-          storeSlug!,
+          storeId,
+          storeSlug,
           () => {
             reset({
               name: "",
               brand_id: "",
               sku: "",
               category_id: "",
+              has_variants: false,
               description: "",
               price: 0,
+              images: undefined,
+              imageExisting: [],
+              imageToDelete: [],
             });
           },
         );
@@ -171,6 +169,7 @@ export function useProductForm({
     errors: errors,
     isDirty: isDirty,
     setValue: setValue,
+    watch: watch,
     reset: reset,
     isViewMode: isView,
     initialData,
@@ -179,3 +178,4 @@ export function useProductForm({
     isPending,
   };
 }
+ */

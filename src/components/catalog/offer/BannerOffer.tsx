@@ -13,19 +13,6 @@ interface BannerOfferProps {
   banners: Banner[];
 }
 
-// Hook de fallback (mismo patrón que en la galería)
-/* function useBannerFallback(src: string) {
-  const [imgSrc, setImgSrc] = useState(src);
-
-  useEffect(() => {
-    setImgSrc(src);
-  }, [src]);
-
-  return {
-    imgSrc,
-    onError: () => setImgSrc(FALLBACK_BANNER),
-  };
-} */
 function useBannerFallback(src: string) {
   const [imgSrc, setImgSrc] = useState(src); // ← elimina el useEffect completamente
 

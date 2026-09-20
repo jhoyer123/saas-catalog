@@ -76,7 +76,7 @@ export default async function Footer({
   return (
     <footer className="w-full bg-catalog-primary border-t border-catalog-secondary/10">
       {/* Main grid */}
-      <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Col 1 — Marca */}
         <div className="flex flex-col gap-4 items-start">
           <div className="flex items-center gap-3">

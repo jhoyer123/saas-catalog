@@ -5,11 +5,17 @@ export interface Banner {
 }
 
 export interface StoreCatalog {
+  id: string;
   name: string;
   slug: string;
   logo_url: string | null;
-  whatsapp_number?: string | null;
-  updated_at: string; // Agregado para el cache busting
+  whatsapp_number: string | null;
+  primary_color: string | null;
+  secondary_color: string | null;
+  tertiary_color: string | null;
+  updated_at: string;
+  plan_expires_at: string | null;
+  is_active: boolean;
 }
 
 export interface BrandsCatalog {

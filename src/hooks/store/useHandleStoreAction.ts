@@ -1,9 +1,8 @@
-// src/hooks/store/useStoreActions.ts
 import { useState } from "react";
 import { useToastPromise } from "../shared/useToastPromise";
 import { useCreateStore } from "@/hooks/store/useCreateStore";
 import { useUpdateStore } from "@/hooks/store/useStoreUpdate";
-import { uploadFile } from "@/lib/utils/storage";
+import { deleteFile, uploadFile } from "@/lib/utils/storage";
 import {
   revalidateStoreCache,
   updateStoreLogo,
@@ -32,6 +31,12 @@ export function useHandleStoreActions() {
     }
   };
 
+  /**
+   * Crea una tienda nueva y sube el logo si existe. Luego revalida la caché de la página de la tienda.
+   * @param data - Datos de la tienda a crear.
+   * @param onSuccess - Callback opcional a ejecutar después de la creación exitosa.
+   * @returns void
+   */
   const createStore = (data: StoreForm, onSuccess?: () => void) => {
     showPromise({
       promise: async () => {
@@ -43,19 +48,18 @@ export function useHandleStoreActions() {
 
           // 2. Si hay logo, subirlo desde el cliente y actualizar
           if (logo instanceof File) {
-            const logoUrl = await uploadFile(
-              "stores",
-              newStore.id,
-              "logo",
-              logo,
-              "main",
-            );
-            await updateStoreLogo(newStore.id, logoUrl);
+            const responseUpload = await uploadFile({
+              storeId: newStore.id,
+              folder: `${newStore.id}/branding`,
+              file: logo,
+            });
+            //update logo_url in the store
+            await updateStoreLogo(newStore.id, responseUpload.path);
           }
 
-          //revalidar cahce de react-query
+          //revalidate cache of react-query
           queryClient.invalidateQueries({ queryKey: ["session-data"] });
-
+          // revalidate cache of store page
           onSuccess?.();
           router.push("/dashboard/panel");
         });
@@ -71,6 +75,13 @@ export function useHandleStoreActions() {
     });
   };
 
+  /**
+   * Actualiza los datos de la tienda y sube un nuevo logo si se proporciona. Luego revalida la caché de la página de la tienda.
+   * @param id
+   * @param data
+   * @param storeSlug
+   * @param onSuccess
+   */
   const updateStore = (
     id: string,
     data: StoreForm,
@@ -82,25 +93,34 @@ export function useHandleStoreActions() {
         await withPending(async () => {
           const { logo, ...storeData } = data;
 
+          // guardamos el path viejo antes de pisarlo (si lo tenés disponible)
+          const oldLogoPath = data.logo_url;
+
           // 1. Actualizar datos de la tienda
           await update({ id, data: storeData as StoreAction });
 
-          // 2. Si hay logo nuevo, subirlo desde el cliente y actualizar
+          // 2. Si hay logo nuevo, subirlo y actualizar
           if (logo instanceof File) {
-            const logoUrl = await uploadFile(
-              "stores",
-              id,
-              "logo",
-              logo,
-              "main",
-            );
-            await updateStoreLogo(id, logoUrl);
+            const responseUpload = await uploadFile({
+              storeId: id,
+              folder: `${id}/branding`,
+              file: logo,
+            });
+
+            await updateStoreLogo(id, responseUpload.path);
+
+            // 3. Borrar el logo viejo, sin que un fallo acá tumbe todo el flujo
+            if (oldLogoPath) {
+              try {
+                await deleteFile(oldLogoPath);
+              } catch (err) {
+                console.error("No se pudo eliminar el logo anterior:", err);
+                // opcional: reportar a un servicio de logging, pero no re-lanzar
+              }
+            }
           }
 
-          // revalidar caché
-          await revalidateStoreCache(storeSlug);
-
-          // revalidar cache de react-query
+          revalidateStoreCache(storeSlug);
           queryClient.invalidateQueries({ queryKey: ["session-data"] });
 
           onSuccess?.();

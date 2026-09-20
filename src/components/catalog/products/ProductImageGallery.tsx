@@ -181,7 +181,7 @@ export function ProductImageGallery({
         )
       : null;
 
-  const ImageStack = ({ isMobile }: { isMobile: boolean }) => (
+  const renderImageStack = (isMobile: boolean) => (
     <div
       className={`relative w-full overflow-hidden bg-gray-100 aspect-square ${
         isMobile
@@ -261,14 +261,16 @@ export function ProductImageGallery({
     </div>
   );
 
-  const Thumbnails = ({
-    size,
-    isMobile,
-  }: {
-    size: number;
-    isMobile: boolean;
-  }) => (
-    <div className="flex gap-2 items-center justify-center overflow-x-auto pb-1">
+  const renderThumbnails = (
+    size: number,
+    isMobile: boolean,
+    isVertical = false,
+  ) => (
+    <div
+      className={`flex gap-2 pb-1 ${
+        isVertical ? "flex-col items-center" : "items-center"
+      }`}
+    >
       {safeImages.map((image, index) => (
         <button
           key={index}
@@ -300,15 +302,17 @@ export function ProductImageGallery({
   return (
     <>
       {/* DESKTOP */}
-      <div className="hidden lg:flex lg:flex-col lg:gap-3">
-        <ImageStack isMobile={false} />
-        {safeImages.length > 1 && <Thumbnails size={72} isMobile={false} />}
+      <div className="hidden lg:flex lg:items-start lg:gap-4">
+        {renderImageStack(false)}
+        {safeImages.length > 1 && (
+          renderThumbnails(68, false, true)
+        )}
       </div>
 
       {/* MOBILE */}
       <div className="flex flex-col gap-3 lg:hidden">
-        <ImageStack isMobile={true} />
-        {safeImages.length > 1 && <Thumbnails size={64} isMobile={true} />}
+        {renderImageStack(true)}
+        {safeImages.length > 1 && renderThumbnails(64, true)}
       </div>
 
       {lightbox}

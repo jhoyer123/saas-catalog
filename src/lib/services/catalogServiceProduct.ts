@@ -5,6 +5,10 @@ import type {
   ProductDetailCatalog,
 } from "@/types/product.types";
 import { BrandsCatalog, StoreCatalog } from "@/types/catalog/catalog.types";
+import {
+  mapToProductDetailCatalog,
+  RawProductRow,
+} from "@/components/catalog/lib/product-detail.mapper";
 
 export type SortOption =
   | "price_asc"
@@ -66,14 +70,14 @@ export async function fetchPublicStore(
     .from("stores")
     .select(
       `
-      name, slug, logo_url, whatsapp_number, updated_at
+      "id,name,description, slug, logo_url, whatsapp_number,primary_color,secondary_color,tertiary_color, updated_at,plan_expires_at,is_active"
       `,
     )
     .eq("id", storeId)
     .single();
 
   if (error || !data) throw new Error("Tienda no encontrada");
-  return data;
+  return data as unknown as StoreCatalog;
 }
 
 /**
@@ -95,6 +99,45 @@ export async function fetchPublicBrands(
   if (error) throw new Error(error.message);
 
   return data ?? [];
+}
+
+/**
+ * Fetch de productos relacionados para el detalle público.
+ */
+export async function fetchRelatedProducts(
+  storeSlug: string,
+  categoryId: string,
+  excludeProductId: string,
+): Promise<ProductCatalogCard[]> {
+  const storeId = await getStoreId(storeSlug);
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      `id, name, price, is_offer, offer_price, offer_start, offer_end, slug,is_available, images:product_images(image_url)`,
+    )
+    .limit(1, { foreignTable: "product_images" })
+    .eq("store_id", storeId)
+    .eq("category_id", categoryId)
+    .neq("id", excludeProductId)
+    .range(0, 4)
+    .order("display_order", { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  const products = (data ?? []).map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    is_offer: product.is_offer ?? false,
+    is_available: product.is_available,
+    offer_price: product.offer_price ?? null,
+    offer_start: product.offer_start ?? null,
+    offer_end: product.offer_end ?? null,
+    slug: product.slug,
+    images: product.images ?? [],
+  })) as ProductCatalogCard[];
+  return products;
 }
 
 /**
@@ -123,13 +166,13 @@ export async function fetchPublicProducts({
     .from(table)
     .select(
       `
-      id, name, price, is_offer, offer_price, offer_start, offer_end,is_available,
+      id, name, price, has_variants, is_offer, offer_price, offer_start, offer_end,is_available,
       slug, images:product_images(image_url)
       `,
       { count: "exact" },
     )
-    .limit(1, { foreignTable: "product_images" })
-    .eq("store_id", storeId);
+    .eq("store_id", storeId)
+    .limit(1, { foreignTable: "product_images" });
 
   if (search) query = query.ilike("name", `%${search}%`);
   if (category) query = query.eq("category_id", category);
@@ -147,8 +190,8 @@ export async function fetchPublicProducts({
     case "newest":
       query = query.order("created_at", { ascending: false });
       break;
-    // default:
-    //query = query.order("display_order", { ascending: true });
+    default:
+      query = query.order("created_at", { ascending: true });
   }
 
   const from = (page - 1) * pageSize;
@@ -165,6 +208,7 @@ export async function fetchPublicProducts({
     id: p.id,
     name: p.name,
     price: p.price,
+    has_variants: p.has_variants ?? false,
     is_offer: p.is_offer ?? false,
     offer_price: p.offer_price ?? null,
     offer_start: p.offer_start ?? null,
@@ -206,70 +250,26 @@ export async function fetchPublicProductBySlug(
     .from("products")
     .select(
       `
-      id, name, price, description, is_offer, offer_price, slug, offer_start, offer_end,is_available, brand_id, category_id, images:product_images(image_url)
-      `,
+      id, name, price, description, has_variants, is_offer, offer_price,
+      slug, offer_start, offer_end, is_available,brand_id,category_id,
+      images:product_images(image_url, display_order, visual_signature),
+      option_types:product_option_types(
+        is_visual,
+        option_type:store_option_types(id, name, input_type)
+      ),
+      variants:product_variants(
+        id, sku, price, offer_price, stock, is_available, option_signature,
+        values:variant_option_values(
+          option_type_id,
+          option_value:store_option_values(id, value, image_url, color_hexes, unit)
+        )
+      )
+    `,
     )
     .eq("slug", slug)
     .eq("store_id", storeId)
     .single();
 
   if (error || !data) throw new Error("Producto no encontrado");
-
-  return {
-    id: data.id,
-    name: data.name,
-    price: data.price,
-    description: data.description,
-    brand_id: data.brand_id ?? null,
-    category_id: data.category_id,
-    is_offer: data.is_offer ?? false,
-    offer_price: data.offer_price ?? null,
-    offer_start: data.offer_start ?? null,
-    offer_end: data.offer_end ?? null,
-    slug: data.slug,
-    images: (data.images ?? []).map(
-      (img: { image_url: string }) => img.image_url,
-    ),
-    is_available: data.is_available,
-  };
-}
-
-/**
- * Fetch de productos relacionados para el detalle público.
- */
-export async function fetchRelatedProducts(
-  storeSlug: string,
-  categoryId: string,
-  excludeProductId: string,
-): Promise<ProductCatalogCard[]> {
-  const storeId = await getStoreId(storeSlug);
-
-  const { data, error } = await supabase
-    .from("products")
-    .select(
-      `id, name, price, is_offer, offer_price, offer_start, offer_end, slug,is_available, images:product_images(image_url)`,
-    )
-    .limit(1, { foreignTable: "product_images" })
-    .eq("store_id", storeId)
-    .eq("category_id", categoryId)
-    .neq("id", excludeProductId)
-    .range(0, 4)
-    .order("display_order", { ascending: true });
-
-  if (error) throw new Error(error.message);
-
-  const products = (data ?? []).map((product) => ({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    is_offer: product.is_offer ?? false,
-    is_available: product.is_available,
-    offer_price: product.offer_price ?? null,
-    offer_start: product.offer_start ?? null,
-    offer_end: product.offer_end ?? null,
-    slug: product.slug,
-    images: product.images ?? [],
-  })) as ProductCatalogCard[];
-
-  return products;
+  return mapToProductDetailCatalog(data as unknown as RawProductRow);
 }

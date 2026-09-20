@@ -11,23 +11,27 @@ interface Props {
 }
 
 export default function RelatedProductsSlider({ products }: Props) {
-  if (products.length === 0) return null;
-
   // NOTA DE RENDIMIENTO: Si este hook cambia cada segundo,
   // lo ideal es moverlo ADENTRO de <ProductCard /> para que no re-renderice este Slider.
   const ahora = useTiempoActual();
 
+  if (products.length === 0) return null;
+
   return (
-    <section className="mx-auto max-w-6xl px-4 pt-2 pb-8">
-      <h2
-        className="
-          mb-4 text-center
-          text-lg font-semibold
-          text-catalog-secondary/80
-        "
-      >
-        Productos relacionados
-      </h2>
+    <section className="mx-auto max-w-7xl border-t border-catalog-secondary/10 px-4 lg:px-8 pb-12 pt-10">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-catalog-secondary/45">
+            También te puede gustar
+          </p>
+          <h2 className="text-2xl font-semibold tracking-tight text-catalog-secondary">
+            Productos relacionados
+          </h2>
+        </div>
+        <span className="hidden text-xs text-catalog-secondary/45 sm:block">
+          Desliza para explorar
+        </span>
+      </div>
 
       <Carousel itemsCount={products.length}>
         {products.map((p) => (
@@ -35,6 +39,7 @@ export default function RelatedProductsSlider({ products }: Props) {
             key={p.id}
             className="
               min-w-0
+              h-full
               pl-4
               flex-[0_0_75%]
               sm:flex-[0_0_50%]

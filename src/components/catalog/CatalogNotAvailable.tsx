@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 
-export default function CatalogNotAvailable({ handle }: { handle?: string }) {
+export default function CatalogNotAvailable({
+  nameStore,
+}: {
+  nameStore?: string;
+}) {
   const [attempts, setAttempts] = useState(0);
 
   const handleReload = () => {
@@ -22,6 +26,16 @@ export default function CatalogNotAvailable({ handle }: { handle?: string }) {
       <div className="absolute top-5 right-5 w-4 h-4 border-t border-r border-white/50" />
       <div className="absolute bottom-5 left-5 w-4 h-4 border-b border-l border-white/50" />
       <div className="absolute bottom-5 right-5 w-4 h-4 border-b border-r border-white/50" />
+
+      {/* Nombre de la tienda como título superior */}
+      {nameStore && (
+        <h1
+          className="text-2xl md:text-3xl font-light text-white/70 tracking-[0.25em] uppercase mb-8 text-center"
+          style={{ fontFamily: "'Cormorant Garamond', serif" }}
+        >
+          {nameStore}
+        </h1>
+      )}
 
       {/* Icono */}
       <div className="mb-8 opacity-40">

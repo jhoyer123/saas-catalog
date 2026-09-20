@@ -46,25 +46,6 @@ export function BrandsTable() {
       duration: 3000,
     });
   };
-  /* 
-  const handleDelete = (brand: BrandDashboard) => {
-    showPromise({
-      promise: async () => {
-        await removeBrand(brand.id);
-        closeModal();
-      },
-      messages: {
-        loading: "Eliminando marca...",
-        success: "Marca eliminada",
-        error: (err: Error) => err.message,
-      },
-      richColors: true,
-      position: "top-right",
-      duration: 3000,
-    });
-
-    revalidateBrandsCache(sessionData?.store?.slug!);
-  }; */
 
   const columns = useMemo(
     () => getBrandsColumns({ onOpenModal: openModal }),

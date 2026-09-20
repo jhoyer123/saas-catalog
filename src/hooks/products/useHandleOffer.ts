@@ -12,20 +12,8 @@ export const useToggleOffer = () => {
   const slugStore = sessionData?.store?.slug;
 
   return useMutation({
-    mutationFn: async ({
-      slugProd,
-      params,
-    }: {
-      slugProd: string;
-      params: ToggleOfferParams;
-    }) => {
-      const result = await toggleOfferAction(slugProd, params, slugStore!);
-      if (result && typeof result === "object" && "error" in result) {
-        throw new Error(result.error);
-      }
-      return result;
-    },
-
+    mutationFn: ({ params }: { params: ToggleOfferParams }) =>
+      toggleOfferAction(params),
     onSuccess: () => {
       // Invalida la lista de productos para que se refresque
       queryClient.invalidateQueries({ queryKey: ["products"] });

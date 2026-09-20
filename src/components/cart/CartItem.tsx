@@ -39,9 +39,16 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
       <div className="flex flex-1 flex-col justify-between min-w-0">
         {/* Nombre y botón eliminar */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-2">
-            {item.name}
-          </h3>
+          <div className="min-w-0">
+            <h3 className="text-sm font-medium text-gray-900 leading-tight line-clamp-2">
+              {item.name}
+            </h3>
+            {item.options && item.options.length > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                {item.options.map((option) => `${option.name}: ${option.value}`).join(" · ")}
+              </p>
+            )}
+          </div>
           <Button
             onClick={() => onRemove(item.id)}
             variant={"ghost"}

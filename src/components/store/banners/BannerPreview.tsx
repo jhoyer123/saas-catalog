@@ -1,0 +1,97 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import { Pencil } from "lucide-react";
+import BannerForm from "./BannerForm";
+import { Plan } from "@/types/plan.types";
+import { getCatalogImageUrl } from "@/lib/helpers/imageUrl";
+import { Button } from "@/components/ui/button";
+
+export const BannerPreview = ({
+  banners,
+  plan,
+}: {
+  banners: string[];
+  plan?: Plan;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  // RENDER - MODO EDICIÓN
+
+  if (isEditing) {
+    return (
+      <div>
+        <div className="flex mb-4 items-center justify-between border-b border-gray-200 pb-2">
+          <h2 className="text-sm font-medium text-gray-700">Banners</h2>
+          <Button
+            type="button"
+            onClick={() => setIsEditing(false)}
+            variant="outline"
+          >
+            Cancelar
+          </Button>
+        </div>
+        <BannerForm
+          existingBanners={banners}
+          setIsEditing={setIsEditing}
+          plan={plan}
+        />
+      </div>
+    );
+  }
+
+  // RENDER - MODO VISUALIZACIÓN
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-gray-700">
+          Banners{" "}
+          <span className="text-gray-400 font-normal">
+            ({banners.length}/{plan?.max_banners ?? "N/A"})
+          </span>
+        </h2>
+        <Button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          variant="outline"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          Editar banners
+        </Button>
+      </div>
+
+      {/* Grid vertical */}
+      {banners.length === 0 ? (
+        <div
+          onClick={() => setIsEditing(true)}
+          className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-10 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+        >
+          <p className="text-sm text-gray-500">No hay banners aún</p>
+          <p className="text-xs text-gray-400">Haz clic para añadir</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {banners.map((url, index) => (
+            <div
+              key={url}
+              className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200"
+            >
+              <Image
+                src={getCatalogImageUrl(url)}
+                alt={`Banner ${index + 1}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 1300px"
+                className="object-cover"
+                loading="eager"
+                priority
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};

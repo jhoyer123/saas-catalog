@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { getPublicStore } from "@/lib/actions/catalogActions";
 import Header from "@/components/catalog/header/Header";
 import Footer from "@/components/catalog/footer/Footer";
+import { checkIsPlanActive } from "@/lib/helpers/validations";
+import CatalogNotAvailable from "@/components/catalog/CatalogNotAvailable";
 
 export default async function StoreLayout({
   children,
@@ -23,10 +25,10 @@ export default async function StoreLayout({
   `;
 
   const umamiId = process.env.NEXT_PUBLIC_UMAMI_ID;
+  const isBlocked = !checkIsPlanActive(store);
 
   return (
     <>
-      {/* Preconnects van aquí, Next.js los mueve al <head> automáticamente */}
       <link
         rel="preconnect"
         href="https://supabase-images.jhoyervega4.workers.dev"
@@ -43,18 +45,19 @@ export default async function StoreLayout({
           strategy="afterInteractive"
         />
       )}
-      {/* Header no va en Suspense porque queremos que se pinte lo antes posible */}
-      <Header store={store} />
-      {/* el page */}
-      {children}
-      {/*
-        Footer en Suspense para no bloquear el render inicial del catálogo.
-        Rollback simple: volver a cargar branches/socialLinks en este layout
-        y pasar props directas como antes.
-      */}
-      <Suspense fallback={<div className="h-20 w-full" aria-hidden="true" />}>
-        <Footer store={store} storeSlug={store.slug} storeId={store.id} />
-      </Suspense>
+      {isBlocked ? (
+        <CatalogNotAvailable nameStore={store.name} />
+      ) : (
+        <>
+          <Header store={store} />
+          {children}
+          <Suspense
+            fallback={<div className="h-20 w-full" aria-hidden="true" />}
+          >
+            <Footer store={store} storeSlug={store.slug} storeId={store.id} />
+          </Suspense>
+        </>
+      )}
     </>
   );
 }

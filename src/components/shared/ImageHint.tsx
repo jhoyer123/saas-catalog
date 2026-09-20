@@ -10,15 +10,14 @@ import {
 } from "lucide-react";
 
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const IMAGE_HINTS = {
   product: {
-    short: "Guía de imagen",
+    short: "Recomendaciones de imagen",
     title: "Foto de producto",
     description:
       "Una foto clara del producto ayuda a que tus clientes entiendan mejor lo que vendes.",
@@ -31,19 +30,22 @@ const IMAGE_HINTS = {
     ],
   },
   banner: {
-    short: "Guía de imagen",
+    short: "Recomendaciones de imagen",
     title: "Imagen de banner",
     description: "Los banners sirven para promociones o anuncios importantes.",
     preview: "banner",
     tips: [
-      { icon: RectangleHorizontal, text: "Formato panorámico (ancho)" },
-      { icon: Maximize2, text: "Resolución recomendada 1280 x 730 px" },
-      { icon: ImageIcon, text: "Ideal para promociones o anuncios" },
-      { icon: Info, text: "La plataforma ajusta la imagen automáticamente" },
+      { icon: RectangleHorizontal, text: "Formato panorámico (16:9)" },
+      { icon: Maximize2, text: "Resolución recomendada 1920 × 1080 px" },
+      {
+        icon: ImageIcon,
+        text: "Evitafranjas negras manteniendo la proporción 16:9",
+      },
+      { icon: Info, text: "La plataforma optimiza la imagen automáticamente" },
     ],
   },
   logo: {
-    short: "Guía de imagen",
+    short: "Recomendaciones de imagen",
     title: "Logo de tu tienda",
     description:
       "Usa el logo principal de tu marca para que tu catálogo sea reconocible.",
@@ -70,72 +72,71 @@ export function ImageHint({ typeElement, disabled }: ImageHintProps) {
   const hint = IMAGE_HINTS[typeElement];
   const isBanner = hint.preview === "banner";
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setOpen((prev) => !prev);
-  };
-
   return (
-    <TooltipProvider delayDuration={150}>
-      <Tooltip open={open} onOpenChange={setOpen}>
-        <TooltipTrigger asChild>
-          <span
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-help transition-colors"
-            onClick={handleClick}
-          >
-            <Info className="w-3.5 h-3.5" />
-            {hint.short}
-          </span>
-        </TooltipTrigger>
-
-        <TooltipContent
-          side="bottom"
-          align="start"
-          className="w-64 p-4 rounded-xl shadow-xl bg-background border"
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild className="cursor-pointer">
+        <button
+          type="button"
+          className="
+            inline-flex items-center gap-1
+            rounded-md px-2 py-1
+            text-primary
+            animate-pulse
+            hover:animate-none
+          "
         >
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-foreground/80" />
-              <p className="text-sm font-semibold text-foreground">
-                {hint.title}
-              </p>
-            </div>
+          <Info className="size-4" />
+          <span className="text-xs font-medium">{hint.short}</span>
+        </button>
+      </PopoverTrigger>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {hint.description}
+      <PopoverContent
+        side="bottom"
+        align="start"
+        className="w-64 p-4 rounded-xl shadow-xl bg-background border"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-foreground/80" />
+            <p className="text-sm font-semibold text-foreground">
+              {hint.title}
             </p>
-
-            <div className="flex items-center gap-3 rounded-md border bg-muted/30 p-2">
-              <div
-                className={`border border-dashed rounded flex items-center justify-center text-[10px] text-muted-foreground
-                  ${isBanner ? "w-16 h-6" : "w-10 h-10"}`}
-              >
-                {isBanner ? "Banner" : "1:1"}
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {isBanner
-                  ? "Imagen panorámica similar a portadas."
-                  : "Imagen cuadrada como en tiendas online."}
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              {hint.tips.map((tip, i) => {
-                const Icon = tip.icon;
-                return (
-                  <div
-                    key={i}
-                    className="flex items-start gap-2 text-xs text-muted-foreground"
-                  >
-                    <Icon className="w-3.5 h-3.5 mt-0.5 text-foreground/70 shrink-0" />
-                    <span>{tip.text}</span>
-                  </div>
-                );
-              })}
-            </div>
           </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {hint.description}
+          </p>
+
+          <div className="flex items-center gap-3 rounded-md border bg-muted/30 p-2">
+            <div
+              className={`border border-dashed rounded flex items-center justify-center text-[10px] text-muted-foreground
+                ${isBanner ? "w-16 h-6" : "w-10 h-10"}`}
+            >
+              {isBanner ? "Banner" : "1:1"}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {isBanner
+                ? "Imagen panorámica similar a portadas."
+                : "Imagen cuadrada como en tiendas online."}
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {hint.tips.map((tip, i) => {
+              const Icon = tip.icon;
+              return (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 text-xs text-muted-foreground"
+                >
+                  <Icon className="w-3.5 h-3.5 mt-0.5 text-foreground/70 shrink-0" />
+                  <span>{tip.text}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

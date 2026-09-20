@@ -1,4 +1,3 @@
-// src/hooks/store/useUpdateStore.ts
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { updateStore } from "@/lib/actions/storeActions";
 import type { StoreAction } from "@/lib/schemas/store";
