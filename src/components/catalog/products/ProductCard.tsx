@@ -71,7 +71,7 @@ export const ProductCard = React.memo(function ProductCard({
       image: getCatalogImageUrl(product.images[0]?.image_url),
       price: displayPrice!,
     });
-    toast.success("Producto agregado al carrito", { position: "bottom-right" });
+    toast.success("Producto agregado al carrito", { position: "top-left" });
   };
 
   const telefono = whatssapNumber;

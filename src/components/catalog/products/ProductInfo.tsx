@@ -202,9 +202,10 @@ export function ProductInfo({
 }: ProductInfoProps) {
   const addItem = useCartStore((s) => s.addItem);
   const missingSelection = product.has_variants && !currentVariant;
-  const outOfStock = currentVariant
-    ? !currentVariant.is_available
-    : !product.has_variants && !product.is_available;
+  const isUnavailable = product.has_variants
+    ? Boolean(currentVariant && !currentVariant.is_available)
+    : !product.is_available;
+  const outOfStock = product.has_variants && isUnavailable;
   const displayPrice = isOfferActive ? effectiveOfferPrice : effectivePrice;
   const hasVariantOffers =
     product.has_variants &&
@@ -278,7 +279,7 @@ export function ProductInfo({
       price: displayPrice!,
       options: selectedOptionDetails,
     });
-    toast.success("Producto agregado al carrito", { position: "bottom-right" });
+    toast.success("Producto agregado al carrito", { position: "top-left" });
   };
 
   const telefono = whatssapNumber;

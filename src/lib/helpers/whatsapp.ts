@@ -3,7 +3,7 @@ export function normalizeWhatsAppNumber(phone: string): string {
 }
 
 export function buildProductUrl(storeSlug: string, productSlug: string): string {
-  return `/public/${storeSlug}/${productSlug}`;
+  return `https://app.jhoyerdev.me/public/${storeSlug}/${productSlug}`;
 }
 
 export function buildProductInquiryMessage({
