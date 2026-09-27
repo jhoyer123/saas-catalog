@@ -66,11 +66,12 @@ export default function PanelPage({
   return (
     <section className="mx-auto w-full space-y-8 p-4">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Panel de control</h2>
-        <p className="text-gray-500 mt-1 text-sm">
-          Administra tu tienda y productos desde aquí, para compartir tu
-          catálogo con tus clientes completa las configuraciones necesarias.
+      <div className="flex flex-col gap-2">
+        <h2 className="text-xl font-bold tracking-tight md:text-2xl font-poppins">
+          Panel de control
+        </h2>
+        <p className="text-sm text-muted-foreground font-inter lg:text-md">
+          Administra tu tienda y productos desde aquí.
         </p>
       </div>
 

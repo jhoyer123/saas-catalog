@@ -89,7 +89,7 @@ export default function PlanPage() {
       </div>
 
       {/* PLANS — sin tocar */}
-      <div className="relative z-20 flex-1">
+      <div className="relative z-20 flex-1 px-4 md:px-12 xl:px-16">
         <Plans />
       </div>
 

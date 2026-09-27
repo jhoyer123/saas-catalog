@@ -402,7 +402,7 @@ export const fetchBrandsPaginated = async (
 };
 
 // ── Planes ──
-export const fetchPlans = async (): Promise<PlanDetails[]> => {
+/* export const fetchPlans = async (): Promise<PlanDetails[]> => {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -415,7 +415,7 @@ export const fetchPlans = async (): Promise<PlanDetails[]> => {
   if (error) throw new Error(error.message);
 
   return data ?? [];
-};
+}; */
 
 // ── Redes sociales ──
 export const fetchSocialLinks = async (

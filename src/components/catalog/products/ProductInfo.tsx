@@ -279,7 +279,7 @@ export function ProductInfo({
       price: displayPrice!,
       options: selectedOptionDetails,
     });
-    toast.success("Producto agregado al carrito", { position: "top-left" });
+    //toast.success("Producto agregado al carrito", { position: "top-left" });
   };
 
   const telefono = whatssapNumber;

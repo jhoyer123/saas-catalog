@@ -70,14 +70,14 @@ interface ProcessImageOptions {
  * - WebP
  * - Máximo 120 KB
  */
-export const PRODUCT_IMAGE_OPTIONS: ProcessImageOptions = {
+/* export const PRODUCT_IMAGE_OPTIONS: ProcessImageOptions = {
   targetWidth: 800,
   targetHeight: 800,
   quality: 0.9,
   maxSizeBytes: 120 * 1024,
   minWidth: 320,
   minHeight: 320,
-};
+}; */
 
 /**
  * Banners
@@ -87,14 +87,14 @@ export const PRODUCT_IMAGE_OPTIONS: ProcessImageOptions = {
  * - WebP
  * - Máximo 300 KB
  */
-export const BANNER_IMAGE_OPTIONS: ProcessImageOptions = {
+/* export const BANNER_IMAGE_OPTIONS: ProcessImageOptions = {
   targetWidth: 1600,
   targetHeight: 600,
   quality: 0.9,
   maxSizeBytes: 300 * 1024,
   minWidth: 640,
   minHeight: 240,
-};
+}; */
 
 /**
  * Logos
@@ -103,14 +103,14 @@ export const BANNER_IMAGE_OPTIONS: ProcessImageOptions = {
  * Puedes cambiar estos valores según el diseño
  * de tu catálogo.
  */
-export const LOGO_IMAGE_OPTIONS: ProcessImageOptions = {
+/* export const LOGO_IMAGE_OPTIONS: ProcessImageOptions = {
   targetWidth: 800,
   targetHeight: null,
   quality: 0.9,
   maxSizeBytes: 120 * 1024,
   minWidth: 320,
   minHeight: 100,
-};
+}; */
 
 // ============================================
 // FUNCIÓN PRINCIPAL
@@ -140,7 +140,7 @@ export async function processImage(
     targetHeight = 800,
     backgroundColor = "#ffffff",
     quality = 0.9,
-    maxSizeBytes = 120 * 1024,
+    maxSizeBytes = 150 * 1024,
     minWidth = 320,
     minHeight = 320,
   } = options;

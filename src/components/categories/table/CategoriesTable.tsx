@@ -74,16 +74,19 @@ export function CategoriesTable() {
     <>
       {isDeleting && <OverlayProcess />}
       {/* Botón para crear — abre el modal en modo "create" */}
-      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row mb-6">
+      <div className="flex flex-col justify-between items-start gap-4 lg:flex-row mb-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-xl font-bold tracking-tight font-poppins md:text-2xl">
+          <h2 className="text-xl font-bold tracking-tight md:text-2xl font-poppins">
             Lista de Categorías
-          </h1>
+          </h2>
           <p className="text-sm text-muted-foreground font-inter lg:text-md">
-            Gestiona las categorías de tus productos
+            Gestiona las categorías de tus productos.
           </p>
         </div>
-        <Button onClick={() => openModal("create", null)}>
+        <Button
+          className="w-full lg:w-auto"
+          onClick={() => openModal("create", null)}
+        >
           Agregar categoría
         </Button>
       </div>

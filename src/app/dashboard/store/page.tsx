@@ -32,12 +32,12 @@ export default function StorePage() {
 
   return (
     <section className="w-full p-4">
-      <div className="mx-auto w-full flex flex-col gap-10">
-        <div className="flex flex-col gap-2 w-full">
-          <h2 className="text-xl font-bold font-poppins tracking-tight lg:text-2xl">
+      <div className="mx-auto w-full flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-xl font-bold tracking-tight md:text-2xl font-poppins">
             Configuración de la tienda
           </h2>
-          <p className="text-muted-foreground text-sm font-inter lg:text-md">
+          <p className="text-sm text-muted-foreground font-inter lg:text-md">
             Administra la información y apariencia de tu tienda.
           </p>
         </div>

@@ -56,7 +56,12 @@ export const IMAGE_PRESETS: Record<string, ImagePreset> = {
   },
   logo: {
     variant: "product",
-    processConfig: { targetWidth: 512, targetHeight: 512, quality: 0.9 },
+    processConfig: {
+      targetWidth: 400,
+      targetHeight: 400,
+      quality: 0.9,
+      maxSizeBytes: 100 * 1024,
+    },
     gridClassName: "grid-cols-1 md:grid-cols-2",
     cardAspect: "square",
   },

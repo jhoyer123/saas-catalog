@@ -2,59 +2,75 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
-import { useGetPlans } from "@/hooks/plans/useGetPlans";
 
-const USD_TO_BS = 9.95;
+const USD_TO_BS = 11.5;
 
 function formatBs(usd: number): string {
   return Math.round(usd * USD_TO_BS).toLocaleString("es-BO");
 }
 
+const COMMON_FEATURES = [
+  "Catálogo online listo para vender",
+  "Pedidos directos por WhatsApp",
+  "Comparte tu tienda con un link",
+  "Gestión de productos y ofertas",
+  "Activa o desactiva productos fácilmente",
+  "Diseño optimizado para tu negocio",
+  "Personaliza tu tienda con tu logo",
+  "Colores adaptados profesionalmente",
+  "Sucursales y redes sociales integradas",
+];
+
+const PLANS = [
+  {
+    id: "basico",
+    name: "Básico",
+    price: 10,
+    description: "Ideal para empezar tu tienda online",
+    popular: false,
+    features: [
+      ...COMMON_FEATURES,
+      "Hasta 50 productos",
+      "3 imágenes por producto",
+      "3 banners en tu tienda",
+    ],
+  },
+  {
+    id: "estandar",
+    name: "Estándar",
+    price: 17,
+    description: "El mejor balance para tu negocio",
+    popular: true,
+    features: [
+      ...COMMON_FEATURES,
+      "Hasta 150 productos",
+      "4 imágenes por producto",
+      "4 banners en tu tienda",
+    ],
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: 25,
+    description: "Para negocios que quieren crecer más",
+    popular: false,
+    features: [
+      ...COMMON_FEATURES,
+      "Hasta 250 productos",
+      "5 imágenes por producto",
+      "5 banners en tu tienda",
+    ],
+  },
+];
+
 export default function Plans() {
   const [currency, setCurrency] = useState<"usd" | "bs">("bs");
-  const { data, isPending } = useGetPlans();
-
-  const plans = data?.map((p) => {
-    const getFeatures = [
-      "Catálogo online listo para vender",
-      "Pedidos directos por WhatsApp",
-      "Comparte tu tienda con un link",
-      "Gestión de productos y ofertas",
-      "Activa o desactiva productos fácilmente",
-      "Diseño optimizado para tu negocio",
-      "Personaliza tu tienda con tu logo",
-      "Colores adaptados profesionalmente",
-      "Sucursales y redes sociales integradas",
-      `Hasta ${p.max_products} productos`,
-      `${p.max_images_per_product} imágenes por producto`,
-      `${p.max_banners} banners en tu tienda`,
-    ];
-    return {
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      maxProducts: p.max_products,
-      maxImages: p.max_images_per_product,
-      maxBanners: p.max_banners,
-      popular: p.name === "Estándar",
-      description: p.description,
-      features: getFeatures,
-    };
-  });
 
   const getWhatsappLink = (planName: string) => {
     const phone = "62557286";
     const message = `Hola, quiero solicitar el plan ${planName} en JPLATAFORM. ¿Podrían brindarme más información?`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
-
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -85,8 +101,8 @@ export default function Plans() {
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 items-center justify-center gap-2 mx-auto">
-        {plans?.map((plan) => (
+      <div className="grid grid-cols-1 lg:grid-cols-3 items-center justify-center gap-2 lg:gap-4 xl:gap-6 mx-auto">
+        {PLANS.map((plan) => (
           <div
             key={plan.id}
             className={`relative bg-white rounded-2xl p-4 md:p-8 transition-all duration-200 hover:-translate-y-1 ${
@@ -148,6 +164,7 @@ export default function Plans() {
             <a
               href={getWhatsappLink(plan.name)}
               target="_blank"
+              rel="noopener noreferrer"
               className={`block w-full text-center py-3.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 plan.popular
                   ? "bg-gray-900 text-white hover:opacity-90"

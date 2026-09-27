@@ -57,16 +57,16 @@ export function BrandsTable() {
   return (
     <>
       {isDeleting && <OverlayProcess />}
-      <div className="flex flex-col justify-between items-center gap-4 lg:flex-row mb-6">
+      <div className="flex flex-col justify-between items-start gap-4 lg:flex-row mb-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-xl font-bold tracking-tight font-poppins md:text-2xl">
+          <h2 className="text-xl font-bold tracking-tight md:text-2xl font-poppins">
             Lista de Marcas
-          </h1>
+          </h2>
           <p className="text-sm text-muted-foreground font-inter lg:text-md">
-            Gestiona las marcas de tus productos
+            Gestiona las marcas de tus productos.
           </p>
         </div>
-        <Button onClick={() => openModal("create", null)}>Agregar marca</Button>
+        <Button className="w-full lg:w-auto" onClick={() => openModal("create", null)}>Agregar marca</Button>
       </div>
 
       <DataTableServer<BrandDashboard>
