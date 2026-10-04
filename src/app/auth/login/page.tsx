@@ -10,6 +10,9 @@ import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 function SearchParamsToast() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -91,6 +94,18 @@ export default function Login() {
       <Suspense fallback={null}>
         <SearchParamsToast />
       </Suspense>
+
+      {/* Botón atrás */}
+      <Button
+        asChild
+        variant="ghost"
+        className="absolute top-4 left-4 z-20 gap-2"
+      >
+        <Link href="/" prefetch={false}>
+          <ArrowLeft className="h-4 w-4" />
+          Atrás
+        </Link>
+      </Button>
 
       <main className="w-full max-w-md p-6 flex relative z-10">
         <div className="flex-1/2">

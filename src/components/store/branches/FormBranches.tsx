@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import {
+  Controller,
   useFieldArray,
   useForm,
   useWatch,
@@ -13,12 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
 
 import FormInput from "@/components/shared/InputForm";
+import { PhoneNumberInput } from "@/components/shared/PhoneNumberInput";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { settingsSchema, type SettingsForm } from "@/lib/schemas/settings";
 import { OverlayProcess } from "../../shared/OverlayProcess";
 import { BranchLocationPicker } from "../../settings/branch-map/BranchLocationPicker";
-
 const emptyBranch = {
   name: "",
   address: "",
@@ -26,6 +27,9 @@ const emptyBranch = {
   lat: undefined,
   lng: undefined,
 };
+
+const formatBranchPhone = (phone: string) =>
+  /^\d{8}$/.test(phone) ? `+591${phone}` : phone;
 
 type BranchCardProps = {
   index: number;
@@ -39,7 +43,6 @@ type BranchCardProps = {
     location: { lat: number; lng: number },
   ) => void;
 };
-
 const BranchCard = ({
   index,
   control,
@@ -85,17 +88,31 @@ const BranchCard = ({
           required
         />
 
-        <FormInput
-          label="Teléfono"
-          name={`branches.${index}.phone`}
-          control={control}
-          errors={errors}
-          inputProps={{
-            placeholder: "+503 2222 2222",
-            disabled,
-          }}
-          required
-        />
+        <div className="grid min-w-0 gap-2">
+          <Label htmlFor={`branches.${index}.phone`}>
+            WhatsApp sucursal<span className="text-red-500">*</span>
+          </Label>
+          <Controller
+            name={`branches.${index}.phone`}
+            control={control}
+            render={({ field, fieldState }) => (
+              <>
+                <PhoneNumberInput
+                  id={`branches.${index}.phone`}
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={disabled}
+                  placeholder="7689 8907"
+                />
+                {fieldState.error && (
+                  <p className="text-sm font-medium text-red-500">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </>
+            )}
+          />
+        </div>
       </div>
 
       <div className="mt-4 grid gap-2">
@@ -143,7 +160,6 @@ const BranchCard = ({
     </div>
   );
 };
-
 interface Props {
   defaultValues?: SettingsForm;
   onSubmit: (data: SettingsForm) => void | Promise<void>;
@@ -152,7 +168,6 @@ interface Props {
   onDirtyChange?: (isDirty: boolean) => void;
   isPending?: boolean;
 }
-
 export const FormBranches = ({
   defaultValues,
   onSubmit,
@@ -171,7 +186,11 @@ export const FormBranches = ({
   } = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      branches: defaultValues?.branches ?? [],
+      branches:
+        defaultValues?.branches?.map((branch) => ({
+          ...branch,
+          phone: formatBranchPhone(branch.phone),
+        })) ?? [],
     },
   });
 
@@ -179,11 +198,9 @@ export const FormBranches = ({
     control,
     name: "branches",
   });
-
   useEffect(() => {
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
-
   const updateBranchLocation = (
     index: number,
     location: { lat: number; lng: number },
@@ -199,14 +216,11 @@ export const FormBranches = ({
       shouldValidate: true,
     });
   };
-
   const handleFormSubmit = async (data: SettingsForm) => {
     await onSubmit(data);
     reset(data);
   };
-
   const disabled = readOnly || isPending || isSubmitting;
-
   return (
     <>
       {isPending && <OverlayProcess />}

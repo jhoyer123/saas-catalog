@@ -11,6 +11,9 @@ import { RegisterData } from "@/lib/schemas/auth";
 import FormRegister from "@/components/auth/FormRegister";
 import Image from "next/image";
 
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 export default function Register() {
   const { showPromise } = useToastPromise();
   const { mutateAsync: register, isPending } = useRegister();
@@ -37,6 +40,18 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white font-sans dark:bg-black">
+      {/* Botón atrás */}
+      <Button
+        asChild
+        variant="ghost"
+        className="absolute top-4 left-4 z-20 gap-2"
+      >
+        <Link href="/" prefetch={false}>
+          <ArrowLeft className="h-4 w-4" />
+          Atrás
+        </Link>
+      </Button>
+
       <main className="w-full max-w-md p-6 relative z-10">
         {/* header */}
         <header className="mb-8 text-center flex flex-col gap-5 px-4">

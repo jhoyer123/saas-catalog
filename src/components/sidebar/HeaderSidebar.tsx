@@ -17,8 +17,9 @@ const HeaderSidebar = () => {
         <div className="w-auto h-auto max-h-20 max-w-20 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
           <Image
             src={
-              getCatalogImageUrl(sessionData?.store?.logo_url) ||
-              "/images/logoDefault.webp"
+              sessionData?.store?.logo_url
+                ? getCatalogImageUrl(sessionData?.store?.logo_url)
+                : "/images/logoDefault.webp"
             }
             alt="Logo"
             width={48}
@@ -26,8 +27,16 @@ const HeaderSidebar = () => {
             priority
             className="h-auto w-auto max-h-15 max-w-15 rounded-md object-contain"
           />
+          {/* span de alerta el logo es por defecto message */}
         </div>
-
+        {!sessionData?.store?.logo_url && (
+          <span
+            className="text-xs text-muted-foreground"
+            title="El logo es por defecto"
+          >
+            ⚠ Logo por defecto · Sube tu propio logo
+          </span>
+        )}
         <h1 className="text-lg font-poppins font-semibold text-gray-800 truncate">
           {sessionData?.store?.name || "Nombre Empresa"}
         </h1>

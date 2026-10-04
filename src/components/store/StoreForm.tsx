@@ -1,7 +1,13 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  getCountries,
+  getCountryCallingCode,
+  type Country,
+} from "react-phone-number-input";
+import flags from "react-phone-number-input/flags";
 import { storeSchema, type StoreForm } from "@/lib/schemas/store";
 import type { Store } from "@/types/store.types";
 import FormInput from "@/components/shared/InputForm";
@@ -19,8 +25,32 @@ interface Props {
   defaultValues?: Store;
 }
 
+const formatInitialPhone = (phone: string | null | undefined) => {
+  if (!phone) return "";
+  return /^\d{8}$/.test(phone) ? `+503${phone}` : phone;
+};
+
+const getCountryFromPhone = (phone: string) => {
+  return getCountries()
+    .sort(
+      (first, second) =>
+        getCountryCallingCode(second).length -
+        getCountryCallingCode(first).length,
+    )
+    .find((country) => phone.startsWith(`+${getCountryCallingCode(country)}`));
+};
+
+const getPhoneDigits = (phone: string, country: Country) =>
+  phone.replace(`+${getCountryCallingCode(country)}`, "").replace(/\D/g, "");
+
+const countryName = new Intl.DisplayNames(["es"], { type: "region" });
+
 const StoreForm = ({ defaultValues }: Props) => {
   const isEditing = !!defaultValues;
+  const initialPhone = formatInitialPhone(defaultValues?.whatsapp_number);
+  const [selectedCountry, setSelectedCountry] = useState<Country>(
+    getCountryFromPhone(initialPhone) ?? "BO",
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(
@@ -39,7 +69,7 @@ const StoreForm = ({ defaultValues }: Props) => {
     defaultValues: {
       name: defaultValues?.name || "",
       description: defaultValues?.description || "",
-      whatsapp_number: defaultValues?.whatsapp_number || "",
+      whatsapp_number: formatInitialPhone(defaultValues?.whatsapp_number),
       logo_url: defaultValues?.logo_url || null,
     },
   });
@@ -80,16 +110,16 @@ const StoreForm = ({ defaultValues }: Props) => {
       <form
         id="store-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 lg:space-y-8 w-full mx-auto"
+        className="mx-auto min-w-0 w-full space-y-4 lg:space-y-8"
       >
         <div className="flex items-end justify-end mb-10">
           <Button type="submit" disabled={isPending || !isDirty}>
             {isPending ? "Guardando..." : "Guardar Datos"}
           </Button>
         </div>
-        <div className="flex flex-col w-full gap-5 md:flex-row">
+        <div className="flex min-w-0 w-full flex-col gap-5 md:flex-row">
           {/* Logo */}
-          <div className="grid gap-2 w-full md:w-1/2">
+          <div className="grid min-w-0 w-full gap-2 md:w-1/2">
             <Label className="font-medium text-sm">
               Logo de la Tienda <span className="text-red-500">*</span>
             </Label>
@@ -108,7 +138,7 @@ const StoreForm = ({ defaultValues }: Props) => {
                   className="h-auto w-auto max-h-48 max-w-48 rounded-md object-contain"
                 />
               ) : (
-                <span className="text-muted-foreground text-sm">
+                <span className="text-muted-foreground text-sm m-2">
                   Subir logo
                 </span>
               )}
@@ -128,12 +158,11 @@ const StoreForm = ({ defaultValues }: Props) => {
             </div>
           </div>
 
-          <div className="grid gap-2 w-full md:w-1/2">
+          <div className="grid min-w-0 w-full gap-2 md:w-1/2">
             {/* Nombre */}
             <FormInput
               label="Nombre de la Tienda"
               name="name"
-              //register={register}
               control={control}
               inputProps={{ placeholder: "Mi tienda" }}
               errors={errors}
@@ -141,15 +170,85 @@ const StoreForm = ({ defaultValues }: Props) => {
             />
 
             {/* WhatsApp */}
-            <FormInput
-              label="WhatsApp de la Tienda"
-              name="whatsapp_number"
-              //register={register}
-              control={control}
-              inputProps={{ placeholder: "12345678" }}
-              errors={errors}
-              required
-            />
+            <div className="grid w-full gap-2">
+              <Label htmlFor="whatsapp_number" className="mt-1">
+                WhatsApp de la Tienda <span className="text-red-500">*</span>
+              </Label>
+              <Controller
+                name="whatsapp_number"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <>
+                    <div className="flex h-9 min-w-0 w-full items-center overflow-hidden rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs md:text-sm">
+                      <div className="relative h-6 w-8 shrink-0">
+                        {(() => {
+                          const Flag = flags[selectedCountry];
+                          return Flag ? (
+                            <span className="absolute inset-0 [&>svg]:h-full [&>svg]:w-full [&>svg]:object-cover">
+                              <Flag
+                                title={
+                                  countryName.of(selectedCountry) ?? selectedCountry
+                                }
+                              />
+                            </span>
+                          ) : null;
+                        })()}
+                        <select
+                          aria-label="Código de país"
+                          value={selectedCountry}
+                          disabled={isPending}
+                          onChange={(event) => {
+                            const country = event.target.value as Country;
+                            setSelectedCountry(country);
+                            const digits = getPhoneDigits(
+                              field.value,
+                              selectedCountry,
+                            );
+                            field.onChange(
+                              digits
+                                ? `+${getCountryCallingCode(country)}${digits}`
+                                : "",
+                            );
+                          }}
+                          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                        >
+                          {getCountries().map((country) => (
+                            <option key={country} value={country}>
+                              {countryName.of(country)} (+
+                              {getCountryCallingCode(country)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <span className="ml-2 text-muted-foreground" aria-hidden>
+                        +{getCountryCallingCode(selectedCountry)}
+                      </span>
+                      <input
+                        id="whatsapp_number"
+                        value={getPhoneDigits(field.value, selectedCountry)}
+                        onChange={(event) => {
+                          const digits = event.target.value.replace(/\D/g, "");
+                          field.onChange(
+                            digits
+                              ? `+${getCountryCallingCode(selectedCountry)}${digits}`
+                              : "",
+                          );
+                        }}
+                        placeholder="7689 8907"
+                        inputMode="numeric"
+                        disabled={isPending}
+                        className="ml-2 min-w-0 flex-1 border-0 bg-transparent p-0 outline-none ring-0 placeholder:text-muted-foreground focus:border-0 focus:outline-none focus:ring-0"
+                      />
+                    </div>
+                    {fieldState.error && (
+                      <p className="text-sm font-medium text-red-500">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
 
             {/* Descripción */}
             <div className="grid gap-2">

@@ -1,4 +1,4 @@
-import z, { string } from "zod";
+import z from "zod";
 /**
  * Schema validador for login singnup forms
  */
@@ -26,9 +26,10 @@ export const registerSchema = z
       .email("Correo electrónico no válido"),
     phone: z
       .string({ message: "Este campo es requerido" })
-      .regex(/^\d+$/, "El teléfono solo debe contener números")
-      .length(8, "El número de teléfono debe tener exactamente 8 dígitos")
-      .min(8, "El número de teléfono debe tener al menos 8 dígitos"),
+      .regex(
+        /^\+[1-9]\d{7,14}$/,
+        "Ingresa un número válido con código de país",
+      ),
     password: z
       .string({ message: "Este campo es requerido" })
       .min(8, "La contraseña debe tener al menos 8 caracteres")

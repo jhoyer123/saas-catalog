@@ -18,11 +18,13 @@ import { PlanAlert } from "../plans/PlanAlert";
 
 interface DashboardPageProps {
   hasProducts?: boolean;
+  hasCategories?: boolean;
   store?: StoreType | null;
 }
 
 export default function PanelPage({
   hasProducts = false,
+  hasCategories = false,
   store = null,
 }: DashboardPageProps) {
   const storeIsComplete = !!(
@@ -43,10 +45,18 @@ export default function PanelPage({
       href: "/dashboard/store",
     },
     {
+      done: hasCategories,
+      label: "Agrega una categoría",
+      description: "Organiza tus productos para publicarlos",
+      href: "/dashboard/categories",
+      requiresStore: true,
+    },
+    {
       done: hasProducts,
       label: "Agrega un producto",
       description: "Al menos uno para publicar",
       href: "/dashboard/products",
+      requiresStore: true,
     },
   ];
 
@@ -77,41 +87,54 @@ export default function PanelPage({
 
       {/* Checklist de configuración — solo si no está todo listo */}
       {!allDone && (
-        <div className="border border-yellow-200 bg-yellow-50 rounded-lg p-5 space-y-3">
-          <p className="text-sm font-medium text-yellow-800 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" />
-            Completa estos pasos para publicar tu catálogo
-          </p>
-          <div className="space-y-2">
-            {steps.map((step) => (
+        <div className="rounded-xl border bg-card text-card-foreground shadow p-6 space-y-4">
+          <div className="flex items-center gap-2 font-semibold leading-none tracking-tight">
+            <AlertCircle className="h-4 w-4" />
+            <p>Completa estos pasos para publicar tu catálogo</p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {steps.map((step) => {
+              const disabled = step.requiresStore && !store;
+
+              return (
               <Link
                 key={step.href}
-                href={step.done ? "#" : step.href}
-                className={`flex items-center justify-between rounded-md px-4 py-3 text-sm transition
-                  ${
-                    step.done
-                      ? "bg-white text-gray-400 cursor-default"
-                      : "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
-                  }`}
+                href={step.done || disabled ? "#" : step.href}
+                className={`flex items-center justify-between rounded-lg border p-4 transition-colors
+            ${
+              step.done || disabled
+                ? "bg-muted/50 text-muted-foreground pointer-events-none"
+                : "bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer shadow-sm"
+            }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   {step.done ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-yellow-400 shrink-0" />
+                    <div className="h-4 w-4 rounded-full border border-primary shrink-0" />
                   )}
-                  <div>
-                    <p className={step.done ? "line-through" : "font-medium"}>
+
+                  <div className="space-y-1">
+                    <p
+                      className={`text-sm font-medium leading-none ${
+                        step.done ? "line-through text-muted-foreground" : ""
+                      }`}
+                    >
                       {step.label}
                     </p>
-                    <p className="text-xs text-gray-400">{step.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {step.description}
+                    </p>
                   </div>
                 </div>
-                {!step.done && (
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
+
+                {!step.done && !disabled && (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 )}
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -128,25 +151,35 @@ export default function PanelPage({
                 <Store className="w-5 h-5" />
                 <h3 className="font-semibold">Tu catálogo público</h3>
               </div>
-              <p className="text-sm text-gray-500">
-                Comparte este enlace con tus clientes.
-              </p>
-              <div className="bg-gray-50 rounded px-3 py-2 flex items-center justify-between gap-2">
-                <span className="text-sm text-gray-500 truncate font-mono">
-                  {catalogUrl}
-                </span>
-                <button
-                  onClick={handleCopy}
-                  className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
-                  disabled={hasProducts ? false : true}
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
+              {/* mientras no haya almoenos un producto creado no se muestra el link */}
+
+              {hasProducts ? (
+                <>
+                  <p className="text-sm text-gray-500">
+                    Comparte este enlace con tus clientes.
+                  </p>
+                  <div className="bg-gray-50 rounded px-3 py-2 flex items-center justify-between gap-2">
+                    <span className="text-sm text-gray-500 truncate font-mono">
+                      {catalogUrl}
+                    </span>
+                    <button
+                      onClick={handleCopy}
+                      className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
+                      disabled={hasProducts ? false : true}
+                    >
+                      {copied ? (
+                        <Check className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No tienes productos creados.
+                </p>
+              )}
               <Button
                 variant="outline"
                 size="sm"

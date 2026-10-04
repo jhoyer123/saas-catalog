@@ -1,6 +1,11 @@
 @import "tailwindcss";
+@import "react-phone-number-input/style.css";
 /*  @import "tw-animate-css";*/
 @import "shadcn/tailwind.css";
+
+.PhoneInputCountryCallingCode {
+  color: var(--muted-foreground);
+}
 
 @custom-variant dark (&:is(.dark *));
 

@@ -90,6 +90,23 @@ export const fetchProductCount = async (storeId: string): Promise<number> => {
   return count ?? 0;
 };
 
+// ── Category count (para panel) ──
+export const fetchCategoryCount = async (storeId: string): Promise<number> => {
+  const supabase = createClient();
+
+  const { count, error } = await supabase
+    .from("categories")
+    .select("id", { count: "exact", head: true })
+    .eq("store_id", storeId);
+
+  if (error) {
+    console.error("fetchCategoryCount error:", error);
+    return 0;
+  }
+
+  return count ?? 0;
+};
+
 //PRODUCTS
 // ── Products paginated ──
 export const fetchProductsPaginated = async (

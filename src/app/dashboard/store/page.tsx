@@ -12,12 +12,12 @@ export default function StorePage() {
     return <SketetonStoreConfig />;
   }
 
-  if (!isSessionPending && !data?.store) {
+  if (!data && !isSessionPending) {
     return (
       <section className="w-full p-4">
         <div className="mx-auto w-full flex flex-col items-center justify-center min-h-100 gap-3">
           <p className="text-sm text-muted-foreground">
-            No se pudo cargar la información de tu tienda.
+            Ocurrió un error inesperado.
           </p>
           <button
             onClick={() => window.location.reload()}
@@ -61,16 +61,16 @@ export default function StorePage() {
           <SectionsStore plan={data?.plan} />
         )}
 
-        {/* Si no existe tienda, se muestra un mensaje indicando que las demas secciones no están disponibles */}
+        {/* Mensaje cuando no existe la tienda */}
         {!data?.store && (
-          <div className="flex flex-col gap-2 w-full intems-center justify-center border rounded-lg border-input p-6 text-center">
-            <h2 className="text-xl font-bold text-muted-foreground font-poppins tracking-tight lg:text-2xl text-center">
-              Configura tu tienda para poder acceder a mas secciones de
-              configuración de tu negocio
+          <div className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-input p-6 text-center">
+            <h2 className="text-sm font-bold tracking-tight text-muted-foreground font-poppins lg:text-xl">
+              Configura tu tienda para acceder a más opciones
             </h2>
-            <p className="text-muted-foreground text-sm font-inter lg:text-md text-center">
-              Para administrar categorías, productos, sucursales, redes sociales
-              y marcas, primero debes crear tu tienda con los datos principales.
+
+            <p className="text-sm text-muted-foreground font-inter lg:text-md">
+              Crea tu tienda con los datos principales para administrar
+              categorías, productos, sucursales, redes sociales y marcas.
             </p>
           </div>
         )}

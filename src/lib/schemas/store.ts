@@ -19,8 +19,7 @@ export const storeSchema = z.object({
   description: z.string().optional().nullable(),
   whatsapp_number: z
     .string()
-    .min(8, "Número inválido")
-    .max(8, "Número inválido"),
+    .regex(/^\+[1-9]\d{7,14}$/, "Ingresa un número válido con código de país"),
   logo: logoSchema.optional(),
   logo_url: z.string().optional().nullable(),
 });

@@ -4,6 +4,7 @@ import PanelPage from "@/components/panel/PanelPage";
 import { useSessionData } from "@/hooks/auth/useSessionData";
 import SkeletonPanel from "@/components/panel/SkeletonPanel";
 import { useProductCount } from "@/hooks/validation/useProductCount";
+import { useCategoryCount } from "@/hooks/validation/useCategoryCount";
 
 export default function DashboardPanelPage() {
   //important data for validation
@@ -11,13 +12,19 @@ export default function DashboardPanelPage() {
   const storeId = sessionData?.store?.id;
 
   const { data: count, isPending: isCountPending } = useProductCount(storeId!);
+  const { data: categoryCount, isPending: isCategoryCountPending } =
+    useCategoryCount(storeId ?? null);
 
-  if (isSessionPending || (isCountPending && storeId != null))
+  if (
+    isSessionPending ||
+    ((isCountPending || isCategoryCountPending) && storeId != null)
+  )
     return <SkeletonPanel />;
 
   return (
     <PanelPage
       hasProducts={(count ?? 0) > 0}
+      hasCategories={(categoryCount ?? 0) > 0}
       store={sessionData?.store ?? null}
     />
   );
